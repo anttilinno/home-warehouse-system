@@ -9,6 +9,11 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+const (
+	msgEmailRequired    = "email is required"
+	msgFullNameRequired = "full name is required"
+)
+
 // User represents a user in the system.
 type User struct {
 	id                      uuid.UUID
@@ -33,10 +38,10 @@ type User struct {
 // NewUser creates a new user with the given parameters.
 func NewUser(email, fullName, password string) (*User, error) {
 	if email == "" {
-		return nil, shared.NewFieldError(shared.ErrInvalidInput, "email", "email is required")
+		return nil, shared.NewFieldError(shared.ErrInvalidInput, "email", msgEmailRequired)
 	}
 	if fullName == "" {
-		return nil, shared.NewFieldError(shared.ErrInvalidInput, "full_name", "full name is required")
+		return nil, shared.NewFieldError(shared.ErrInvalidInput, "full_name", msgFullNameRequired)
 	}
 	if len(password) < 8 {
 		return nil, shared.NewFieldError(shared.ErrInvalidInput, "password", "password must be at least 8 characters")
@@ -72,10 +77,10 @@ func NewUser(email, fullName, password string) (*User, error) {
 // NewOAuthUser creates a new user for OAuth-only authentication (no password).
 func NewOAuthUser(email, fullName string) (*User, error) {
 	if email == "" {
-		return nil, shared.NewFieldError(shared.ErrInvalidInput, "email", "email is required")
+		return nil, shared.NewFieldError(shared.ErrInvalidInput, "email", msgEmailRequired)
 	}
 	if fullName == "" {
-		return nil, shared.NewFieldError(shared.ErrInvalidInput, "full_name", "full name is required")
+		return nil, shared.NewFieldError(shared.ErrInvalidInput, "full_name", msgFullNameRequired)
 	}
 
 	now := time.Now()
@@ -200,7 +205,7 @@ func (u *User) CheckPassword(password string) bool {
 // UpdateProfile updates the user's profile information.
 func (u *User) UpdateProfile(fullName string) error {
 	if fullName == "" {
-		return shared.NewFieldError(shared.ErrInvalidInput, "full_name", "full name is required")
+		return shared.NewFieldError(shared.ErrInvalidInput, "full_name", msgFullNameRequired)
 	}
 	u.fullName = fullName
 	u.updatedAt = time.Now()
@@ -298,7 +303,7 @@ func (u *User) UpdateAvatar(path *string) {
 // UpdateEmail updates the user's email address.
 func (u *User) UpdateEmail(email string) error {
 	if email == "" {
-		return shared.NewFieldError(shared.ErrInvalidInput, "email", "email is required")
+		return shared.NewFieldError(shared.ErrInvalidInput, "email", msgEmailRequired)
 	}
 	u.email = email
 	u.updatedAt = time.Now()

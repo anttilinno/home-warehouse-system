@@ -87,8 +87,7 @@ func (m *MockRepository) SetPrimary(ctx context.Context, id uuid.UUID) error {
 }
 
 func (m *MockRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
+	return m.Called(ctx, id).Error(0)
 }
 
 func (m *MockRepository) DeleteByItem(ctx context.Context, itemID, workspaceID uuid.UUID) error {
@@ -124,10 +123,7 @@ func (m *MockRepository) GetPhotosWithHashes(ctx context.Context, workspaceID uu
 
 func (m *MockRepository) GetItemPhotosWithHashes(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*itemphoto.ItemPhoto, error) {
 	args := m.Called(ctx, itemID, workspaceID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]*itemphoto.ItemPhoto), args.Error(1)
+	return mockSliceErrGuarded[*itemphoto.ItemPhoto](args)
 }
 
 func (m *MockRepository) UpdatePerceptualHash(ctx context.Context, id uuid.UUID, hash int64) error {

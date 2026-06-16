@@ -35,7 +35,7 @@ export function ScanHistoryList({
   entries,
   onSelect,
   onClear,
-}: ScanHistoryListProps) {
+}: Readonly<ScanHistoryListProps>) {
   const { t } = useLingui();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const now = Date.now();

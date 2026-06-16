@@ -21,7 +21,7 @@ export interface LoanRowActionsProps {
 
 type OpenDialog = "return" | "extend" | "edit" | null;
 
-export function LoanRowActions({ loan, tab }: LoanRowActionsProps) {
+export function LoanRowActions({ loan, tab }: Readonly<LoanRowActionsProps>) {
   const [openDialog, setOpenDialog] = useState<OpenDialog>(null);
 
   // History rows are terminal (read-only) — no lifecycle actions.

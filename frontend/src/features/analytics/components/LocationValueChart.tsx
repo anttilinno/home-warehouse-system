@@ -28,9 +28,9 @@ import {
 // accent. Value = total_value (CENTS → formatCents).
 export function LocationValueChart({
   data,
-}: {
+}: Readonly<{
   data: LocationInventoryValue[];
-}) {
+}>) {
   const { ink, grid, muted } = useChartColors();
   const isEmpty = data.length === 0;
   return (

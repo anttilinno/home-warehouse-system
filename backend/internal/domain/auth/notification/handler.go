@@ -11,13 +11,15 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+const msgAuthenticationRequired = "authentication required"
+
 // RegisterRoutes registers notification routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List user notifications
 	huma.Get(api, "/notifications", func(ctx context.Context, input *ListNotificationsInput) (*ListNotificationsOutput, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
@@ -45,7 +47,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Get(api, "/notifications/unread", func(ctx context.Context, input *struct{}) (*ListUnreadNotificationsOutput, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		notifications, err := svc.GetUnreadNotifications(ctx, authUser.ID)
@@ -72,7 +74,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Get(api, "/notifications/unread/count", func(ctx context.Context, input *struct{}) (*UnreadCountOutput, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		count, err := svc.GetUnreadCount(ctx, authUser.ID)
@@ -89,7 +91,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Get(api, "/notifications/{id}", func(ctx context.Context, input *GetNotificationInput) (*GetNotificationOutput, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		notification, err := svc.GetByID(ctx, input.ID, authUser.ID)
@@ -106,7 +108,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Post(api, "/notifications/{id}/read", func(ctx context.Context, input *GetNotificationInput) (*struct{}, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		err := svc.MarkAsRead(ctx, input.ID, authUser.ID)
@@ -121,7 +123,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Post(api, "/notifications/read-all", func(ctx context.Context, input *struct{}) (*struct{}, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		err := svc.MarkAllAsRead(ctx, authUser.ID)

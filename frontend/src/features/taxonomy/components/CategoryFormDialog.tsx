@@ -75,7 +75,7 @@ function flattenExcluding(
   return out;
 }
 
-export function CategoryFormDialog({ mode }: CategoryFormDialogProps) {
+export function CategoryFormDialog({ mode }: Readonly<CategoryFormDialogProps>) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const { currentWorkspaceId: wsId } = useWorkspace();
@@ -140,8 +140,9 @@ export function CategoryFormDialog({ mode }: CategoryFormDialogProps) {
   useEffect(() => {
     if (!guardActive) return;
     const handler = (e: BeforeUnloadEvent) => {
+      // preventDefault() alone triggers the browser's unsaved-changes prompt
+      // (the legacy returnValue assignment is deprecated).
       e.preventDefault();
-      e.returnValue = "";
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);

@@ -14,6 +14,14 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	msgFailedToListLoans        = "failed to list loans"
+	msgFailedToDecorateLoans    = "failed to decorate loans"
+	msgLoanNotFound             = "loan not found"
+	msgFailedToDecorateLoan     = "failed to decorate loan"
+)
+
 // ===== Decoration types (plan 62-01 D-03/D-04) =====
 
 // LoanEmbeddedItem is the item slice surfaced on every LoanResponse.
@@ -168,34 +176,55 @@ func decorateLoans(ctx context.Context, lookup DecorationLookup, workspaceID uui
 // handler embeds item + borrower decoration in the response (plan 62-01
 // D-03/D-04). Pass nil to skip decoration (tests without photo integration).
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster, lookup DecorationLookup) {
-	// List all loans
-	huma.Get(api, "/loans", func(ctx context.Context, input *ListLoansInput) (*ListLoansOutput, error) {
+	huma.Get(api, "/loans", listLoans(svc, lookup))
+	huma.Get(api, "/loans/active", listActiveLoans(svc, lookup))
+	huma.Get(api, "/loans/overdue", listOverdueLoans(svc, lookup))
+	huma.Get(api, "/loans/{id}", getLoan(svc, lookup))
+	huma.Post(api, "/loans", createLoan(svc, broadcaster, lookup))
+	huma.Post(api, "/loans/{id}/return", returnLoan(svc, broadcaster, lookup))
+	huma.Patch(api, "/loans/{id}/extend", extendLoan(svc, broadcaster, lookup))
+	huma.Patch(api, "/loans/{id}", updateLoan(svc, broadcaster, lookup))
+	huma.Get(api, "/borrowers/{borrower_id}/loans", listBorrowerLoans(svc, lookup))
+	huma.Get(api, "/items/{item_id}/loans", listItemLoans(svc, lookup))
+	huma.Get(api, "/inventory/{inventory_id}/loans", listInventoryLoans(svc, lookup))
+}
+
+// decoratedListResponse decorates a loan slice and wraps it in the standard
+// list envelope, mapping a decoration failure to the shared 500 error. Used by
+// every list-style loan handler so the workspace-guard + decorate + envelope
+// sequence isn't repeated per route.
+func decoratedListResponse(ctx context.Context, lookup DecorationLookup, workspaceID uuid.UUID, loans []*Loan) (*ListLoansOutput, error) {
+	items, err := decorateLoans(ctx, lookup, workspaceID, loans)
+	if err != nil {
+		return nil, huma.Error500InternalServerError(msgFailedToDecorateLoans)
+	}
+	return &ListLoansOutput{Body: LoanListResponse{Items: items}}, nil
+}
+
+// listLoans returns the handler for GET /loans.
+func listLoans(svc ServiceInterface, lookup DecorationLookup) func(context.Context, *ListLoansInput) (*ListLoansOutput, error) {
+	return func(ctx context.Context, input *ListLoansInput) (*ListLoansOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
 		loans, _, err := svc.List(ctx, workspaceID, pagination)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to list loans")
+			return nil, huma.Error500InternalServerError(msgFailedToListLoans)
 		}
 
-		items, err := decorateLoans(ctx, lookup, workspaceID, loans)
-		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to decorate loans")
-		}
+		return decoratedListResponse(ctx, lookup, workspaceID, loans)
+	}
+}
 
-		return &ListLoansOutput{
-			Body: LoanListResponse{Items: items},
-		}, nil
-	})
-
-	// Get active loans
-	huma.Get(api, "/loans/active", func(ctx context.Context, input *struct{}) (*ListLoansOutput, error) {
+// listActiveLoans returns the handler for GET /loans/active.
+func listActiveLoans(svc ServiceInterface, lookup DecorationLookup) func(context.Context, *struct{}) (*ListLoansOutput, error) {
+	return func(ctx context.Context, input *struct{}) (*ListLoansOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		loans, err := svc.GetActiveLoans(ctx, workspaceID)
@@ -203,21 +232,16 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, huma.Error500InternalServerError("failed to get active loans")
 		}
 
-		items, err := decorateLoans(ctx, lookup, workspaceID, loans)
-		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to decorate loans")
-		}
+		return decoratedListResponse(ctx, lookup, workspaceID, loans)
+	}
+}
 
-		return &ListLoansOutput{
-			Body: LoanListResponse{Items: items},
-		}, nil
-	})
-
-	// Get overdue loans
-	huma.Get(api, "/loans/overdue", func(ctx context.Context, input *struct{}) (*ListLoansOutput, error) {
+// listOverdueLoans returns the handler for GET /loans/overdue.
+func listOverdueLoans(svc ServiceInterface, lookup DecorationLookup) func(context.Context, *struct{}) (*ListLoansOutput, error) {
+	return func(ctx context.Context, input *struct{}) (*ListLoansOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		loans, err := svc.GetOverdueLoans(ctx, workspaceID)
@@ -225,43 +249,40 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, huma.Error500InternalServerError("failed to get overdue loans")
 		}
 
-		items, err := decorateLoans(ctx, lookup, workspaceID, loans)
-		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to decorate loans")
-		}
+		return decoratedListResponse(ctx, lookup, workspaceID, loans)
+	}
+}
 
-		return &ListLoansOutput{
-			Body: LoanListResponse{Items: items},
-		}, nil
-	})
-
-	// Get loan by ID
-	huma.Get(api, "/loans/{id}", func(ctx context.Context, input *GetLoanInput) (*GetLoanOutput, error) {
+// getLoan returns the handler for GET /loans/{id}.
+func getLoan(svc ServiceInterface, lookup DecorationLookup) func(context.Context, *GetLoanInput) (*GetLoanOutput, error) {
+	return func(ctx context.Context, input *GetLoanInput) (*GetLoanOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		loan, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil || loan == nil {
-			return nil, huma.Error404NotFound("loan not found")
+			return nil, huma.Error404NotFound(msgLoanNotFound)
 		}
 
 		decorated, err := decorateOneLoan(ctx, lookup, workspaceID, loan)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to decorate loan")
+			return nil, huma.Error500InternalServerError(msgFailedToDecorateLoan)
 		}
 
 		return &GetLoanOutput{
 			Body: decorated,
 		}, nil
-	})
+	}
+}
 
-	// Create loan
-	huma.Post(api, "/loans", func(ctx context.Context, input *CreateLoanInput) (*CreateLoanOutput, error) {
+// createLoan returns the handler for POST /loans.
+func createLoan(svc ServiceInterface, broadcaster *events.Broadcaster, lookup DecorationLookup) func(context.Context, *CreateLoanInput) (*CreateLoanOutput, error) {
+	return func(ctx context.Context, input *CreateLoanInput) (*CreateLoanOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		loanedAt := time.Now()
@@ -311,25 +332,27 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		decorated, err := decorateOneLoan(ctx, lookup, workspaceID, loan)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to decorate loan")
+			return nil, huma.Error500InternalServerError(msgFailedToDecorateLoan)
 		}
 
 		return &CreateLoanOutput{
 			Body: decorated,
 		}, nil
-	})
+	}
+}
 
-	// Return loan
-	huma.Post(api, "/loans/{id}/return", func(ctx context.Context, input *ReturnLoanInput) (*ReturnLoanOutput, error) {
+// returnLoan returns the handler for POST /loans/{id}/return.
+func returnLoan(svc ServiceInterface, broadcaster *events.Broadcaster, lookup DecorationLookup) func(context.Context, *ReturnLoanInput) (*ReturnLoanOutput, error) {
+	return func(ctx context.Context, input *ReturnLoanInput) (*ReturnLoanOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		loan, err := svc.Return(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrLoanNotFound) {
-				return nil, huma.Error404NotFound("loan not found")
+				return nil, huma.Error404NotFound(msgLoanNotFound)
 			}
 			if errors.Is(err, ErrAlreadyReturned) {
 				return nil, huma.Error400BadRequest("loan has already been returned")
@@ -354,26 +377,29 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		decorated, err := decorateOneLoan(ctx, lookup, workspaceID, loan)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to decorate loan")
+			return nil, huma.Error500InternalServerError(msgFailedToDecorateLoan)
 		}
 
 		return &ReturnLoanOutput{
 			Body: decorated,
 		}, nil
-	})
+	}
+}
 
-	// Extend due date (legacy single-purpose endpoint; retained for back-compat
-	// — the Phase 62 edit flow uses PATCH /loans/{id} instead, per D-01).
-	huma.Patch(api, "/loans/{id}/extend", func(ctx context.Context, input *ExtendLoanInput) (*ExtendLoanOutput, error) {
+// extendLoan returns the handler for PATCH /loans/{id}/extend (legacy
+// single-purpose endpoint; retained for back-compat — the Phase 62 edit flow
+// uses PATCH /loans/{id} instead, per D-01).
+func extendLoan(svc ServiceInterface, broadcaster *events.Broadcaster, lookup DecorationLookup) func(context.Context, *ExtendLoanInput) (*ExtendLoanOutput, error) {
+	return func(ctx context.Context, input *ExtendLoanInput) (*ExtendLoanOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		loan, err := svc.ExtendDueDate(ctx, input.ID, workspaceID, input.Body.NewDueDate)
 		if err != nil {
 			if errors.Is(err, ErrLoanNotFound) {
-				return nil, huma.Error404NotFound("loan not found")
+				return nil, huma.Error404NotFound(msgLoanNotFound)
 			}
 			if errors.Is(err, ErrAlreadyReturned) {
 				return nil, huma.Error400BadRequest("cannot extend due date for returned loan")
@@ -403,26 +429,28 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		decorated, err := decorateOneLoan(ctx, lookup, workspaceID, loan)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to decorate loan")
+			return nil, huma.Error500InternalServerError(msgFailedToDecorateLoan)
 		}
 
 		return &ExtendLoanOutput{
 			Body: decorated,
 		}, nil
-	})
+	}
+}
 
-	// Update loan (due_date and/or notes) — supersedes /extend for the edit
-	// flow per plan 62-01 D-01.
-	huma.Patch(api, "/loans/{id}", func(ctx context.Context, input *UpdateLoanInput) (*UpdateLoanOutput, error) {
+// updateLoan returns the handler for PATCH /loans/{id} (due_date and/or notes)
+// — supersedes /extend for the edit flow per plan 62-01 D-01.
+func updateLoan(svc ServiceInterface, broadcaster *events.Broadcaster, lookup DecorationLookup) func(context.Context, *UpdateLoanInput) (*UpdateLoanOutput, error) {
+	return func(ctx context.Context, input *UpdateLoanInput) (*UpdateLoanOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		loan, err := svc.Update(ctx, input.ID, workspaceID, input.Body.DueDate, input.Body.Notes)
 		if err != nil {
 			if errors.Is(err, ErrLoanNotFound) {
-				return nil, huma.Error404NotFound("loan not found")
+				return nil, huma.Error404NotFound(msgLoanNotFound)
 			}
 			if errors.Is(err, ErrAlreadyReturned) {
 				return nil, huma.Error400BadRequest("cannot edit returned loan")
@@ -453,77 +481,63 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		decorated, err := decorateOneLoan(ctx, lookup, workspaceID, loan)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to decorate loan")
+			return nil, huma.Error500InternalServerError(msgFailedToDecorateLoan)
 		}
 		return &UpdateLoanOutput{Body: decorated}, nil
-	})
+	}
+}
 
-	// List loans by borrower
-	huma.Get(api, "/borrowers/{borrower_id}/loans", func(ctx context.Context, input *ListBorrowerLoansInput) (*ListLoansOutput, error) {
+// listBorrowerLoans returns the handler for GET /borrowers/{borrower_id}/loans.
+func listBorrowerLoans(svc ServiceInterface, lookup DecorationLookup) func(context.Context, *ListBorrowerLoansInput) (*ListLoansOutput, error) {
+	return func(ctx context.Context, input *ListBorrowerLoansInput) (*ListLoansOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
 		loans, err := svc.ListByBorrower(ctx, workspaceID, input.BorrowerID, pagination)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to list loans")
+			return nil, huma.Error500InternalServerError(msgFailedToListLoans)
 		}
 
-		items, err := decorateLoans(ctx, lookup, workspaceID, loans)
-		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to decorate loans")
-		}
+		return decoratedListResponse(ctx, lookup, workspaceID, loans)
+	}
+}
 
-		return &ListLoansOutput{
-			Body: LoanListResponse{Items: items},
-		}, nil
-	})
-
-	// List loans by item definition (joins through inventory)
-	huma.Get(api, "/items/{item_id}/loans", func(ctx context.Context, input *ListItemLoansInput) (*ListLoansOutput, error) {
+// listItemLoans returns the handler for GET /items/{item_id}/loans (joins
+// through inventory).
+func listItemLoans(svc ServiceInterface, lookup DecorationLookup) func(context.Context, *ListItemLoansInput) (*ListLoansOutput, error) {
+	return func(ctx context.Context, input *ListItemLoansInput) (*ListLoansOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		loans, err := svc.ListByItem(ctx, workspaceID, input.ItemID)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to list loans")
+			return nil, huma.Error500InternalServerError(msgFailedToListLoans)
 		}
 
-		items, err := decorateLoans(ctx, lookup, workspaceID, loans)
-		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to decorate loans")
-		}
+		return decoratedListResponse(ctx, lookup, workspaceID, loans)
+	}
+}
 
-		return &ListLoansOutput{
-			Body: LoanListResponse{Items: items},
-		}, nil
-	})
-
-	// List loans by inventory
-	huma.Get(api, "/inventory/{inventory_id}/loans", func(ctx context.Context, input *ListInventoryLoansInput) (*ListLoansOutput, error) {
+// listInventoryLoans returns the handler for GET /inventory/{inventory_id}/loans.
+func listInventoryLoans(svc ServiceInterface, lookup DecorationLookup) func(context.Context, *ListInventoryLoansInput) (*ListLoansOutput, error) {
+	return func(ctx context.Context, input *ListInventoryLoansInput) (*ListLoansOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		loans, err := svc.ListByInventory(ctx, workspaceID, input.InventoryID)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to list loans")
+			return nil, huma.Error500InternalServerError(msgFailedToListLoans)
 		}
 
-		items, err := decorateLoans(ctx, lookup, workspaceID, loans)
-		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to decorate loans")
-		}
-
-		return &ListLoansOutput{
-			Body: LoanListResponse{Items: items},
-		}, nil
-	})
+		return decoratedListResponse(ctx, lookup, workspaceID, loans)
+	}
 }
 
 // toLoanResponse populates a LoanResponse, filling in item + borrower

@@ -16,6 +16,13 @@ import (
 	"github.com/antti/home-warehouse/go-backend/tests/testdb"
 )
 
+const (
+	msgFailedCreateRequest = "failed to create request: %v"
+	msgFailedMakeRequest   = "failed to make request: %v"
+	headerContentType      = "Content-Type"
+	authBearerPrefix       = "Bearer "
+)
+
 // TestServer wraps the test server and provides helper methods.
 type TestServer struct {
 	t      *testing.T
@@ -77,17 +84,17 @@ func (ts *TestServer) Request(method, path string, body interface{}) *http.Respo
 
 	req, err := http.NewRequest(method, ts.Server.URL+path, reqBody)
 	if err != nil {
-		ts.t.Fatalf("failed to create request: %v", err)
+		ts.t.Fatalf(msgFailedCreateRequest, err)
 	}
 
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(headerContentType, "application/json")
 	if ts.Token != "" {
-		req.Header.Set("Authorization", "Bearer "+ts.Token)
+		req.Header.Set("Authorization", authBearerPrefix+ts.Token)
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		ts.t.Fatalf("failed to make request: %v", err)
+		ts.t.Fatalf(msgFailedMakeRequest, err)
 	}
 
 	return resp
@@ -137,12 +144,12 @@ func (ts *TestServer) RequestWithCookies(method, path string, body interface{}, 
 
 	req, err := http.NewRequest(method, ts.Server.URL+path, reqBody)
 	if err != nil {
-		ts.t.Fatalf("failed to create request: %v", err)
+		ts.t.Fatalf(msgFailedCreateRequest, err)
 	}
 
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(headerContentType, "application/json")
 	if ts.Token != "" {
-		req.Header.Set("Authorization", "Bearer "+ts.Token)
+		req.Header.Set("Authorization", authBearerPrefix+ts.Token)
 	}
 	for name, value := range cookies {
 		req.AddCookie(&http.Cookie{Name: name, Value: value})
@@ -150,7 +157,7 @@ func (ts *TestServer) RequestWithCookies(method, path string, body interface{}, 
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		ts.t.Fatalf("failed to make request: %v", err)
+		ts.t.Fatalf(msgFailedMakeRequest, err)
 	}
 
 	return resp
@@ -167,17 +174,17 @@ func (ts *TestServer) PostRaw(path string, body *bytes.Buffer, contentType strin
 
 	req, err := http.NewRequest(http.MethodPost, ts.Server.URL+path, body)
 	if err != nil {
-		ts.t.Fatalf("failed to create request: %v", err)
+		ts.t.Fatalf(msgFailedCreateRequest, err)
 	}
 
-	req.Header.Set("Content-Type", contentType)
+	req.Header.Set(headerContentType, contentType)
 	if ts.Token != "" {
-		req.Header.Set("Authorization", "Bearer "+ts.Token)
+		req.Header.Set("Authorization", authBearerPrefix+ts.Token)
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		ts.t.Fatalf("failed to make request: %v", err)
+		ts.t.Fatalf(msgFailedMakeRequest, err)
 	}
 
 	return resp

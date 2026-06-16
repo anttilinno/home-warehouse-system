@@ -40,7 +40,7 @@ export function AddAttachmentDialog({
   itemId,
   open,
   onClose,
-}: AddAttachmentDialogProps) {
+}: Readonly<AddAttachmentDialogProps>) {
   const { t } = useLingui();
   const { upload } = useItemAttachments(wsId, itemId);
 
@@ -72,12 +72,14 @@ export function AddAttachmentDialog({
       retroToast.success(t`DONE · File uploaded.`);
       handleClose();
     } catch (err) {
-      const reason =
-        err instanceof HttpError && err.status === 404
-          ? t`That item no longer exists.`
-          : err instanceof HttpError && err.status === 400
-            ? t`That file was rejected — check its type and size.`
-            : t`Try again.`;
+      let reason: string;
+      if (err instanceof HttpError && err.status === 404) {
+        reason = t`That item no longer exists.`;
+      } else if (err instanceof HttpError && err.status === 400) {
+        reason = t`That file was rejected — check its type and size.`;
+      } else {
+        reason = t`Try again.`;
+      }
       retroToast.error(t`Couldn't upload this file. ${reason}`);
     }
   }

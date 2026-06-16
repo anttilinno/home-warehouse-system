@@ -12,13 +12,18 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 )
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	routeLabelByID              = "/labels/{id}"
+)
+
 // RegisterRoutes registers label routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List labels
 	huma.Get(api, "/labels", func(ctx context.Context, input *struct{}) (*ListLabelsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		labels, err := svc.ListByWorkspace(ctx, workspaceID)
@@ -37,10 +42,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Get label by ID
-	huma.Get(api, "/labels/{id}", func(ctx context.Context, input *GetLabelInput) (*GetLabelOutput, error) {
+	huma.Get(api, routeLabelByID, func(ctx context.Context, input *GetLabelInput) (*GetLabelOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		label, err := svc.GetByID(ctx, input.ID, workspaceID)
@@ -57,7 +62,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/labels", func(ctx context.Context, input *CreateLabelInput) (*CreateLabelOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -97,10 +102,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Update label
-	huma.Patch(api, "/labels/{id}", func(ctx context.Context, input *UpdateLabelInput) (*UpdateLabelOutput, error) {
+	huma.Patch(api, routeLabelByID, func(ctx context.Context, input *UpdateLabelInput) (*UpdateLabelOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -153,7 +158,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/labels/{id}/archive", func(ctx context.Context, input *GetLabelInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -184,7 +189,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/labels/{id}/restore", func(ctx context.Context, input *GetLabelInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -212,10 +217,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Delete label
-	huma.Delete(api, "/labels/{id}", func(ctx context.Context, input *GetLabelInput) (*struct{}, error) {
+	huma.Delete(api, routeLabelByID, func(ctx context.Context, input *GetLabelInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)

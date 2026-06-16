@@ -14,6 +14,8 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/webpush"
 )
 
+const cronDailyAt9AM = "0 9 * * *"
+
 // SchedulerConfig holds configuration for the job scheduler.
 type SchedulerConfig struct {
 	RedisAddr string
@@ -130,7 +132,7 @@ func (s *Scheduler) RegisterHandlers(emailSender EmailSender, pushSender *webpus
 // RegisterScheduledTasks registers all scheduled/periodic tasks.
 func (s *Scheduler) RegisterScheduledTasks() error {
 	// Schedule loan reminders check daily at 9 AM
-	_, err := s.scheduler.Register("0 9 * * *", NewScheduleLoanRemindersTask(),
+	_, err := s.scheduler.Register(cronDailyAt9AM, NewScheduleLoanRemindersTask(),
 		asynq.Queue(QueueDefault),
 	)
 	if err != nil {
@@ -139,7 +141,7 @@ func (s *Scheduler) RegisterScheduledTasks() error {
 	log.Println("Registered scheduled task: loan reminders (daily at 9 AM)")
 
 	// Schedule repair reminders check daily at 9 AM (same schedule as loan reminders)
-	_, err = s.scheduler.Register("0 9 * * *", NewScheduleRepairRemindersTask(),
+	_, err = s.scheduler.Register(cronDailyAt9AM, NewScheduleRepairRemindersTask(),
 		asynq.Queue(QueueDefault),
 	)
 	if err != nil {
@@ -148,7 +150,7 @@ func (s *Scheduler) RegisterScheduledTasks() error {
 	log.Println("Registered scheduled task: repair reminders (daily at 9 AM)")
 
 	// Schedule expiry/warranty reminders check daily at 9 AM
-	_, err = s.scheduler.Register("0 9 * * *", NewScheduleExpiryRemindersTask(),
+	_, err = s.scheduler.Register(cronDailyAt9AM, NewScheduleExpiryRemindersTask(),
 		asynq.Queue(QueueDefault),
 	)
 	if err != nil {
@@ -157,7 +159,7 @@ func (s *Scheduler) RegisterScheduledTasks() error {
 	log.Println("Registered scheduled task: expiry reminders (daily at 9 AM)")
 
 	// Schedule maintenance due/overdue reminders check daily at 9 AM
-	_, err = s.scheduler.Register("0 9 * * *", NewScheduleMaintenanceRemindersTask(),
+	_, err = s.scheduler.Register(cronDailyAt9AM, NewScheduleMaintenanceRemindersTask(),
 		asynq.Queue(QueueDefault),
 	)
 	if err != nil {

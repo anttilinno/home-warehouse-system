@@ -27,7 +27,7 @@ export function MobileDrawer({
   stats,
   user,
   onLogout,
-}: MobileDrawerProps) {
+}: Readonly<MobileDrawerProps>) {
   const panelRef = useRef<HTMLDivElement>(null);
   const invokerRef = useRef<HTMLElement | null>(null);
 

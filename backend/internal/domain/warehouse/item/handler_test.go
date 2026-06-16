@@ -56,9 +56,13 @@ func (m *MockService) Delete(ctx context.Context, id, workspaceID uuid.UUID) err
 	return args.Error(0)
 }
 
+func mockSliceIntErr[T any](args mock.Arguments) ([]T, int, error) {
+	return args.Get(0).([]T), args.Int(1), args.Error(2)
+}
+
 func (m *MockService) ListNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*item.Item, int, error) {
 	args := m.Called(ctx, workspaceID, pagination)
-	return args.Get(0).([]*item.Item), args.Int(1), args.Error(2)
+	return mockSliceIntErr[*item.Item](args)
 }
 
 func (m *MockService) Update(ctx context.Context, id, workspaceID uuid.UUID, input item.UpdateInput) (*item.Item, error) {
@@ -70,13 +74,11 @@ func (m *MockService) Update(ctx context.Context, id, workspaceID uuid.UUID, inp
 }
 
 func (m *MockService) Archive(ctx context.Context, id, workspaceID uuid.UUID) error {
-	args := m.Called(ctx, id, workspaceID)
-	return args.Error(0)
+	return m.Called(ctx, id, workspaceID).Error(0)
 }
 
 func (m *MockService) Restore(ctx context.Context, id, workspaceID uuid.UUID) error {
-	args := m.Called(ctx, id, workspaceID)
-	return args.Error(0)
+	return m.Called(ctx, id, workspaceID).Error(0)
 }
 
 func (m *MockService) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*item.Item, error) {
@@ -103,8 +105,7 @@ func (m *MockService) AttachLabel(ctx context.Context, itemID, labelID, workspac
 }
 
 func (m *MockService) DetachLabel(ctx context.Context, itemID, labelID, workspaceID uuid.UUID) error {
-	args := m.Called(ctx, itemID, labelID, workspaceID)
-	return args.Error(0)
+	return m.Called(ctx, itemID, labelID, workspaceID).Error(0)
 }
 
 func (m *MockService) GetItemLabels(ctx context.Context, itemID, workspaceID uuid.UUID) ([]uuid.UUID, error) {

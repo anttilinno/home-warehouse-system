@@ -69,8 +69,8 @@ async function parseResponse<T>(response: Response): Promise<T> {
 // single-flighted via refreshPromise — so concurrent 401 callers awaiting the
 // same promise observe exactly one event (Phase 05 Plan 02, AUTH-01).
 function emitAuthExpired(): void {
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("auth-expired"));
+  if (typeof globalThis.window !== "undefined") {
+    globalThis.dispatchEvent(new CustomEvent("auth-expired"));
   }
 }
 
@@ -147,7 +147,7 @@ export function get<T>(endpoint: string): Promise<T> {
 export function post<T>(endpoint: string, data?: unknown): Promise<T> {
   return request<T>(endpoint, {
     method: "POST",
-    body: data !== undefined ? JSON.stringify(data) : undefined,
+    body: data === undefined ? undefined : JSON.stringify(data),
   });
 }
 
@@ -176,7 +176,7 @@ export function del<T = void>(endpoint: string): Promise<T> {
 export function put<T>(endpoint: string, data: unknown): Promise<T> {
   return request<T>(endpoint, {
     method: "PUT",
-    body: data !== undefined ? JSON.stringify(data) : undefined,
+    body: data === undefined ? undefined : JSON.stringify(data),
   });
 }
 

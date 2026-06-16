@@ -25,7 +25,7 @@ import {
 // ANL-02 — top borrowers ranked by total_loans, single-series butter (the
 // loan/warning accent per sketch 009). A LabelList shows the loan count in the
 // right gutter, clear of the bars.
-export function TopBorrowersChart({ data }: { data: TopBorrower[] }) {
+export function TopBorrowersChart({ data }: Readonly<{ data: TopBorrower[] }>) {
   const { ink, grid, muted } = useChartColors();
   const isEmpty = data.length === 0;
   return (

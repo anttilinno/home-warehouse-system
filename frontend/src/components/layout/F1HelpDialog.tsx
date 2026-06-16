@@ -31,7 +31,11 @@ const GLOBAL_SYNTHETIC: { shortcutKey: string; description: string }[] = [
  * modal-stack ESC pop (never logout — TUI-02); this component only owns the F1
  * toggle listener (the F1 owner, NOT an ESC listener).
  */
-export function F1HelpDialog({ open, onClose, onToggle }: F1HelpDialogProps) {
+export function F1HelpDialog({
+  open,
+  onClose,
+  onToggle,
+}: Readonly<F1HelpDialogProps>) {
   const { shortcuts } = useShortcutsContext();
 
   // The SINGLE F1/"?" toggle owner. Bails on modifier combos and editable
@@ -116,10 +120,10 @@ export function F1HelpDialog({ open, onClose, onToggle }: F1HelpDialogProps) {
 function Group({
   label,
   children,
-}: {
+}: Readonly<{
   label: React.ReactNode;
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <section className="flex flex-col gap-sp-2">
       <h3 className="border-b border-dotted border-fg-faint pb-[3px] font-body text-10 font-bold uppercase tracking-14 text-fg-muted">
@@ -136,13 +140,13 @@ function Row({
   description,
   danger,
   onActivate,
-}: {
+}: Readonly<{
   shortcutKey: string;
   label: string;
   description: string;
   danger?: boolean;
   onActivate: () => void;
-}) {
+}>) {
   return (
     <div className="grid grid-cols-[auto_1fr] items-center gap-sp-3 py-[3px]">
       <ShortcutChip

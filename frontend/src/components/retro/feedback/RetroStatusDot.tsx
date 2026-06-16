@@ -18,7 +18,7 @@ const DOT_FILL: Record<RetroStatusDotState, string> = {
 // prop-driven visual primitive with ZERO live-stream coupling (Pitfall 6). The
 // dashboard feeds the real connection state into the `state` prop in Phase 6;
 // this atom never imports a live-stream hook or a browser stream source.
-export function RetroStatusDot({ state }: RetroStatusDotProps) {
+export function RetroStatusDot({ state }: Readonly<RetroStatusDotProps>) {
   // Live = hard step-end blink (see globals.css .status-dot--live, reduced-
   // motion-safe). idle/error stay solid.
   const dotClass = `inline-block h-2 w-2 border border-border-ink ${DOT_FILL[state]}${

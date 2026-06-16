@@ -64,12 +64,16 @@ func (m *MockRepository) FindActiveLoans(ctx context.Context, workspaceID uuid.U
 	return args.Get(0).([]*Loan), args.Error(1)
 }
 
-func (m *MockRepository) FindOverdueLoans(ctx context.Context, workspaceID uuid.UUID) ([]*Loan, error) {
-	args := m.Called(ctx, workspaceID)
+func mockSliceErr[T any](args mock.Arguments) ([]T, error) {
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*Loan), args.Error(1)
+	return args.Get(0).([]T), args.Error(1)
+}
+
+func (m *MockRepository) FindOverdueLoans(ctx context.Context, workspaceID uuid.UUID) ([]*Loan, error) {
+	args := m.Called(ctx, workspaceID)
+	return mockSliceErr[*Loan](args)
 }
 
 func (m *MockRepository) FindActiveLoanForInventory(ctx context.Context, inventoryID uuid.UUID) (*Loan, error) {
@@ -126,10 +130,7 @@ func (m *MockInventoryRepository) FindByID(ctx context.Context, id, workspaceID 
 
 func (m *MockInventoryRepository) FindByItem(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*inventory.Inventory, error) {
 	args := m.Called(ctx, workspaceID, itemID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]*inventory.Inventory), args.Error(1)
+	return mockSliceErr[*inventory.Inventory](args)
 }
 
 func (m *MockInventoryRepository) FindByLocation(ctx context.Context, workspaceID, locationID uuid.UUID) ([]*inventory.Inventory, error) {

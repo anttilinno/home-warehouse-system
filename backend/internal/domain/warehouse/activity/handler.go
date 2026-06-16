@@ -11,13 +11,15 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+const msgWorkspaceContextRequired = "workspace context required"
+
 // RegisterRoutes registers activity routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List workspace activity (optionally filtered by user_id)
 	huma.Get(api, "/activity", func(ctx context.Context, input *ListActivityInput) (*ListActivityOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
@@ -53,7 +55,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Get(api, "/activity/{entity_type}/{entity_id}", func(ctx context.Context, input *ListByEntityInput) (*ListActivityOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		entityType := EntityType(input.EntityType)
@@ -81,7 +83,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Get(api, "/activity/recent", func(ctx context.Context, input *RecentActivityInput) (*ListActivityOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		since := time.Now().Add(-24 * time.Hour) // Default: last 24 hours

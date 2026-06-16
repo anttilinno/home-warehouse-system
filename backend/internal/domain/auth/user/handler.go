@@ -33,6 +33,28 @@ const (
 	refreshTokenMaxAge = 7 * 24 * 60 * 60 // 7 days
 )
 
+const (
+	// Route paths
+	routeUsersMe       = "/users/me"
+	routeUsersMeAvatar = "/users/me/avatar"
+
+	// Error messages
+	msgEmailAlreadyTaken          = "email is already taken"
+	msgFailedGenerateToken        = "failed to generate token"
+	msgFailedGenerateRefreshToken = "failed to generate refresh token"
+	msgUserNotFound               = "user not found"
+	msgNotAuthenticated           = "not authenticated"
+	msgSuperuserAccessRequired    = "superuser access required"
+
+	// MIME types
+	mimeJPEG = "image/jpeg"
+	mimePNG  = "image/png"
+	mimeWebP = "image/webp"
+
+	// HTTP headers
+	headerContentType = "Content-Type"
+)
+
 // secureCookies controls the Secure flag on auth cookies. It is configured at
 // startup via SetSecureCookies from config.SecureCookies() — the single source
 // of truth for production detection — and defaults to the APP_ENV check for
@@ -146,21 +168,21 @@ func (h *Handler) RegisterPublicRoutes(api huma.API) {
 
 // RegisterProtectedRoutes registers protected user routes (auth required).
 func (h *Handler) RegisterProtectedRoutes(api huma.API) {
-	huma.Get(api, "/users/me", h.getMe)
+	huma.Get(api, routeUsersMe, h.getMe)
 	huma.Get(api, "/users/me/workspaces", h.getMyWorkspaces)
 	huma.Get(api, "/users/me/can-delete", h.canDeleteMe)
-	huma.Patch(api, "/users/me", h.updateMe)
+	huma.Patch(api, routeUsersMe, h.updateMe)
 	huma.Patch(api, "/users/me/password", h.updatePassword)
 	huma.Patch(api, "/users/me/preferences", h.updatePreferences)
-	huma.Delete(api, "/users/me/avatar", h.deleteAvatar)
-	huma.Delete(api, "/users/me", h.deleteMe)
+	huma.Delete(api, routeUsersMeAvatar, h.deleteAvatar)
+	huma.Delete(api, routeUsersMe, h.deleteMe)
 }
 
 // RegisterAvatarRoutes registers avatar upload and serve routes on a Chi router.
 // This must be called separately because multipart upload requires Chi routing.
 func (h *Handler) RegisterAvatarRoutes(r chi.Router) {
-	r.Post("/users/me/avatar", h.uploadAvatar)
-	r.Get("/users/me/avatar", h.serveAvatar)
+	r.Post(routeUsersMeAvatar, h.uploadAvatar)
+	r.Get(routeUsersMeAvatar, h.serveAvatar)
 }
 
 // RegisterAdminRoutes registers admin-only user routes (superuser required).
@@ -179,7 +201,7 @@ func (h *Handler) register(ctx context.Context, input *RegisterInput) (*Register
 	})
 	if err != nil {
 		if shared.IsAlreadyExists(err) {
-			return nil, huma.Error409Conflict("email is already taken")
+			return nil, huma.Error409Conflict(msgEmailAlreadyTaken)
 		}
 		if shared.IsInvalidInput(err) {
 			return nil, appMiddleware.MapDomainError(err)
@@ -205,12 +227,12 @@ func (h *Handler) register(ctx context.Context, input *RegisterInput) (*Register
 	// Generate token for the new user
 	token, err := h.jwtService.GenerateToken(user.ID(), user.Email(), user.FullName(), user.IsSuperuser())
 	if err != nil {
-		return nil, huma.Error500InternalServerError("failed to generate token")
+		return nil, huma.Error500InternalServerError(msgFailedGenerateToken)
 	}
 
 	refreshToken, err := h.jwtService.GenerateRefreshToken(user.ID())
 	if err != nil {
-		return nil, huma.Error500InternalServerError("failed to generate refresh token")
+		return nil, huma.Error500InternalServerError(msgFailedGenerateRefreshToken)
 	}
 
 	return &RegisterOutput{
@@ -236,12 +258,12 @@ func (h *Handler) login(ctx context.Context, input *LoginInput) (*LoginOutput, e
 
 	token, err := h.jwtService.GenerateToken(user.ID(), user.Email(), user.FullName(), user.IsSuperuser())
 	if err != nil {
-		return nil, huma.Error500InternalServerError("failed to generate token")
+		return nil, huma.Error500InternalServerError(msgFailedGenerateToken)
 	}
 
 	refreshToken, err := h.jwtService.GenerateRefreshToken(user.ID())
 	if err != nil {
-		return nil, huma.Error500InternalServerError("failed to generate refresh token")
+		return nil, huma.Error500InternalServerError(msgFailedGenerateRefreshToken)
 	}
 
 	// Create session if session service is configured
@@ -290,7 +312,7 @@ func (h *Handler) refreshToken(ctx context.Context, input *RefreshTokenInput) (*
 
 	user, err := h.svc.GetByID(ctx, userID)
 	if err != nil {
-		return nil, huma.Error401Unauthorized("user not found")
+		return nil, huma.Error401Unauthorized(msgUserNotFound)
 	}
 
 	if !user.IsActive() {
@@ -299,12 +321,12 @@ func (h *Handler) refreshToken(ctx context.Context, input *RefreshTokenInput) (*
 
 	token, err := h.jwtService.GenerateToken(user.ID(), user.Email(), user.FullName(), user.IsSuperuser())
 	if err != nil {
-		return nil, huma.Error500InternalServerError("failed to generate token")
+		return nil, huma.Error500InternalServerError(msgFailedGenerateToken)
 	}
 
 	refreshToken, err := h.jwtService.GenerateRefreshToken(user.ID())
 	if err != nil {
-		return nil, huma.Error500InternalServerError("failed to generate refresh token")
+		return nil, huma.Error500InternalServerError(msgFailedGenerateRefreshToken)
 	}
 
 	// Rotate the session's token hash
@@ -346,12 +368,12 @@ func (h *Handler) logout(ctx context.Context, input *LogoutInput) (*LogoutOutput
 func (h *Handler) getMe(ctx context.Context, input *struct{}) (*GetMeOutput, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("not authenticated")
+		return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 	}
 
 	user, err := h.svc.GetByID(ctx, authUser.ID)
 	if err != nil {
-		return nil, huma.Error404NotFound("user not found")
+		return nil, huma.Error404NotFound(msgUserNotFound)
 	}
 
 	return &GetMeOutput{
@@ -375,7 +397,7 @@ func (h *Handler) getMe(ctx context.Context, input *struct{}) (*GetMeOutput, err
 func (h *Handler) getMyWorkspaces(ctx context.Context, input *struct{}) (*GetMyWorkspacesOutput, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("not authenticated")
+		return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 	}
 
 	workspaces, err := h.workspaceSvc.GetUserWorkspaces(ctx, authUser.ID)
@@ -403,7 +425,7 @@ func (h *Handler) getMyWorkspaces(ctx context.Context, input *struct{}) (*GetMyW
 func (h *Handler) updateMe(ctx context.Context, input *UpdateMeInput) (*UpdateMeOutput, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("not authenticated")
+		return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 	}
 
 	var user *User
@@ -414,7 +436,7 @@ func (h *Handler) updateMe(ctx context.Context, input *UpdateMeInput) (*UpdateMe
 		user, err = h.svc.UpdateEmail(ctx, authUser.ID, input.Body.Email)
 		if err != nil {
 			if shared.IsAlreadyExists(err) {
-				return nil, huma.Error409Conflict("email is already taken")
+				return nil, huma.Error409Conflict(msgEmailAlreadyTaken)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -434,7 +456,7 @@ func (h *Handler) updateMe(ctx context.Context, input *UpdateMeInput) (*UpdateMe
 	if user == nil {
 		user, err = h.svc.GetByID(ctx, authUser.ID)
 		if err != nil {
-			return nil, huma.Error404NotFound("user not found")
+			return nil, huma.Error404NotFound(msgUserNotFound)
 		}
 	}
 
@@ -459,7 +481,7 @@ func (h *Handler) updateMe(ctx context.Context, input *UpdateMeInput) (*UpdateMe
 func (h *Handler) updatePassword(ctx context.Context, input *UpdatePasswordInput) (*struct{}, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("not authenticated")
+		return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 	}
 
 	err := h.svc.UpdatePassword(ctx, authUser.ID, input.Body.CurrentPassword, input.Body.NewPassword)
@@ -476,7 +498,7 @@ func (h *Handler) updatePassword(ctx context.Context, input *UpdatePasswordInput
 func (h *Handler) updatePreferences(ctx context.Context, input *UpdatePrefsRequest) (*UpdatePrefsResponse, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("not authenticated")
+		return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 	}
 
 	user, err := h.svc.UpdatePreferences(ctx, authUser.ID, UpdatePreferencesInput{
@@ -515,10 +537,10 @@ func (h *Handler) updatePreferences(ctx context.Context, input *UpdatePrefsReque
 func (h *Handler) listUsers(ctx context.Context, input *ListUsersInput) (*ListUsersOutput, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("not authenticated")
+		return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 	}
 	if !authUser.IsSuperuser {
-		return nil, huma.Error403Forbidden("superuser access required")
+		return nil, huma.Error403Forbidden(msgSuperuserAccessRequired)
 	}
 
 	pagination := shared.Pagination{
@@ -572,16 +594,16 @@ func (h *Handler) listUsers(ctx context.Context, input *ListUsersInput) (*ListUs
 func (h *Handler) getUserByID(ctx context.Context, input *GetUserByIDInput) (*GetUserByIDOutput, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("not authenticated")
+		return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 	}
 	if !authUser.IsSuperuser {
-		return nil, huma.Error403Forbidden("superuser access required")
+		return nil, huma.Error403Forbidden(msgSuperuserAccessRequired)
 	}
 
 	user, err := h.svc.GetByID(ctx, input.ID)
 	if err != nil {
 		if errors.Is(err, ErrUserNotFound) {
-			return nil, huma.Error404NotFound("user not found")
+			return nil, huma.Error404NotFound(msgUserNotFound)
 		}
 		return nil, huma.Error500InternalServerError("failed to get user")
 	}
@@ -610,10 +632,10 @@ func (h *Handler) getUserByID(ctx context.Context, input *GetUserByIDInput) (*Ge
 func (h *Handler) deactivateUser(ctx context.Context, input *DeactivateUserInput) (*struct{}, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("not authenticated")
+		return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 	}
 	if !authUser.IsSuperuser {
-		return nil, huma.Error403Forbidden("superuser access required")
+		return nil, huma.Error403Forbidden(msgSuperuserAccessRequired)
 	}
 
 	// Prevent deactivating yourself
@@ -624,7 +646,7 @@ func (h *Handler) deactivateUser(ctx context.Context, input *DeactivateUserInput
 	err := h.svc.Deactivate(ctx, input.ID)
 	if err != nil {
 		if errors.Is(err, ErrUserNotFound) {
-			return nil, huma.Error404NotFound("user not found")
+			return nil, huma.Error404NotFound(msgUserNotFound)
 		}
 		return nil, huma.Error500InternalServerError("failed to deactivate user")
 	}
@@ -635,16 +657,16 @@ func (h *Handler) deactivateUser(ctx context.Context, input *DeactivateUserInput
 func (h *Handler) activateUser(ctx context.Context, input *ActivateUserInput) (*struct{}, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("not authenticated")
+		return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 	}
 	if !authUser.IsSuperuser {
-		return nil, huma.Error403Forbidden("superuser access required")
+		return nil, huma.Error403Forbidden(msgSuperuserAccessRequired)
 	}
 
 	err := h.svc.Activate(ctx, input.ID)
 	if err != nil {
 		if errors.Is(err, ErrUserNotFound) {
-			return nil, huma.Error404NotFound("user not found")
+			return nil, huma.Error404NotFound(msgUserNotFound)
 		}
 		return nil, huma.Error500InternalServerError("failed to activate user")
 	}
@@ -663,9 +685,9 @@ const (
 
 // Allowed MIME types for avatars
 var allowedAvatarMimeTypes = map[string]bool{
-	"image/jpeg": true,
-	"image/png":  true,
-	"image/webp": true,
+	mimeJPEG: true,
+	mimePNG:  true,
+	mimeWebP: true,
 }
 
 // uploadAvatar handles POST /users/me/avatar
@@ -674,7 +696,7 @@ func (h *Handler) uploadAvatar(w http.ResponseWriter, r *http.Request) {
 
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		http.Error(w, "not authenticated", http.StatusUnauthorized)
+		http.Error(w, msgNotAuthenticated, http.StatusUnauthorized)
 		return
 	}
 
@@ -705,7 +727,7 @@ func (h *Handler) uploadAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate MIME type
-	contentType := header.Header.Get("Content-Type")
+	contentType := header.Header.Get(headerContentType)
 	if !allowedAvatarMimeTypes[contentType] {
 		http.Error(w, "invalid file type: only JPEG, PNG, and WebP are allowed", http.StatusBadRequest)
 		return
@@ -743,11 +765,11 @@ func (h *Handler) uploadAvatar(w http.ResponseWriter, r *http.Request) {
 	if ext == "" {
 		// Determine extension from content type
 		switch contentType {
-		case "image/jpeg":
+		case mimeJPEG:
 			ext = ".jpg"
-		case "image/png":
+		case mimePNG:
 			ext = ".png"
-		case "image/webp":
+		case mimeWebP:
 			ext = ".webp"
 		}
 	}
@@ -791,7 +813,7 @@ func (h *Handler) uploadAvatar(w http.ResponseWriter, r *http.Request) {
 
 	// Return updated user
 	notifPrefsJSON, _ := json.Marshal(user.NotificationPreferences())
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(headerContentType, "application/json")
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, `{"id":"%s","email":"%s","full_name":"%s","has_password":%t,"date_format":"%s","time_format":"%s","thousand_separator":"%s","decimal_separator":"%s","language":"%s","theme":"%s","notification_preferences":%s,"avatar_url":"/api/users/me/avatar"}`,
 		user.ID(), user.Email(), user.FullName(), user.HasPassword(), user.DateFormat(), user.TimeFormat(), user.ThousandSeparator(), user.DecimalSeparator(), user.Language(), user.Theme(), notifPrefsJSON)
@@ -803,7 +825,7 @@ func (h *Handler) serveAvatar(w http.ResponseWriter, r *http.Request) {
 
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		http.Error(w, "not authenticated", http.StatusUnauthorized)
+		http.Error(w, msgNotAuthenticated, http.StatusUnauthorized)
 		return
 	}
 
@@ -816,7 +838,7 @@ func (h *Handler) serveAvatar(w http.ResponseWriter, r *http.Request) {
 	// Get user to find avatar path
 	user, err := h.svc.GetByID(ctx, authUser.ID)
 	if err != nil {
-		http.Error(w, "user not found", http.StatusNotFound)
+		http.Error(w, msgUserNotFound, http.StatusNotFound)
 		return
 	}
 
@@ -839,15 +861,15 @@ func (h *Handler) serveAvatar(w http.ResponseWriter, r *http.Request) {
 	contentType := "application/octet-stream"
 	switch ext {
 	case ".jpg", ".jpeg":
-		contentType = "image/jpeg"
+		contentType = mimeJPEG
 	case ".png":
-		contentType = "image/png"
+		contentType = mimePNG
 	case ".webp":
-		contentType = "image/webp"
+		contentType = mimeWebP
 	}
 
 	// Set headers
-	w.Header().Set("Content-Type", contentType)
+	w.Header().Set(headerContentType, contentType)
 	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=%q", "avatar"+ext))
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'")
@@ -860,7 +882,7 @@ func (h *Handler) serveAvatar(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) deleteAvatar(ctx context.Context, input *struct{}) (*struct{}, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("not authenticated")
+		return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 	}
 
 	// Check if storage is configured
@@ -871,7 +893,7 @@ func (h *Handler) deleteAvatar(ctx context.Context, input *struct{}) (*struct{},
 	// Get user to find current avatar path
 	user, err := h.svc.GetByID(ctx, authUser.ID)
 	if err != nil {
-		return nil, huma.Error404NotFound("user not found")
+		return nil, huma.Error404NotFound(msgUserNotFound)
 	}
 
 	avatarPath := user.AvatarPath()
@@ -898,7 +920,7 @@ func (h *Handler) deleteAvatar(ctx context.Context, input *struct{}) (*struct{},
 func (h *Handler) canDeleteMe(ctx context.Context, input *struct{}) (*CanDeleteAccountOutput, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("not authenticated")
+		return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 	}
 
 	canDelete, blockingWorkspaces, err := h.svc.CanDelete(ctx, authUser.ID)
@@ -928,7 +950,7 @@ func (h *Handler) canDeleteMe(ctx context.Context, input *struct{}) (*CanDeleteA
 func (h *Handler) deleteMe(ctx context.Context, input *DeleteAccountInput) (*DeleteAccountOutput, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("not authenticated")
+		return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 	}
 
 	// Validate confirmation text (case-insensitive)
@@ -1218,7 +1240,7 @@ func RegisterPublicRoutes(api huma.API, svc ServiceInterface) {
 		})
 		if err != nil {
 			if shared.IsAlreadyExists(err) {
-				return nil, huma.Error409Conflict("email is already taken")
+				return nil, huma.Error409Conflict(msgEmailAlreadyTaken)
 			}
 			if shared.IsInvalidInput(err) {
 				return nil, appMiddleware.MapDomainError(err)
@@ -1251,15 +1273,15 @@ func RegisterPublicRoutes(api huma.API, svc ServiceInterface) {
 // RegisterProtectedRoutes registers protected user routes (auth required).
 // Deprecated: Use Handler.RegisterProtectedRoutes instead.
 func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
-	huma.Get(api, "/users/me", func(ctx context.Context, input *struct{}) (*GetMeOutput, error) {
+	huma.Get(api, routeUsersMe, func(ctx context.Context, input *struct{}) (*GetMeOutput, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("not authenticated")
+			return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 		}
 
 		user, err := svc.GetByID(ctx, authUser.ID)
 		if err != nil {
-			return nil, huma.Error404NotFound("user not found")
+			return nil, huma.Error404NotFound(msgUserNotFound)
 		}
 
 		return &GetMeOutput{
@@ -1279,10 +1301,10 @@ func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
 		}, nil
 	})
 
-	huma.Patch(api, "/users/me", func(ctx context.Context, input *UpdateMeInput) (*UpdateMeOutput, error) {
+	huma.Patch(api, routeUsersMe, func(ctx context.Context, input *UpdateMeInput) (*UpdateMeOutput, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("not authenticated")
+			return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 		}
 
 		user, err := svc.UpdateProfile(ctx, authUser.ID, UpdateProfileInput{
@@ -1312,7 +1334,7 @@ func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
 	huma.Patch(api, "/users/me/password", func(ctx context.Context, input *UpdatePasswordInput) (*struct{}, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("not authenticated")
+			return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 		}
 
 		err := svc.UpdatePassword(ctx, authUser.ID, input.Body.CurrentPassword, input.Body.NewPassword)
@@ -1329,7 +1351,7 @@ func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
 	huma.Patch(api, "/users/me/preferences", func(ctx context.Context, input *UpdatePrefsRequest) (*UpdatePrefsResponse, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("not authenticated")
+			return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 		}
 
 		user, err := svc.UpdatePreferences(ctx, authUser.ID, UpdatePreferencesInput{

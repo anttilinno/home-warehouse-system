@@ -12,13 +12,18 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 )
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	routeCategoryByID           = "/categories/{id}"
+)
+
 // RegisterRoutes registers category routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List all categories
 	huma.Get(api, "/categories", func(ctx context.Context, input *struct{}) (*ListCategoriesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		categories, err := svc.ListByWorkspace(ctx, workspaceID)
@@ -40,7 +45,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/categories/root", func(ctx context.Context, input *struct{}) (*ListCategoriesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		categories, err := svc.ListRootCategories(ctx, workspaceID)
@@ -59,10 +64,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Get category by ID
-	huma.Get(api, "/categories/{id}", func(ctx context.Context, input *GetCategoryInput) (*GetCategoryOutput, error) {
+	huma.Get(api, routeCategoryByID, func(ctx context.Context, input *GetCategoryInput) (*GetCategoryOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		category, err := svc.GetByID(ctx, input.ID, workspaceID)
@@ -79,7 +84,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/categories/{id}/children", func(ctx context.Context, input *GetCategoryInput) (*ListCategoriesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		categories, err := svc.ListByParent(ctx, workspaceID, input.ID)
@@ -101,7 +106,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/categories", func(ctx context.Context, input *CreateCategoryInput) (*CreateCategoryOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -139,10 +144,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Update category
-	huma.Patch(api, "/categories/{id}", func(ctx context.Context, input *UpdateCategoryInput) (*UpdateCategoryOutput, error) {
+	huma.Patch(api, routeCategoryByID, func(ctx context.Context, input *UpdateCategoryInput) (*UpdateCategoryOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -188,7 +193,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/categories/{id}/archive", func(ctx context.Context, input *GetCategoryInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -219,7 +224,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/categories/{id}/restore", func(ctx context.Context, input *GetCategoryInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -247,10 +252,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Delete category
-	huma.Delete(api, "/categories/{id}", func(ctx context.Context, input *GetCategoryInput) (*struct{}, error) {
+	huma.Delete(api, routeCategoryByID, func(ctx context.Context, input *GetCategoryInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -284,7 +289,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/categories/{id}/breadcrumb", func(ctx context.Context, input *GetCategoryInput) (*BreadcrumbOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		breadcrumb, err := svc.GetBreadcrumb(ctx, input.ID, workspaceID)

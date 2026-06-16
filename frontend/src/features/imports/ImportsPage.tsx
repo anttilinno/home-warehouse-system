@@ -1,25 +1,25 @@
-import { useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
+import type { StatusPillVariant } from "@/components/retro";
 import {
   BevelButton,
   RetroEmptyState,
   RetroFileInput,
   RetroSelect,
   RetroTable,
+  retroToast,
   StatusPill,
   Window,
-  retroToast,
 } from "@/components/retro";
-import type { StatusPillVariant } from "@/components/retro";
-import { settingsApi } from "@/lib/api/settings";
+import { useWorkspace } from "@/features/workspace/useWorkspace";
 import {
   IMPORT_ENTITY_TYPES,
   type ImportEntityType,
   type ImportJob,
   type ImportJobStatus,
 } from "@/lib/api/importJobs";
-import { useWorkspace } from "@/features/workspace/useWorkspace";
+import { settingsApi } from "@/lib/api/settings";
 import { useImportJobs, useUploadImport } from "./hooks/useImportJobs";
 
 // Phase 14 Plan 05 (SYS-04) — the /imports page. One blue Window with three
@@ -47,21 +47,19 @@ const STATUS_VARIANT: Record<ImportJobStatus, StatusPillVariant> = {
   cancelled: "warn",
 };
 
-function StatusBadge({ status }: { status: ImportJobStatus }) {
+const STATUS_LABEL: Record<ImportJobStatus, React.ReactNode> = {
+  completed: <Trans>Completed</Trans>,
+  failed: <Trans>Failed</Trans>,
+  processing: <Trans>Processing</Trans>,
+  cancelled: <Trans>Cancelled</Trans>,
+  pending: <Trans>Pending</Trans>,
+};
+
+function StatusBadge({ status }: Readonly<{ status: ImportJobStatus }>) {
   const variant = STATUS_VARIANT[status] ?? "info";
   return (
     <StatusPill variant={variant}>
-      {status === "completed" ? (
-        <Trans>Completed</Trans>
-      ) : status === "failed" ? (
-        <Trans>Failed</Trans>
-      ) : status === "processing" ? (
-        <Trans>Processing</Trans>
-      ) : status === "cancelled" ? (
-        <Trans>Cancelled</Trans>
-      ) : (
-        <Trans>Pending</Trans>
-      )}
+      {STATUS_LABEL[status] ?? <Trans>Pending</Trans>}
     </StatusPill>
   );
 }

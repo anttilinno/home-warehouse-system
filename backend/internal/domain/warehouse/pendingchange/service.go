@@ -3,6 +3,7 @@ package pendingchange
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -23,6 +24,13 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/wishlist"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/webpush"
+)
+
+const (
+	msgEntityIDRequiredForUpdateAction = "entity_id is required for update action"
+	msgFailedToUnmarshalUpdatePayload  = "failed to unmarshal update payload: %w"
+	msgEntityIDRequiredForDeleteAction = "entity_id is required for delete action"
+	msgUnsupportedAction               = "unsupported action: %s"
 )
 
 // Transactor runs a function inside a single database transaction. It is a port
@@ -563,11 +571,11 @@ func (s *Service) applyItemChange(ctx context.Context, change *PendingChange) er
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for update action")
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var input item.UpdateInput
 		if err := json.Unmarshal(change.Payload(), &input); err != nil {
-			return fmt.Errorf("failed to unmarshal update payload: %w", err)
+			return fmt.Errorf(msgFailedToUnmarshalUpdatePayload, err)
 		}
 		if _, err := s.itemSvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), input); err != nil {
 			return fmt.Errorf("failed to update item: %w", err)
@@ -575,14 +583,14 @@ func (s *Service) applyItemChange(ctx context.Context, change *PendingChange) er
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for delete action")
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.itemSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete item: %w", err)
 		}
 
 	default:
-		return fmt.Errorf("unsupported action: %s", change.Action())
+		return fmt.Errorf(msgUnsupportedAction, change.Action())
 	}
 
 	return nil
@@ -611,7 +619,7 @@ func (s *Service) applyCategoryChange(ctx context.Context, change *PendingChange
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for update action")
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			Name             string     `json:"name"`
@@ -619,7 +627,7 @@ func (s *Service) applyCategoryChange(ctx context.Context, change *PendingChange
 			Description      *string    `json:"description"`
 		}
 		if err := json.Unmarshal(change.Payload(), &p); err != nil {
-			return fmt.Errorf("failed to unmarshal update payload: %w", err)
+			return fmt.Errorf(msgFailedToUnmarshalUpdatePayload, err)
 		}
 		if _, err := s.categorySvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), category.UpdateInput{
 			Name:             p.Name,
@@ -631,14 +639,14 @@ func (s *Service) applyCategoryChange(ctx context.Context, change *PendingChange
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for delete action")
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.categorySvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete category: %w", err)
 		}
 
 	default:
-		return fmt.Errorf("unsupported action: %s", change.Action())
+		return fmt.Errorf(msgUnsupportedAction, change.Action())
 	}
 
 	return nil
@@ -669,7 +677,7 @@ func (s *Service) applyLocationChange(ctx context.Context, change *PendingChange
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for update action")
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			Name           string     `json:"name"`
@@ -677,7 +685,7 @@ func (s *Service) applyLocationChange(ctx context.Context, change *PendingChange
 			Description    *string    `json:"description"`
 		}
 		if err := json.Unmarshal(change.Payload(), &p); err != nil {
-			return fmt.Errorf("failed to unmarshal update payload: %w", err)
+			return fmt.Errorf(msgFailedToUnmarshalUpdatePayload, err)
 		}
 		if _, err := s.locationSvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), location.UpdateInput{
 			Name:           p.Name,
@@ -689,14 +697,14 @@ func (s *Service) applyLocationChange(ctx context.Context, change *PendingChange
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for delete action")
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.locationSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete location: %w", err)
 		}
 
 	default:
-		return fmt.Errorf("unsupported action: %s", change.Action())
+		return fmt.Errorf(msgUnsupportedAction, change.Action())
 	}
 
 	return nil
@@ -729,7 +737,7 @@ func (s *Service) applyContainerChange(ctx context.Context, change *PendingChang
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for update action")
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			Name        string    `json:"name"`
@@ -738,7 +746,7 @@ func (s *Service) applyContainerChange(ctx context.Context, change *PendingChang
 			Capacity    *string   `json:"capacity"`
 		}
 		if err := json.Unmarshal(change.Payload(), &p); err != nil {
-			return fmt.Errorf("failed to unmarshal update payload: %w", err)
+			return fmt.Errorf(msgFailedToUnmarshalUpdatePayload, err)
 		}
 		if _, err := s.containerSvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), container.UpdateInput{
 			Name:        p.Name,
@@ -751,14 +759,14 @@ func (s *Service) applyContainerChange(ctx context.Context, change *PendingChang
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for delete action")
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.containerSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete container: %w", err)
 		}
 
 	default:
-		return fmt.Errorf("unsupported action: %s", change.Action())
+		return fmt.Errorf(msgUnsupportedAction, change.Action())
 	}
 
 	return nil
@@ -807,7 +815,7 @@ func (s *Service) applyInventoryChange(ctx context.Context, change *PendingChang
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for update action")
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			LocationID      uuid.UUID  `json:"location_id"`
@@ -822,7 +830,7 @@ func (s *Service) applyInventoryChange(ctx context.Context, change *PendingChang
 			Notes           *string    `json:"notes"`
 		}
 		if err := json.Unmarshal(change.Payload(), &p); err != nil {
-			return fmt.Errorf("failed to unmarshal update payload: %w", err)
+			return fmt.Errorf(msgFailedToUnmarshalUpdatePayload, err)
 		}
 		if _, err := s.inventorySvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), inventory.UpdateInput{
 			LocationID:      p.LocationID,
@@ -841,14 +849,14 @@ func (s *Service) applyInventoryChange(ctx context.Context, change *PendingChang
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for delete action")
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.inventoryRepo.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete inventory: %w", err)
 		}
 
 	default:
-		return fmt.Errorf("unsupported action: %s", change.Action())
+		return fmt.Errorf(msgUnsupportedAction, change.Action())
 	}
 
 	return nil
@@ -879,11 +887,11 @@ func (s *Service) applyBorrowerChange(ctx context.Context, change *PendingChange
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for update action")
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var input borrower.UpdateInput
 		if err := json.Unmarshal(change.Payload(), &input); err != nil {
-			return fmt.Errorf("failed to unmarshal update payload: %w", err)
+			return fmt.Errorf(msgFailedToUnmarshalUpdatePayload, err)
 		}
 		if _, err := s.borrowerSvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), input); err != nil {
 			return fmt.Errorf("failed to update borrower: %w", err)
@@ -891,14 +899,14 @@ func (s *Service) applyBorrowerChange(ctx context.Context, change *PendingChange
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for delete action")
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.borrowerSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete borrower: %w", err)
 		}
 
 	default:
-		return fmt.Errorf("unsupported action: %s", change.Action())
+		return fmt.Errorf(msgUnsupportedAction, change.Action())
 	}
 
 	return nil
@@ -950,14 +958,14 @@ func (s *Service) applyLoanChange(ctx context.Context, change *PendingChange) er
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for update action")
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			DueDate *string `json:"due_date"`
 			Notes   *string `json:"notes"`
 		}
 		if err := json.Unmarshal(change.Payload(), &p); err != nil {
-			return fmt.Errorf("failed to unmarshal update payload: %w", err)
+			return fmt.Errorf(msgFailedToUnmarshalUpdatePayload, err)
 		}
 
 		var dueDate *time.Time
@@ -975,14 +983,14 @@ func (s *Service) applyLoanChange(ctx context.Context, change *PendingChange) er
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for delete action")
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.loanRepo.Delete(ctx, *change.EntityID()); err != nil {
 			return fmt.Errorf("failed to delete loan: %w", err)
 		}
 
 	default:
-		return fmt.Errorf("unsupported action: %s", change.Action())
+		return fmt.Errorf(msgUnsupportedAction, change.Action())
 	}
 
 	return nil
@@ -1011,7 +1019,7 @@ func (s *Service) applyLabelChange(ctx context.Context, change *PendingChange) e
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for update action")
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			Name        string  `json:"name"`
@@ -1019,7 +1027,7 @@ func (s *Service) applyLabelChange(ctx context.Context, change *PendingChange) e
 			Description *string `json:"description"`
 		}
 		if err := json.Unmarshal(change.Payload(), &p); err != nil {
-			return fmt.Errorf("failed to unmarshal update payload: %w", err)
+			return fmt.Errorf(msgFailedToUnmarshalUpdatePayload, err)
 		}
 		if _, err := s.labelSvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), label.UpdateInput{
 			Name:        p.Name,
@@ -1031,14 +1039,14 @@ func (s *Service) applyLabelChange(ctx context.Context, change *PendingChange) e
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for delete action")
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.labelSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete label: %w", err)
 		}
 
 	default:
-		return fmt.Errorf("unsupported action: %s", change.Action())
+		return fmt.Errorf(msgUnsupportedAction, change.Action())
 	}
 
 	return nil
@@ -1074,7 +1082,7 @@ func (s *Service) applyMaintenanceChange(ctx context.Context, change *PendingCha
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for update action")
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			Title        *string    `json:"title"`
@@ -1098,14 +1106,14 @@ func (s *Service) applyMaintenanceChange(ctx context.Context, change *PendingCha
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for delete action")
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.maintenanceSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete maintenance schedule: %w", err)
 		}
 
 	default:
-		return fmt.Errorf("unsupported action: %s", change.Action())
+		return fmt.Errorf(msgUnsupportedAction, change.Action())
 	}
 
 	return nil
@@ -1152,7 +1160,7 @@ func (s *Service) applyWishlistChange(ctx context.Context, change *PendingChange
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for update action")
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			Name              *string    `json:"name"`
@@ -1189,14 +1197,14 @@ func (s *Service) applyWishlistChange(ctx context.Context, change *PendingChange
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf("entity_id is required for delete action")
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.wishlistSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete wishlist item: %w", err)
 		}
 
 	default:
-		return fmt.Errorf("unsupported action: %s", change.Action())
+		return fmt.Errorf(msgUnsupportedAction, change.Action())
 	}
 
 	return nil

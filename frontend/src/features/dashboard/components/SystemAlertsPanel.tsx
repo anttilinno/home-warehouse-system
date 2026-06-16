@@ -1,6 +1,6 @@
-import { Link } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Window, RetroBadge } from "@/components/retro";
+import { Link } from "react-router";
+import { RetroBadge, Window } from "@/components/retro";
 import { useExpiringQuery } from "@/features/inventory/hooks/useExpiringQuery";
 import { useMaintenanceDueQuery } from "@/features/maintenance/hooks/useMaintenanceQuery";
 
@@ -35,15 +35,18 @@ function AlertCard({
   isError,
   emptyText,
   trailing,
-}: AlertCardProps) {
+}: Readonly<AlertCardProps>) {
   const { t } = useLingui();
 
   // Loading → calm mono "Loading…"; error → calm "—" (no error spam).
-  const display = isLoading
-    ? t`Loading…`
-    : isError || count === null
-      ? "—"
-      : String(count);
+  let display: string;
+  if (isLoading) {
+    display = t`Loading…`;
+  } else if (isError || count === null) {
+    display = "—";
+  } else {
+    display = String(count);
+  }
 
   const resolvedZero = !isLoading && !isError && count === 0;
 

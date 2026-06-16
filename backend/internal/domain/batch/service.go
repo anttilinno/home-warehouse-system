@@ -17,6 +17,12 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 )
 
+const (
+	msgEntityIDRequiredForUpdate = "entity_id required for update"
+	msgInvalidUpdateData         = "invalid update data"
+	msgEntityIDRequiredForDelete = "entity_id required for delete"
+)
+
 // ServiceInterface defines the interface for batch service operations
 type ServiceInterface interface {
 	ProcessBatch(ctx context.Context, workspaceID uuid.UUID, req BatchRequest) (*BatchResponse, error)
@@ -130,7 +136,7 @@ func (s *Service) processItemOperation(ctx context.Context, workspaceID uuid.UUI
 	switch op.Operation {
 	case OperationUpdate:
 		if op.EntityID == nil {
-			return errorResult(index, "entity_id required for update", "MISSING_ENTITY_ID")
+			return errorResult(index, msgEntityIDRequiredForUpdate, "MISSING_ENTITY_ID")
 		}
 
 		// Check for conflict
@@ -147,7 +153,7 @@ func (s *Service) processItemOperation(ctx context.Context, workspaceID uuid.UUI
 		// Parse update data
 		var updateData item.UpdateInput
 		if err := json.Unmarshal(op.Data, &updateData); err != nil {
-			return errorResult(index, "invalid update data", "INVALID_DATA")
+			return errorResult(index, msgInvalidUpdateData, "INVALID_DATA")
 		}
 
 		// Apply update
@@ -161,7 +167,7 @@ func (s *Service) processItemOperation(ctx context.Context, workspaceID uuid.UUI
 
 	case OperationDelete:
 		if op.EntityID == nil {
-			return errorResult(index, "entity_id required for delete", "MISSING_ENTITY_ID")
+			return errorResult(index, msgEntityIDRequiredForDelete, "MISSING_ENTITY_ID")
 		}
 
 		if err := s.itemSvc.Archive(ctx, *op.EntityID, workspaceID); err != nil {
@@ -180,7 +186,7 @@ func (s *Service) processLocationOperation(ctx context.Context, workspaceID uuid
 	switch op.Operation {
 	case OperationUpdate:
 		if op.EntityID == nil {
-			return errorResult(index, "entity_id required for update", "MISSING_ENTITY_ID")
+			return errorResult(index, msgEntityIDRequiredForUpdate, "MISSING_ENTITY_ID")
 		}
 
 		existing, err := s.locationSvc.GetByID(ctx, *op.EntityID, workspaceID)
@@ -195,7 +201,7 @@ func (s *Service) processLocationOperation(ctx context.Context, workspaceID uuid
 
 		var updateData location.UpdateInput
 		if err := json.Unmarshal(op.Data, &updateData); err != nil {
-			return errorResult(index, "invalid update data", "INVALID_DATA")
+			return errorResult(index, msgInvalidUpdateData, "INVALID_DATA")
 		}
 
 		updated, err := s.locationSvc.Update(ctx, *op.EntityID, workspaceID, updateData)
@@ -208,7 +214,7 @@ func (s *Service) processLocationOperation(ctx context.Context, workspaceID uuid
 
 	case OperationDelete:
 		if op.EntityID == nil {
-			return errorResult(index, "entity_id required for delete", "MISSING_ENTITY_ID")
+			return errorResult(index, msgEntityIDRequiredForDelete, "MISSING_ENTITY_ID")
 		}
 
 		if err := s.locationSvc.Archive(ctx, *op.EntityID, workspaceID); err != nil {
@@ -227,7 +233,7 @@ func (s *Service) processContainerOperation(ctx context.Context, workspaceID uui
 	switch op.Operation {
 	case OperationUpdate:
 		if op.EntityID == nil {
-			return errorResult(index, "entity_id required for update", "MISSING_ENTITY_ID")
+			return errorResult(index, msgEntityIDRequiredForUpdate, "MISSING_ENTITY_ID")
 		}
 
 		existing, err := s.containerSvc.GetByID(ctx, *op.EntityID, workspaceID)
@@ -242,7 +248,7 @@ func (s *Service) processContainerOperation(ctx context.Context, workspaceID uui
 
 		var updateData container.UpdateInput
 		if err := json.Unmarshal(op.Data, &updateData); err != nil {
-			return errorResult(index, "invalid update data", "INVALID_DATA")
+			return errorResult(index, msgInvalidUpdateData, "INVALID_DATA")
 		}
 
 		updated, err := s.containerSvc.Update(ctx, *op.EntityID, workspaceID, updateData)
@@ -255,7 +261,7 @@ func (s *Service) processContainerOperation(ctx context.Context, workspaceID uui
 
 	case OperationDelete:
 		if op.EntityID == nil {
-			return errorResult(index, "entity_id required for delete", "MISSING_ENTITY_ID")
+			return errorResult(index, msgEntityIDRequiredForDelete, "MISSING_ENTITY_ID")
 		}
 
 		if err := s.containerSvc.Archive(ctx, *op.EntityID, workspaceID); err != nil {
@@ -274,7 +280,7 @@ func (s *Service) processCategoryOperation(ctx context.Context, workspaceID uuid
 	switch op.Operation {
 	case OperationUpdate:
 		if op.EntityID == nil {
-			return errorResult(index, "entity_id required for update", "MISSING_ENTITY_ID")
+			return errorResult(index, msgEntityIDRequiredForUpdate, "MISSING_ENTITY_ID")
 		}
 
 		existing, err := s.categorySvc.GetByID(ctx, *op.EntityID, workspaceID)
@@ -289,7 +295,7 @@ func (s *Service) processCategoryOperation(ctx context.Context, workspaceID uuid
 
 		var updateData category.UpdateInput
 		if err := json.Unmarshal(op.Data, &updateData); err != nil {
-			return errorResult(index, "invalid update data", "INVALID_DATA")
+			return errorResult(index, msgInvalidUpdateData, "INVALID_DATA")
 		}
 
 		updated, err := s.categorySvc.Update(ctx, *op.EntityID, workspaceID, updateData)
@@ -302,7 +308,7 @@ func (s *Service) processCategoryOperation(ctx context.Context, workspaceID uuid
 
 	case OperationDelete:
 		if op.EntityID == nil {
-			return errorResult(index, "entity_id required for delete", "MISSING_ENTITY_ID")
+			return errorResult(index, msgEntityIDRequiredForDelete, "MISSING_ENTITY_ID")
 		}
 
 		if err := s.categorySvc.Archive(ctx, *op.EntityID, workspaceID); err != nil {
@@ -321,7 +327,7 @@ func (s *Service) processLabelOperation(ctx context.Context, workspaceID uuid.UU
 	switch op.Operation {
 	case OperationUpdate:
 		if op.EntityID == nil {
-			return errorResult(index, "entity_id required for update", "MISSING_ENTITY_ID")
+			return errorResult(index, msgEntityIDRequiredForUpdate, "MISSING_ENTITY_ID")
 		}
 
 		existing, err := s.labelSvc.GetByID(ctx, *op.EntityID, workspaceID)
@@ -336,7 +342,7 @@ func (s *Service) processLabelOperation(ctx context.Context, workspaceID uuid.UU
 
 		var updateData label.UpdateInput
 		if err := json.Unmarshal(op.Data, &updateData); err != nil {
-			return errorResult(index, "invalid update data", "INVALID_DATA")
+			return errorResult(index, msgInvalidUpdateData, "INVALID_DATA")
 		}
 
 		updated, err := s.labelSvc.Update(ctx, *op.EntityID, workspaceID, updateData)
@@ -349,7 +355,7 @@ func (s *Service) processLabelOperation(ctx context.Context, workspaceID uuid.UU
 
 	case OperationDelete:
 		if op.EntityID == nil {
-			return errorResult(index, "entity_id required for delete", "MISSING_ENTITY_ID")
+			return errorResult(index, msgEntityIDRequiredForDelete, "MISSING_ENTITY_ID")
 		}
 
 		if err := s.labelSvc.Archive(ctx, *op.EntityID, workspaceID); err != nil {
@@ -368,7 +374,7 @@ func (s *Service) processCompanyOperation(ctx context.Context, workspaceID uuid.
 	switch op.Operation {
 	case OperationUpdate:
 		if op.EntityID == nil {
-			return errorResult(index, "entity_id required for update", "MISSING_ENTITY_ID")
+			return errorResult(index, msgEntityIDRequiredForUpdate, "MISSING_ENTITY_ID")
 		}
 
 		existing, err := s.companySvc.GetByID(ctx, *op.EntityID, workspaceID)
@@ -383,7 +389,7 @@ func (s *Service) processCompanyOperation(ctx context.Context, workspaceID uuid.
 
 		var updateData company.UpdateInput
 		if err := json.Unmarshal(op.Data, &updateData); err != nil {
-			return errorResult(index, "invalid update data", "INVALID_DATA")
+			return errorResult(index, msgInvalidUpdateData, "INVALID_DATA")
 		}
 
 		updated, err := s.companySvc.Update(ctx, *op.EntityID, workspaceID, updateData)
@@ -396,7 +402,7 @@ func (s *Service) processCompanyOperation(ctx context.Context, workspaceID uuid.
 
 	case OperationDelete:
 		if op.EntityID == nil {
-			return errorResult(index, "entity_id required for delete", "MISSING_ENTITY_ID")
+			return errorResult(index, msgEntityIDRequiredForDelete, "MISSING_ENTITY_ID")
 		}
 
 		if err := s.companySvc.Archive(ctx, *op.EntityID, workspaceID); err != nil {

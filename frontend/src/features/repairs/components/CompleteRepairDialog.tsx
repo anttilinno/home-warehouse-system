@@ -24,7 +24,7 @@ export function CompleteRepairDialog({
   open,
   onClose,
   repair,
-}: CompleteRepairDialogProps) {
+}: Readonly<CompleteRepairDialogProps>) {
   const { t } = useLingui();
   const { completeRepair } = useRepairMutations();
   // "" = keep current condition (no new_condition sent).

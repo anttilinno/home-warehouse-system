@@ -15,6 +15,12 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+const (
+	msgItemNotFound             = "item not found"
+	msgWorkspaceContextRequired = "workspace context required"
+	routeItemByID               = "/items/{id}"
+)
+
 // PrimaryPhotoLookup is the narrow interface the item handler needs from the
 // itemphoto service to decorate ItemResponse with thumbnail URLs. Defined here
 // so RegisterRoutes can accept nil (degrades gracefully) and tests don't need
@@ -76,11 +82,42 @@ func patchOrCurrent[T any](patch, current *T) *T {
 // photoURLGen is optional — required only when photos is non-nil. Generates the
 // same URL shape as itemphoto.RegisterRoutes for consistent URLs across endpoints.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster, photos PrimaryPhotoLookup, photoURLGen PrimaryPhotoURLGenerator) {
-	// List items
-	huma.Get(api, "/items", func(ctx context.Context, input *ListItemsInput) (*ListItemsOutput, error) {
+	huma.Get(api, "/items", listItems(svc, photos, photoURLGen))
+	huma.Get(api, "/items/search", searchItems(svc, photoURLGen))
+	huma.Get(api, "/items/by-barcode/{code}", lookupItemByBarcode(svc, photos, photoURLGen))
+	huma.Get(api, routeItemByID, getItem(svc, photos, photoURLGen))
+	huma.Get(api, "/items/by-category/{category_id}", listItemsByCategory(svc, photos, photoURLGen))
+	huma.Post(api, "/items", createItem(svc, broadcaster, photoURLGen))
+	huma.Patch(api, routeItemByID, updateItem(svc, broadcaster, photos, photoURLGen))
+	huma.Post(api, "/items/{id}/archive", archiveItem(svc, broadcaster))
+	huma.Post(api, "/items/{id}/restore", restoreItem(svc, broadcaster))
+	huma.Delete(api, routeItemByID, deleteItem(svc, broadcaster))
+	huma.Get(api, "/items/{id}/labels", getItemLabels(svc))
+	huma.Post(api, "/items/{id}/labels/{label_id}", attachItemLabel(svc))
+	huma.Delete(api, "/items/{id}/labels/{label_id}", detachItemLabel(svc))
+}
+
+// lookupSinglePrimary fetches the primary photo for one item, best-effort: a
+// nil photos source or a lookup error degrades to a nil primary (logged with
+// the supplied context label) rather than failing the request.
+func lookupSinglePrimary(ctx context.Context, photos PrimaryPhotoLookup, itemID, workspaceID uuid.UUID, logLabel string) *itemphoto.ItemPhoto {
+	if photos == nil {
+		return nil
+	}
+	p, perr := photos.GetPrimary(ctx, itemID, workspaceID)
+	if perr != nil {
+		log.Printf("%s: primary photo lookup failed for item %s: %v", logLabel, itemID, perr)
+		return nil
+	}
+	return p
+}
+
+// listItems returns the handler for GET /items.
+func listItems(svc ServiceInterface, photos PrimaryPhotoLookup, photoURLGen PrimaryPhotoURLGenerator) func(context.Context, *ListItemsInput) (*ListItemsOutput, error) {
+	return func(ctx context.Context, input *ListItemsInput) (*ListItemsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
@@ -139,13 +176,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				TotalPages: totalPages,
 			},
 		}, nil
-	})
+	}
+}
 
-	// Search items
-	huma.Get(api, "/items/search", func(ctx context.Context, input *SearchItemsInput) (*SearchItemsOutput, error) {
+// searchItems returns the handler for GET /items/search.
+func searchItems(svc ServiceInterface, photoURLGen PrimaryPhotoURLGenerator) func(context.Context, *SearchItemsInput) (*SearchItemsOutput, error) {
+	return func(ctx context.Context, input *SearchItemsInput) (*SearchItemsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		items, err := svc.Search(ctx, workspaceID, input.Query, input.Limit)
@@ -171,34 +210,37 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				TotalPages: 1,
 			},
 		}, nil
-	})
+	}
+}
 
-	// Lookup item by exact barcode (G-65-01 gap closure)
-	//
-	// Dedicated endpoint because the /items list FTS search_vector column
-	// covers name/brand/model/description ONLY — barcode + sku are NOT
-	// indexed by the generated tsvector (see
-	// backend/db/migrations/001_initial_schema.sql:495-500). This handler
-	// uses repo.FindByBarcode which hits the ix_items_barcode btree index.
-	//
-	// Case-sensitivity: Postgres text = operator is byte-wise, so upstream
-	// callers (frontend itemsApi.lookupByBarcode) inherit D-07 case-sensitive
-	// exact-match without any extra guard at this layer.
-	//
-	// Workspace scoping (D-08): FindByBarcode's WHERE clause includes
-	// workspace_id = $1 and the appMiddleware.GetWorkspaceID(ctx) value
-	// comes from the route-mounting workspace-context middleware — so a
-	// call for workspace A never leaks a match from workspace B.
-	huma.Get(api, "/items/by-barcode/{code}", func(ctx context.Context, input *LookupItemByBarcodeInput) (*LookupItemByBarcodeOutput, error) {
+// lookupItemByBarcode returns the handler for GET /items/by-barcode/{code}
+// (G-65-01 gap closure).
+//
+// Dedicated endpoint because the /items list FTS search_vector column
+// covers name/brand/model/description ONLY — barcode + sku are NOT
+// indexed by the generated tsvector (see
+// backend/db/migrations/001_initial_schema.sql:495-500). This handler
+// uses repo.FindByBarcode which hits the ix_items_barcode btree index.
+//
+// Case-sensitivity: Postgres text = operator is byte-wise, so upstream
+// callers (frontend itemsApi.lookupByBarcode) inherit D-07 case-sensitive
+// exact-match without any extra guard at this layer.
+//
+// Workspace scoping (D-08): FindByBarcode's WHERE clause includes
+// workspace_id = $1 and the appMiddleware.GetWorkspaceID(ctx) value
+// comes from the route-mounting workspace-context middleware — so a
+// call for workspace A never leaks a match from workspace B.
+func lookupItemByBarcode(svc ServiceInterface, photos PrimaryPhotoLookup, photoURLGen PrimaryPhotoURLGenerator) func(context.Context, *LookupItemByBarcodeInput) (*LookupItemByBarcodeOutput, error) {
+	return func(ctx context.Context, input *LookupItemByBarcodeInput) (*LookupItemByBarcodeOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		itm, err := svc.LookupByBarcode(ctx, workspaceID, input.Code)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to lookup item by barcode")
 		}
@@ -206,58 +248,46 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		// Decorate with primary photo (best-effort — mirrors the GetByID
 		// handler convention so the frontend MATCH banner can render a
 		// thumbnail if one exists).
-		var primary *itemphoto.ItemPhoto
-		if photos != nil {
-			p, perr := photos.GetPrimary(ctx, itm.ID(), workspaceID)
-			if perr != nil {
-				log.Printf("item lookup-by-barcode: primary photo lookup failed for item %s: %v", itm.ID(), perr)
-			} else {
-				primary = p
-			}
-		}
+		primary := lookupSinglePrimary(ctx, photos, itm.ID(), workspaceID, "item lookup-by-barcode")
 
 		return &LookupItemByBarcodeOutput{
 			Body: toItemResponse(itm, primary, photoURLGen),
 		}, nil
-	})
+	}
+}
 
-	// Get item by ID
-	huma.Get(api, "/items/{id}", func(ctx context.Context, input *GetItemInput) (*GetItemOutput, error) {
+// getItem returns the handler for GET /items/{id}.
+func getItem(svc ServiceInterface, photos PrimaryPhotoLookup, photoURLGen PrimaryPhotoURLGenerator) func(context.Context, *GetItemInput) (*GetItemOutput, error) {
+	return func(ctx context.Context, input *GetItemInput) (*GetItemOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		item, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to get item")
 		}
 
 		// Decorate detail view with primary photo (best-effort — failures log and
 		// degrade to no thumbnail rather than failing the whole request).
-		var primary *itemphoto.ItemPhoto
-		if photos != nil {
-			p, perr := photos.GetPrimary(ctx, input.ID, workspaceID)
-			if perr != nil {
-				log.Printf("item detail: primary photo lookup failed for item %s: %v", input.ID, perr)
-			} else {
-				primary = p
-			}
-		}
+		primary := lookupSinglePrimary(ctx, photos, input.ID, workspaceID, "item detail")
 
 		return &GetItemOutput{
 			Body: toItemResponse(item, primary, photoURLGen),
 		}, nil
-	})
+	}
+}
 
-	// List items by category
-	huma.Get(api, "/items/by-category/{category_id}", func(ctx context.Context, input *ListItemsByCategoryInput) (*ListItemsOutput, error) {
+// listItemsByCategory returns the handler for GET /items/by-category/{category_id}.
+func listItemsByCategory(svc ServiceInterface, photos PrimaryPhotoLookup, photoURLGen PrimaryPhotoURLGenerator) func(context.Context, *ListItemsByCategoryInput) (*ListItemsOutput, error) {
+	return func(ctx context.Context, input *ListItemsByCategoryInput) (*ListItemsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
@@ -284,13 +314,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				TotalPages: 1,
 			},
 		}, nil
-	})
+	}
+}
 
-	// Create item
-	huma.Post(api, "/items", func(ctx context.Context, input *CreateItemInput) (*CreateItemOutput, error) {
+// createItem returns the handler for POST /items.
+func createItem(svc ServiceInterface, broadcaster *events.Broadcaster, photoURLGen PrimaryPhotoURLGenerator) func(context.Context, *CreateItemInput) (*CreateItemOutput, error) {
+	return func(ctx context.Context, input *CreateItemInput) (*CreateItemOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -356,34 +388,36 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &CreateItemOutput{
 			Body: toItemResponse(item, nil, photoURLGen),
 		}, nil
-	})
+	}
+}
 
-	// Update item
-	//
-	// PATCH merge semantics (svc.Update / entity Update() are full-state
-	// replacements, so the handler is responsible for merging the request
-	// body over the current item):
-	//
-	//   - Field absent from the body (nil pointer after decode) = UNCHANGED:
-	//     the current value is carried over. This protects partial updates
-	//     like {"needs_review": false} (item detail "mark as reviewed") from
-	//     nulling every omitted field.
-	//   - Explicit empty string ("") on a nullable *string field = CLEAR:
-	//     the field is stored as NULL.
-	//   - *bool, *uuid.UUID (category_id, purchased_from) and min_stock_level
-	//     have NO clear mechanism via PATCH: nil keeps the current value,
-	//     non-nil overwrites. Explicit JSON null also decodes to nil and
-	//     therefore means "unchanged", not "clear".
-	//
-	// Frontend note: the edit wizard (edit-item-wizard.tsx) sends cleared
-	// inputs as omitted (`value || undefined`), which under these semantics
-	// is a no-op — to clear a string field a client must send "" explicitly.
-	// That trade-off is deliberate: a partial PATCH must never silently
-	// destroy data it did not mention.
-	huma.Patch(api, "/items/{id}", func(ctx context.Context, input *UpdateItemInput) (*UpdateItemOutput, error) {
+// updateItem returns the handler for PATCH /items/{id}.
+//
+// PATCH merge semantics (svc.Update / entity Update() are full-state
+// replacements, so the handler is responsible for merging the request
+// body over the current item):
+//
+//   - Field absent from the body (nil pointer after decode) = UNCHANGED:
+//     the current value is carried over. This protects partial updates
+//     like {"needs_review": false} (item detail "mark as reviewed") from
+//     nulling every omitted field.
+//   - Explicit empty string ("") on a nullable *string field = CLEAR:
+//     the field is stored as NULL.
+//   - *bool, *uuid.UUID (category_id, purchased_from) and min_stock_level
+//     have NO clear mechanism via PATCH: nil keeps the current value,
+//     non-nil overwrites. Explicit JSON null also decodes to nil and
+//     therefore means "unchanged", not "clear".
+//
+// Frontend note: the edit wizard (edit-item-wizard.tsx) sends cleared
+// inputs as omitted (`value || undefined`), which under these semantics
+// is a no-op — to clear a string field a client must send "" explicitly.
+// That trade-off is deliberate: a partial PATCH must never silently
+// destroy data it did not mention.
+func updateItem(svc ServiceInterface, broadcaster *events.Broadcaster, photos PrimaryPhotoLookup, photoURLGen PrimaryPhotoURLGenerator) func(context.Context, *UpdateItemInput) (*UpdateItemOutput, error) {
+	return func(ctx context.Context, input *UpdateItemInput) (*UpdateItemOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -392,13 +426,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		currentItem, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to get item")
 		}
 
 		// Build the full-state UpdateInput by merging the PATCH body over the
-		// current item (see merge semantics on the route comment above).
+		// current item (see merge semantics on the handler comment above).
 		updateInput := UpdateInput{
 			Name:              currentItem.Name(),
 			Description:       patchString(input.Body.Description, currentItem.Description()),
@@ -449,26 +483,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Update response: look up primary photo to keep thumbnail URL fresh for
 		// callers that re-render the detail view after PATCH.
-		var primary *itemphoto.ItemPhoto
-		if photos != nil {
-			p, perr := photos.GetPrimary(ctx, input.ID, workspaceID)
-			if perr != nil {
-				log.Printf("item update: primary photo lookup failed for item %s: %v", input.ID, perr)
-			} else {
-				primary = p
-			}
-		}
+		primary := lookupSinglePrimary(ctx, photos, input.ID, workspaceID, "item update")
 
 		return &UpdateItemOutput{
 			Body: toItemResponse(item, primary, photoURLGen),
 		}, nil
-	})
+	}
+}
 
-	// Archive item
-	huma.Post(api, "/items/{id}/archive", func(ctx context.Context, input *GetItemInput) (*struct{}, error) {
+// archiveItem returns the handler for POST /items/{id}/archive.
+func archiveItem(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetItemInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetItemInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -476,33 +504,24 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		err := svc.Archive(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish event (treat archive as delete event)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "item.deleted",
-				EntityID:   input.ID.String(),
-				EntityType: "item",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishItemLifecycleEvent(ctx, broadcaster, authUser, workspaceID, "item.deleted", input.ID)
 
 		return nil, nil
-	})
+	}
+}
 
-	// Restore item
-	huma.Post(api, "/items/{id}/restore", func(ctx context.Context, input *GetItemInput) (*struct{}, error) {
+// restoreItem returns the handler for POST /items/{id}/restore.
+func restoreItem(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetItemInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetItemInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -510,70 +529,72 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		err := svc.Restore(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish event (treat restore as create event)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "item.created",
-				EntityID:   input.ID.String(),
-				EntityType: "item",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishItemLifecycleEvent(ctx, broadcaster, authUser, workspaceID, "item.created", input.ID)
 
 		return nil, nil
-	})
+	}
+}
 
-	// Delete item (hard delete; archive endpoint is separate)
-	huma.Delete(api, "/items/{id}", func(ctx context.Context, input *GetItemInput) (*struct{}, error) {
+// deleteItem returns the handler for DELETE /items/{id} (hard delete; archive
+// endpoint is separate).
+func deleteItem(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetItemInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetItemInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		if err := svc.Delete(ctx, input.ID, workspaceID); err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
 
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "item.deleted",
-				EntityID:   input.ID.String(),
-				EntityType: "item",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishItemLifecycleEvent(ctx, broadcaster, authUser, workspaceID, "item.deleted", input.ID)
 		return nil, nil
-	})
+	}
+}
 
-	// Get item labels
-	huma.Get(api, "/items/{id}/labels", func(ctx context.Context, input *GetItemInput) (*GetItemLabelsOutput, error) {
+// publishItemLifecycleEvent emits the minimal item SSE event used by the
+// archive/restore/delete handlers (carrying only the user display name in the
+// payload). No-op when the broadcaster or authenticated user is absent.
+func publishItemLifecycleEvent(ctx context.Context, broadcaster *events.Broadcaster, authUser *appMiddleware.AuthUser, workspaceID uuid.UUID, eventType string, itemID uuid.UUID) {
+	if broadcaster == nil || authUser == nil {
+		return
+	}
+	userName := appMiddleware.GetUserDisplayName(ctx)
+	broadcaster.Publish(workspaceID, events.Event{
+		Type:       eventType,
+		EntityID:   itemID.String(),
+		EntityType: "item",
+		UserID:     authUser.ID,
+		Data: map[string]any{
+			"user_name": userName,
+		},
+	})
+}
+
+// getItemLabels returns the handler for GET /items/{id}/labels.
+func getItemLabels(svc ServiceInterface) func(context.Context, *GetItemInput) (*GetItemLabelsOutput, error) {
+	return func(ctx context.Context, input *GetItemInput) (*GetItemLabelsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		labelIDs, err := svc.GetItemLabels(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to get item labels")
 		}
@@ -581,43 +602,47 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &GetItemLabelsOutput{
 			Body: ItemLabelsResponse{LabelIDs: labelIDs},
 		}, nil
-	})
+	}
+}
 
-	// Attach label to item
-	huma.Post(api, "/items/{id}/labels/{label_id}", func(ctx context.Context, input *ItemLabelInput) (*struct{}, error) {
+// attachItemLabel returns the handler for POST /items/{id}/labels/{label_id}.
+func attachItemLabel(svc ServiceInterface) func(context.Context, *ItemLabelInput) (*struct{}, error) {
+	return func(ctx context.Context, input *ItemLabelInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		err := svc.AttachLabel(ctx, input.ID, input.LabelID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return nil, nil
-	})
+	}
+}
 
-	// Detach label from item
-	huma.Delete(api, "/items/{id}/labels/{label_id}", func(ctx context.Context, input *ItemLabelInput) (*struct{}, error) {
+// detachItemLabel returns the handler for DELETE /items/{id}/labels/{label_id}.
+func detachItemLabel(svc ServiceInterface) func(context.Context, *ItemLabelInput) (*struct{}, error) {
+	return func(ctx context.Context, input *ItemLabelInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		err := svc.DetachLabel(ctx, input.ID, input.LabelID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return nil, nil
-	})
+	}
 }
 
 // lookupPrimaryPhotos wraps the batched primary-photo fetch with graceful

@@ -7,8 +7,8 @@ import { server } from "./msw/server";
 // without this stub every test that mounts the provider tree throws
 // `matchMedia is not a function`. Minimal: reports not-matched (→ light) with
 // no-op listener registration. Tests that need dark can override per-case.
-if (typeof window !== "undefined" && !window.matchMedia) {
-  Object.defineProperty(window, "matchMedia", {
+if (typeof globalThis.window !== "undefined" && !globalThis.matchMedia) {
+  Object.defineProperty(globalThis, "matchMedia", {
     configurable: true,
     writable: true,
     value: (query: string) => ({
@@ -128,8 +128,7 @@ export class MockEventSource {
 }
 
 // Install on the global so `new EventSource(...)` in app code resolves to the stub.
-(globalThis as { EventSource?: unknown }).EventSource =
-  MockEventSource as unknown as typeof EventSource;
+(globalThis as { EventSource?: unknown }).EventSource = MockEventSource;
 
 afterEach(() => MockEventSource.reset());
 
@@ -154,7 +153,7 @@ class FakeMediaStreamTrack {
   }
 
   applyConstraints(constraints?: MediaTrackConstraints): Promise<void> {
-    const advanced = (constraints?.advanced ?? []) as MediaTrackConstraintSet[];
+    const advanced = constraints?.advanced ?? [];
     this.appliedConstraints.push(...advanced);
     return Promise.resolve();
   }
@@ -200,7 +199,7 @@ class MockMediaDevices {
 // reset is idempotent across the whole suite.
 Object.defineProperty(navigator, "mediaDevices", {
   configurable: true,
-  value: new MockMediaDevices() as unknown as MediaDevices,
+  value: new MockMediaDevices(),
 });
 
 export { MockMediaDevices, FakeMediaStream, FakeMediaStreamTrack };

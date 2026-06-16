@@ -507,7 +507,7 @@ func TestCompleteInventoryWorkflow(t *testing.T) {
 	t.Log("✓ Step 18: Archived item hidden from regular list")
 
 	// Steps 19-20 - Deleted records and activity logging
-	// See docs/GO_BACKEND_TODO.md - Activity Logging Integration
+	// NOTE: deferred - Activity Logging Integration (tracked in the backend backlog doc)
 	// For now, the core workflow has been successfully validated through step 18
 
 	t.Log("✓ Core workflow completed successfully (Steps 1-18)")

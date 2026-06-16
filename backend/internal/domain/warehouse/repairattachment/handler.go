@@ -14,13 +14,15 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+const msgWorkspaceContextRequired = "workspace context required"
+
 // RegisterRoutes registers repair attachment routes under /repairs/{repairLogId}/attachments.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List attachments for a repair log
 	huma.Get(api, "/repairs/{repairLogId}/attachments", func(ctx context.Context, input *ListAttachmentsInput) (*ListAttachmentsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		attachments, err := svc.ListByRepairLog(ctx, input.RepairLogID, workspaceID)
@@ -45,7 +47,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/repairs/{repairLogId}/attachments", func(ctx context.Context, input *CreateAttachmentInput) (*CreateAttachmentOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		// Validate attachment type
@@ -95,7 +97,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Delete(api, "/repairs/{repairLogId}/attachments/{attachmentId}", func(ctx context.Context, input *DeleteAttachmentInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		attachmentID := input.AttachmentID

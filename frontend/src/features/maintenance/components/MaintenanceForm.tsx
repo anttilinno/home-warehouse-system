@@ -62,7 +62,7 @@ export function MaintenanceForm({
   onClose,
   invId,
   schedule,
-}: MaintenanceFormProps) {
+}: Readonly<MaintenanceFormProps>) {
   const { t } = useLingui();
   const isEdit = Boolean(schedule);
   const { createSchedule, updateSchedule } = useMaintenanceMutations();

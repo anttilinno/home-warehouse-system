@@ -13,13 +13,60 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	routeRepairByID             = "/repairs/{id}"
+	msgRepairLogNotFound        = "repair log not found"
+)
+
 // RegisterRoutes registers repair log routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
-	// List all repair logs in workspace
-	huma.Get(api, "/repairs", func(ctx context.Context, input *ListRepairLogsInput) (*ListRepairLogsOutput, error) {
+	huma.Get(api, "/repairs", listRepairLogs(svc))
+	huma.Get(api, routeRepairByID, getRepairLog(svc))
+	huma.Post(api, "/repairs", createRepairLog(svc, broadcaster))
+	huma.Patch(api, routeRepairByID, updateRepairLog(svc, broadcaster))
+	huma.Post(api, "/repairs/{id}/start", startRepair(svc, broadcaster))
+	huma.Post(api, "/repairs/{id}/complete", completeRepair(svc, broadcaster))
+	huma.Delete(api, routeRepairByID, deleteRepairLog(svc, broadcaster))
+	huma.Get(api, "/inventory/{inventory_id}/repairs", listInventoryRepairs(svc))
+	huma.Get(api, "/inventory/{inventory_id}/repair-cost", getRepairCost(svc))
+}
+
+// isRepairNotFound reports whether err is one of the not-found sentinels the
+// repair handlers map to a 404.
+func isRepairNotFound(err error) bool {
+	return errors.Is(err, ErrRepairLogNotFound) || errors.Is(err, shared.ErrNotFound)
+}
+
+// publishRepairEvent emits a repair-log SSE event with the standard
+// {id, status, user_name} payload, no-op when broadcaster or auth user is
+// absent. Callers that need extra payload fields (e.g. create, complete,
+// delete) publish inline instead.
+func publishRepairEvent(ctx context.Context, broadcaster *events.Broadcaster, workspaceID uuid.UUID, eventType string, r *RepairLog) {
+	authUser, _ := appMiddleware.GetAuthUser(ctx)
+	if broadcaster == nil || authUser == nil {
+		return
+	}
+	userName := appMiddleware.GetUserDisplayName(ctx)
+	broadcaster.Publish(workspaceID, events.Event{
+		Type:       eventType,
+		EntityID:   r.ID().String(),
+		EntityType: "repairlog",
+		UserID:     authUser.ID,
+		Data: map[string]any{
+			"id":        r.ID(),
+			"status":    r.Status(),
+			"user_name": userName,
+		},
+	})
+}
+
+// listRepairLogs returns the handler for GET /repairs.
+func listRepairLogs(svc ServiceInterface) func(context.Context, *ListRepairLogsInput) (*ListRepairLogsOutput, error) {
+	return func(ctx context.Context, input *ListRepairLogsInput) (*ListRepairLogsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
@@ -53,19 +100,21 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				Total: total,
 			},
 		}, nil
-	})
+	}
+}
 
-	// Get repair log by ID
-	huma.Get(api, "/repairs/{id}", func(ctx context.Context, input *GetRepairLogInput) (*GetRepairLogOutput, error) {
+// getRepairLog returns the handler for GET /repairs/{id}.
+func getRepairLog(svc ServiceInterface) func(context.Context, *GetRepairLogInput) (*GetRepairLogOutput, error) {
+	return func(ctx context.Context, input *GetRepairLogInput) (*GetRepairLogOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		repairLog, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
-			if errors.Is(err, ErrRepairLogNotFound) || errors.Is(err, shared.ErrNotFound) {
-				return nil, huma.Error404NotFound("repair log not found")
+			if isRepairNotFound(err) {
+				return nil, huma.Error404NotFound(msgRepairLogNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to get repair log")
 		}
@@ -73,13 +122,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &GetRepairLogOutput{
 			Body: toRepairLogResponse(repairLog),
 		}, nil
-	})
+	}
+}
 
-	// Create repair log
-	huma.Post(api, "/repairs", func(ctx context.Context, input *CreateRepairLogInput) (*CreateRepairLogOutput, error) {
+// createRepairLog returns the handler for POST /repairs.
+func createRepairLog(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *CreateRepairLogInput) (*CreateRepairLogOutput, error) {
+	return func(ctx context.Context, input *CreateRepairLogInput) (*CreateRepairLogOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		repairLog, err := svc.Create(ctx, CreateInput{
@@ -125,13 +176,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &CreateRepairLogOutput{
 			Body: toRepairLogResponse(repairLog),
 		}, nil
-	})
+	}
+}
 
-	// Update repair log
-	huma.Patch(api, "/repairs/{id}", func(ctx context.Context, input *UpdateRepairLogInput) (*UpdateRepairLogOutput, error) {
+// updateRepairLog returns the handler for PATCH /repairs/{id}.
+func updateRepairLog(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *UpdateRepairLogInput) (*UpdateRepairLogOutput, error) {
+	return func(ctx context.Context, input *UpdateRepairLogInput) (*UpdateRepairLogOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		repairLog, err := svc.Update(ctx, input.ID, workspaceID, UpdateInput{
@@ -143,8 +196,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			Notes:           input.Body.Notes,
 		})
 		if err != nil {
-			if errors.Is(err, ErrRepairLogNotFound) || errors.Is(err, shared.ErrNotFound) {
-				return nil, huma.Error404NotFound("repair log not found")
+			if isRepairNotFound(err) {
+				return nil, huma.Error404NotFound(msgRepairLogNotFound)
 			}
 			if errors.Is(err, ErrRepairAlreadyCompleted) {
 				return nil, huma.Error400BadRequest("cannot update completed repair")
@@ -155,39 +208,27 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, appMiddleware.MapDomainError(err)
 		}
 
-		// Publish SSE event
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "repairlog.updated",
-				EntityID:   repairLog.ID().String(),
-				EntityType: "repairlog",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"id":        repairLog.ID(),
-					"status":    repairLog.Status(),
-					"user_name": userName,
-				},
-			})
-		}
+		publishRepairEvent(ctx, broadcaster, workspaceID, "repairlog.updated", repairLog)
 
 		return &UpdateRepairLogOutput{
 			Body: toRepairLogResponse(repairLog),
 		}, nil
-	})
+	}
+}
 
-	// Start repair (transition from PENDING to IN_PROGRESS)
-	huma.Post(api, "/repairs/{id}/start", func(ctx context.Context, input *StartRepairInput) (*StartRepairOutput, error) {
+// startRepair returns the handler for POST /repairs/{id}/start (transition from
+// PENDING to IN_PROGRESS).
+func startRepair(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *StartRepairInput) (*StartRepairOutput, error) {
+	return func(ctx context.Context, input *StartRepairInput) (*StartRepairOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		repairLog, err := svc.StartRepair(ctx, input.ID, workspaceID)
 		if err != nil {
-			if errors.Is(err, ErrRepairLogNotFound) || errors.Is(err, shared.ErrNotFound) {
-				return nil, huma.Error404NotFound("repair log not found")
+			if isRepairNotFound(err) {
+				return nil, huma.Error404NotFound(msgRepairLogNotFound)
 			}
 			if errors.Is(err, ErrInvalidStatusTransition) {
 				return nil, huma.Error400BadRequest("can only start repair from pending status")
@@ -195,39 +236,27 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, appMiddleware.MapDomainError(err)
 		}
 
-		// Publish SSE event
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "repairlog.started",
-				EntityID:   repairLog.ID().String(),
-				EntityType: "repairlog",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"id":        repairLog.ID(),
-					"status":    repairLog.Status(),
-					"user_name": userName,
-				},
-			})
-		}
+		publishRepairEvent(ctx, broadcaster, workspaceID, "repairlog.started", repairLog)
 
 		return &StartRepairOutput{
 			Body: toRepairLogResponse(repairLog),
 		}, nil
-	})
+	}
+}
 
-	// Complete repair (transition from IN_PROGRESS to COMPLETED)
-	huma.Post(api, "/repairs/{id}/complete", func(ctx context.Context, input *CompleteRepairInput) (*CompleteRepairOutput, error) {
+// completeRepair returns the handler for POST /repairs/{id}/complete
+// (transition from IN_PROGRESS to COMPLETED).
+func completeRepair(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *CompleteRepairInput) (*CompleteRepairOutput, error) {
+	return func(ctx context.Context, input *CompleteRepairInput) (*CompleteRepairOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		repairLog, err := svc.Complete(ctx, input.ID, workspaceID, input.Body.NewCondition)
 		if err != nil {
-			if errors.Is(err, ErrRepairLogNotFound) || errors.Is(err, shared.ErrNotFound) {
-				return nil, huma.Error404NotFound("repair log not found")
+			if isRepairNotFound(err) {
+				return nil, huma.Error404NotFound(msgRepairLogNotFound)
 			}
 			if errors.Is(err, ErrInvalidStatusTransition) {
 				return nil, huma.Error400BadRequest("can only complete repair from in_progress status")
@@ -262,21 +291,23 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &CompleteRepairOutput{
 			Body: toRepairLogResponse(repairLog),
 		}, nil
-	})
+	}
+}
 
-	// Delete repair log
-	huma.Delete(api, "/repairs/{id}", func(ctx context.Context, input *DeleteRepairLogInput) (*struct{}, error) {
+// deleteRepairLog returns the handler for DELETE /repairs/{id}.
+func deleteRepairLog(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *DeleteRepairLogInput) (*struct{}, error) {
+	return func(ctx context.Context, input *DeleteRepairLogInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		// Get the repair log ID before deletion for SSE event
 		repairLogID := input.ID
 
 		if err := svc.Delete(ctx, input.ID, workspaceID); err != nil {
-			if errors.Is(err, ErrRepairLogNotFound) || errors.Is(err, shared.ErrNotFound) {
-				return nil, huma.Error404NotFound("repair log not found")
+			if isRepairNotFound(err) {
+				return nil, huma.Error404NotFound(msgRepairLogNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to delete repair log")
 		}
@@ -298,13 +329,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return nil, nil
-	})
+	}
+}
 
-	// List repairs for inventory
-	huma.Get(api, "/inventory/{inventory_id}/repairs", func(ctx context.Context, input *ListInventoryRepairsInput) (*ListRepairLogsOutput, error) {
+// listInventoryRepairs returns the handler for GET /inventory/{inventory_id}/repairs.
+func listInventoryRepairs(svc ServiceInterface) func(context.Context, *ListInventoryRepairsInput) (*ListRepairLogsOutput, error) {
+	return func(ctx context.Context, input *ListInventoryRepairsInput) (*ListRepairLogsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		repairs, err := svc.ListByInventory(ctx, workspaceID, input.InventoryID)
@@ -323,13 +356,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				Total: len(repairs),
 			},
 		}, nil
-	})
+	}
+}
 
-	// Get total repair cost for inventory
-	huma.Get(api, "/inventory/{inventory_id}/repair-cost", func(ctx context.Context, input *GetRepairCostInput) (*GetRepairCostOutput, error) {
+// getRepairCost returns the handler for GET /inventory/{inventory_id}/repair-cost.
+func getRepairCost(svc ServiceInterface) func(context.Context, *GetRepairCostInput) (*GetRepairCostOutput, error) {
+	return func(ctx context.Context, input *GetRepairCostInput) (*GetRepairCostOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		summaries, err := svc.GetTotalRepairCost(ctx, workspaceID, input.InventoryID)
@@ -339,17 +374,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		items := make([]RepairCostSummaryResponse, len(summaries))
 		for i, s := range summaries {
-			items[i] = RepairCostSummaryResponse{
-				CurrencyCode:   s.CurrencyCode,
-				TotalCostCents: s.TotalCostCents,
-				RepairCount:    s.RepairCount,
-			}
+			items[i] = RepairCostSummaryResponse(s)
 		}
 
 		return &GetRepairCostOutput{
 			Body: RepairCostResponse{Items: items},
 		}, nil
-	})
+	}
 }
 
 func toRepairLogResponse(r *RepairLog) RepairLogResponse {

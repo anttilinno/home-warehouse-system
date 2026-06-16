@@ -22,7 +22,7 @@ export function RetroBadge({
   variant = "neutral",
   className = "",
   children,
-}: RetroBadgeProps) {
+}: Readonly<RetroBadgeProps>) {
   return (
     <span
       className={`inline-flex items-center gap-[6px] rounded-chip border border-border-ink px-sp-2 py-px text-11 font-bold uppercase tracking-7 text-fg-ink ${BADGE_VARIANTS[variant]} ${className}`}

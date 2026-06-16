@@ -41,7 +41,7 @@ export const maintenanceApi = {
   // horizon query (server default when omitted).
   due: (ws: string, days?: number) =>
     get<{ items: DueSchedule[] }>(
-      `/workspaces/${ws}/maintenance/due${days != null ? `?days=${days}` : ""}`,
+      `/workspaces/${ws}/maintenance/due${days == null ? "" : `?days=${days}`}`,
     ),
   get: (ws: string, id: string) =>
     get<MaintenanceSchedule>(`/workspaces/${ws}/maintenance/${id}`),

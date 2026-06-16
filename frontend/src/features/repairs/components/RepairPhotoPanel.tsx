@@ -40,7 +40,10 @@ function toGalleryPhoto(p: RepairPhoto): GalleryPhoto {
   };
 }
 
-export function RepairPhotoPanel({ wsId, repairId }: RepairPhotoPanelProps) {
+export function RepairPhotoPanel({
+  wsId,
+  repairId,
+}: Readonly<RepairPhotoPanelProps>) {
   const { t } = useLingui();
   const [uploadOpen, setUploadOpen] = useState(false);
   const [photoType, setPhotoType] = useState<RepairPhotoType>("BEFORE");

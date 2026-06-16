@@ -2,6 +2,8 @@
 
 Date: 2026-06-11. Scope: `backend/` multi-tenant warehouse API (Go, chi + Huma, sqlc/pgx, Postgres). Findings combine reads of the auth/middleware/config/router/shortlink/webpush layers with deep passes over tenant-isolation queries, file uploads, and import/export. Every finding cites file:line with code evidence.
 
+> **Status (2026-06-16): ALL 20 findings RESOLVED.** F1–F20 were remediated in commit `f49e4b48` ("tenant isolation threading + security hardening (F1-F20)", 2026-06-11), pairing with migrations 002–006. Each mitigation was re-verified present in current source on 2026-06-16. The per-row table below and the prose sections retain the original finding text for audit history; the ✅ tags mark resolution. No open security holes remain in the audited surface.
+
 ## Severity summary
 
 | # | Severity | Title | Location |
@@ -9,23 +11,23 @@ Date: 2026-06-11. Scope: `backend/` multi-tenant warehouse API (Go, chi + Huma, 
 | F1 | CRITICAL | ✅ RESOLVED (`f49e4b48`) — Cross-tenant IDOR on `attachment`/`file` (read + destructive delete) | `domain/warehouse/attachment/handler.go`, `attachments.sql.go` |
 | F2 | HIGH | ✅ RESOLVED (`f49e4b48`) — Logout does not revoke session / refresh token | `domain/auth/user/handler.go:324` |
 | F3 | HIGH | ✅ RESOLVED (`f49e4b48`) — Session revocation bypass via "legacy token" re-creation on refresh | `domain/auth/user/handler.go:264-310` |
-| F4 | HIGH | CSV formula/DDE injection on export | `domain/importexport/service.go:391-508` |
-| F5 | HIGH | Import/restore not admin-gated; bypasses approval pipeline | `api/router.go:494`, `approval_middleware.go:171-207` |
-| F6 | HIGH | Cross-tenant FK injection in workspace restore | `domain/importexport/workspace_restore.go:719-734` |
-| F7 | MEDIUM | CORS reflects ANY private-network origin with credentials | `api/middleware/cors.go:29-55` |
-| F8 | MEDIUM | Rate-limit bypass via spoofable `X-Forwarded-For` | `api/middleware/ratelimit.go:112-126` |
-| F9 | MEDIUM | No security headers / `nosniff` on served upload files | all serve handlers |
-| F10 | MEDIUM | No request body size cap (`MaxBytesReader` absent) | upload + import handlers |
-| F11 | MEDIUM | XLSX decompression bomb (no `UnzipSizeLimit`) | `workspace_restore.go:101` |
-| F12 | MEDIUM | Push subscription SSRF (endpoint URL unvalidated) | `domain/auth/pushsubscription/entity.go:33` |
-| F13 | MEDIUM | Cookie `Secure` flag gated on `APP_ENV`, decoupled from JWT/prod gating | `domain/auth/user/handler.go:36` |
-| F14 | LOW | Zip-slip via unsanitized photo filename in bulk download | `itemphoto/handler.go:488-497` |
-| F15 | LOW | Served `Content-Type` taken from client header, not detected format | `itemphoto/service.go:135` |
-| F16 | LOW | Weak default JWT secret `change-me-in-production` | `config/config.go:75` |
-| F17 | LOW | No CSRF token defense-in-depth (relies solely on SameSite=Lax) | global |
-| F18 | LOW | Internal error strings leaked in JSON responses | `approval_middleware.go:101,120` |
-| F19 | LOW | Dead unscoped `GetFavorite`/`FindByID` query | `favorites.sql.go:95` |
-| F20 | LOW | `strings.HasPrefix` path-containment check (sibling-dir bug) | `storage/local_storage.go:128` |
+| F4 | HIGH | ✅ RESOLVED (`f49e4b48`) — CSV formula/DDE injection on export | `domain/importexport/service.go:391-508` |
+| F5 | HIGH | ✅ RESOLVED (`f49e4b48`) — Import/restore not admin-gated; bypasses approval pipeline | `api/router.go:494`, `approval_middleware.go:171-207` |
+| F6 | HIGH | ✅ RESOLVED (`f49e4b48`) — Cross-tenant FK injection in workspace restore | `domain/importexport/workspace_restore.go:719-734` |
+| F7 | MEDIUM | ✅ RESOLVED (`f49e4b48`) — CORS reflects ANY private-network origin with credentials | `api/middleware/cors.go:29-55` |
+| F8 | MEDIUM | ✅ RESOLVED (`f49e4b48`) — Rate-limit bypass via spoofable `X-Forwarded-For` | `api/middleware/ratelimit.go:112-126` |
+| F9 | MEDIUM | ✅ RESOLVED (`f49e4b48`) — No security headers / `nosniff` on served upload files | all serve handlers |
+| F10 | MEDIUM | ✅ RESOLVED (`f49e4b48`) — No request body size cap (`MaxBytesReader` absent) | upload + import handlers |
+| F11 | MEDIUM | ✅ RESOLVED (`f49e4b48`) — XLSX decompression bomb (no `UnzipSizeLimit`) | `workspace_restore.go:101` |
+| F12 | MEDIUM | ✅ RESOLVED (`f49e4b48`) — Push subscription SSRF (endpoint URL unvalidated) | `domain/auth/pushsubscription/entity.go:33` |
+| F13 | MEDIUM | ✅ RESOLVED (`f49e4b48`) — Cookie `Secure` flag gated on `APP_ENV`, decoupled from JWT/prod gating | `domain/auth/user/handler.go:36` |
+| F14 | LOW | ✅ RESOLVED (`f49e4b48`) — Zip-slip via unsanitized photo filename in bulk download | `itemphoto/handler.go:488-497` |
+| F15 | LOW | ✅ RESOLVED (`f49e4b48`) — Served `Content-Type` taken from client header, not detected format | `itemphoto/service.go:135` |
+| F16 | LOW | ✅ RESOLVED (`f49e4b48`) — Weak default JWT secret `change-me-in-production` | `config/config.go:75` |
+| F17 | LOW | ✅ RESOLVED (`f49e4b48`) — No CSRF token defense-in-depth (relies solely on SameSite=Lax) | global |
+| F18 | LOW | ✅ RESOLVED (`f49e4b48`) — Internal error strings leaked in JSON responses | `approval_middleware.go:101,120` |
+| F19 | LOW | ✅ RESOLVED (`f49e4b48`) — Dead unscoped `GetFavorite`/`FindByID` query (regenerated; all favorites queries now `WHERE user_id=$1 AND workspace_id=$2`) | `favorites.sql.go:95` |
+| F20 | LOW | ✅ RESOLVED (`f49e4b48`) — `strings.HasPrefix` path-containment check (sibling-dir bug) | `storage/local_storage.go:128` |
 
 ---
 

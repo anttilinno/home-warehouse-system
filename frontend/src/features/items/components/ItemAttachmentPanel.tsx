@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   BevelButton,
@@ -36,7 +36,7 @@ const BADGE_VARIANT: Record<AttachmentType, RetroBadgeVariant> = {
 export function ItemAttachmentPanel({
   wsId,
   itemId,
-}: ItemAttachmentPanelProps) {
+}: Readonly<ItemAttachmentPanelProps>) {
   const { t } = useLingui();
   const { items, isLoading, isError, setPrimary, deleteAttachment } =
     useItemAttachments(wsId, itemId);
@@ -59,80 +59,91 @@ export function ItemAttachmentPanel({
     });
   }
 
+  let content: ReactNode;
+  if (isLoading) {
+    content = (
+      <p className="bg-bg-panel-2 p-sp-4 font-mono text-12 text-fg-muted">
+        <Trans>Loading…</Trans>
+      </p>
+    );
+  } else if (isError) {
+    content = (
+      <p className="bg-bg-panel-2 p-sp-4 text-14 text-danger">
+        <Trans>Couldn't load files. Try again.</Trans>
+      </p>
+    );
+  } else if (items.length === 0) {
+    content = (
+      <div className="bg-bg-panel-2 p-sp-3">
+        <RetroEmptyState
+          eyebrow={<Trans>Files</Trans>}
+          glyph="◇"
+          heading={<Trans>NO FILES</Trans>}
+          body={
+            <Trans>No manuals, receipts, or warranties attached yet.</Trans>
+          }
+          action={{
+            label: <Trans>⊕ ADD FILE</Trans>,
+            onClick: () => setAddOpen(true),
+          }}
+        />
+      </div>
+    );
+  } else {
+    content = (
+      <ul className="bg-bg-panel-2">
+        {items.map((att) => (
+          <li
+            key={att.id}
+            className="flex items-center gap-sp-2 border-b border-table-rule px-sp-3 py-sp-2"
+          >
+            <RetroBadge variant={BADGE_VARIANT[att.attachment_type]}>
+              {att.attachment_type}
+            </RetroBadge>
+            {att.is_primary && (
+              <RetroBadge variant="ok">
+                <Trans>PRIMARY</Trans>
+              </RetroBadge>
+            )}
+            <a
+              href={itemAttachmentsApi.downloadUrl(wsId, att.id)}
+              target="_blank"
+              rel="noreferrer"
+              className="flex-1 truncate text-14 font-semibold text-fg-ink underline-offset-2 hover:underline"
+            >
+              {att.title || att.file_name || t`Untitled`}
+            </a>
+            {att.file_mime_type && (
+              <span className="font-mono text-12 text-fg-muted">
+                {att.file_mime_type}
+              </span>
+            )}
+            {!att.is_primary && (
+              <BevelButton
+                variant="mint"
+                className="!px-[8px] !py-[2px] !text-11"
+                disabled={setPrimary.isPending}
+                onClick={() => handleSetPrimary(att)}
+              >
+                <Trans>SET PRIMARY</Trans>
+              </BevelButton>
+            )}
+            <BevelButton
+              variant="danger"
+              className="!px-[8px] !py-[2px] !text-11"
+              onClick={() => setDeleteTarget(att)}
+            >
+              <Trans>DELETE</Trans>
+            </BevelButton>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-sp-2">
-      {isLoading ? (
-        <p className="bg-bg-panel-2 p-sp-4 font-mono text-12 text-fg-muted">
-          <Trans>Loading…</Trans>
-        </p>
-      ) : isError ? (
-        <p className="bg-bg-panel-2 p-sp-4 text-14 text-danger">
-          <Trans>Couldn't load files. Try again.</Trans>
-        </p>
-      ) : items.length === 0 ? (
-        <div className="bg-bg-panel-2 p-sp-3">
-          <RetroEmptyState
-            eyebrow={<Trans>Files</Trans>}
-            glyph="◇"
-            heading={<Trans>NO FILES</Trans>}
-            body={
-              <Trans>No manuals, receipts, or warranties attached yet.</Trans>
-            }
-            action={{
-              label: <Trans>⊕ ADD FILE</Trans>,
-              onClick: () => setAddOpen(true),
-            }}
-          />
-        </div>
-      ) : (
-        <ul className="bg-bg-panel-2">
-          {items.map((att) => (
-            <li
-              key={att.id}
-              className="flex items-center gap-sp-2 border-b border-table-rule px-sp-3 py-sp-2"
-            >
-              <RetroBadge variant={BADGE_VARIANT[att.attachment_type]}>
-                {att.attachment_type}
-              </RetroBadge>
-              {att.is_primary && (
-                <RetroBadge variant="ok">
-                  <Trans>PRIMARY</Trans>
-                </RetroBadge>
-              )}
-              <a
-                href={itemAttachmentsApi.downloadUrl(wsId, att.id)}
-                target="_blank"
-                rel="noreferrer"
-                className="flex-1 truncate text-14 font-semibold text-fg-ink underline-offset-2 hover:underline"
-              >
-                {att.title || att.file_name || t`Untitled`}
-              </a>
-              {att.file_mime_type && (
-                <span className="font-mono text-12 text-fg-muted">
-                  {att.file_mime_type}
-                </span>
-              )}
-              {!att.is_primary && (
-                <BevelButton
-                  variant="mint"
-                  className="!px-[8px] !py-[2px] !text-11"
-                  disabled={setPrimary.isPending}
-                  onClick={() => handleSetPrimary(att)}
-                >
-                  <Trans>SET PRIMARY</Trans>
-                </BevelButton>
-              )}
-              <BevelButton
-                variant="danger"
-                className="!px-[8px] !py-[2px] !text-11"
-                onClick={() => setDeleteTarget(att)}
-              >
-                <Trans>DELETE</Trans>
-              </BevelButton>
-            </li>
-          ))}
-        </ul>
-      )}
+      {content}
 
       {/* ⊕ ADD FILE — shown below a non-empty list (the empty state has its own). */}
       {items.length > 0 && (

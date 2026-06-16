@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -66,7 +66,7 @@ export function RepairsDrawer({
   itemId,
   onClose,
   onOpenRecord,
-}: RepairsDrawerProps) {
+}: Readonly<RepairsDrawerProps>) {
   const { t } = useLingui();
   const { currentWorkspaceId: wsId } = useWorkspace();
   const queryClient = useQueryClient();
@@ -131,6 +131,144 @@ export function RepairsDrawer({
     });
   }
 
+  let recordsContent: ReactNode;
+  if (isLoading) {
+    recordsContent = (
+      <p className="bg-bg-panel-2 p-sp-4 font-mono text-12 text-fg-muted">
+        <Trans>Loading…</Trans>
+      </p>
+    );
+  } else if (isError) {
+    recordsContent = (
+      <p className="bg-bg-panel-2 p-sp-4 text-14 text-danger">
+        <Trans>Couldn't load repairs. Try again.</Trans>
+      </p>
+    );
+  } else if (items.length === 0) {
+    recordsContent = (
+      <div className="bg-bg-panel-2 p-sp-3">
+        <RetroEmptyState
+          eyebrow={<Trans>Repairs</Trans>}
+          glyph="🔧"
+          heading={<Trans>NO REPAIRS</Trans>}
+          body={
+            <Trans>
+              No repairs logged for this entry yet. Add one to track work,
+              cost, and warranty.
+            </Trans>
+          }
+          action={{
+            label: <Trans>⊕ ADD REPAIR</Trans>,
+            onClick: openCreate,
+          }}
+        />
+      </div>
+    );
+  } else {
+    recordsContent = (
+      <ul className="bg-bg-panel-2">
+        {items.map((repair) => {
+          const status = repairStatus(repair);
+          const isPending = repair.status === "PENDING";
+          const isInProgress = repair.status === "IN_PROGRESS";
+          const isCompleted = repair.status === "COMPLETED";
+          return (
+            <li
+              key={repair.id}
+              className="flex flex-col gap-sp-1 border-b border-table-rule px-sp-3 py-sp-2"
+            >
+              <div className="flex items-baseline justify-between gap-sp-2">
+                <span className="text-14 font-semibold text-fg-ink">
+                  {repair.description}
+                </span>
+                <StatusPill variant={status.variant}>
+                  {status.label}
+                </StatusPill>
+              </div>
+
+              <div className="flex flex-wrap items-baseline gap-sp-2 font-mono text-12 text-fg-muted">
+                <span>{formatDate(repair.repair_date)}</span>
+                <span>·</span>
+                <span>
+                  {typeof repair.cost === "number"
+                    ? formatCents(repair.cost, repair.currency_code)
+                    : "—"}
+                </span>
+                {repair.service_provider && (
+                  <>
+                    <span>·</span>
+                    <span>{repair.service_provider}</span>
+                  </>
+                )}
+                {repair.is_warranty_claim && (
+                  <RetroBadge variant="warn">
+                    <Trans>⚖ WARRANTY</Trans>
+                  </RetroBadge>
+                )}
+                {isCompleted && repair.completed_at && (
+                  <span>
+                    <Trans>completed</Trans>{" "}
+                    {formatDate(repair.completed_at)}
+                  </span>
+                )}
+              </div>
+
+              {/* Actions — status-gated; COMPLETED = DELETE only. */}
+              <div className="flex flex-wrap justify-end gap-sp-1">
+                {isPending && (
+                  <BevelButton
+                    className="!px-[8px] !py-[2px] !text-11"
+                    onClick={() => handleStart(repair)}
+                  >
+                    <Trans>START</Trans>
+                  </BevelButton>
+                )}
+                {isInProgress && (
+                  <BevelButton
+                    className="!px-[8px] !py-[2px] !text-11"
+                    onClick={() => setCompleteRepair(repair)}
+                  >
+                    <Trans>COMPLETE</Trans>
+                  </BevelButton>
+                )}
+                {!isCompleted && (
+                  <BevelButton
+                    className="!px-[8px] !py-[2px] !text-11"
+                    onClick={() => openEdit(repair)}
+                  >
+                    <Trans>EDIT</Trans>
+                  </BevelButton>
+                )}
+                <BevelButton
+                  className="!px-[8px] !py-[2px] !text-11"
+                  onClick={() => setDeleteTarget(repair)}
+                >
+                  <Trans>DELETE</Trans>
+                </BevelButton>
+                {/* PHOTOS/FILES — open the record sub-view on the matching
+                    tab. Counts are not carried on the repair list response,
+                    so the labels show no (n) and the list never blocks on a
+                    per-record fetch. */}
+                <BevelButton
+                  className="!px-[8px] !py-[2px] !text-11"
+                  onClick={() => openRecord(repair, "photos")}
+                >
+                  <Trans>PHOTOS</Trans>
+                </BevelButton>
+                <BevelButton
+                  className="!px-[8px] !py-[2px] !text-11"
+                  onClick={() => openRecord(repair, "files")}
+                >
+                  <Trans>FILES</Trans>
+                </BevelButton>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
   return (
     <>
       <RetroDialog
@@ -173,134 +311,7 @@ export function RepairsDrawer({
         </div>
 
         {/* (3) record list / loading / error / empty. */}
-        {isLoading ? (
-          <p className="bg-bg-panel-2 p-sp-4 font-mono text-12 text-fg-muted">
-            <Trans>Loading…</Trans>
-          </p>
-        ) : isError ? (
-          <p className="bg-bg-panel-2 p-sp-4 text-14 text-danger">
-            <Trans>Couldn't load repairs. Try again.</Trans>
-          </p>
-        ) : items.length === 0 ? (
-          <div className="bg-bg-panel-2 p-sp-3">
-            <RetroEmptyState
-              eyebrow={<Trans>Repairs</Trans>}
-              glyph="🔧"
-              heading={<Trans>NO REPAIRS</Trans>}
-              body={
-                <Trans>
-                  No repairs logged for this entry yet. Add one to track work,
-                  cost, and warranty.
-                </Trans>
-              }
-              action={{
-                label: <Trans>⊕ ADD REPAIR</Trans>,
-                onClick: openCreate,
-              }}
-            />
-          </div>
-        ) : (
-          <ul className="bg-bg-panel-2">
-            {items.map((repair) => {
-              const status = repairStatus(repair);
-              const isPending = repair.status === "PENDING";
-              const isInProgress = repair.status === "IN_PROGRESS";
-              const isCompleted = repair.status === "COMPLETED";
-              return (
-                <li
-                  key={repair.id}
-                  className="flex flex-col gap-sp-1 border-b border-table-rule px-sp-3 py-sp-2"
-                >
-                  <div className="flex items-baseline justify-between gap-sp-2">
-                    <span className="text-14 font-semibold text-fg-ink">
-                      {repair.description}
-                    </span>
-                    <StatusPill variant={status.variant}>
-                      {status.label}
-                    </StatusPill>
-                  </div>
-
-                  <div className="flex flex-wrap items-baseline gap-sp-2 font-mono text-12 text-fg-muted">
-                    <span>{formatDate(repair.repair_date)}</span>
-                    <span>·</span>
-                    <span>
-                      {typeof repair.cost === "number"
-                        ? formatCents(repair.cost, repair.currency_code)
-                        : "—"}
-                    </span>
-                    {repair.service_provider && (
-                      <>
-                        <span>·</span>
-                        <span>{repair.service_provider}</span>
-                      </>
-                    )}
-                    {repair.is_warranty_claim && (
-                      <RetroBadge variant="warn">
-                        <Trans>⚖ WARRANTY</Trans>
-                      </RetroBadge>
-                    )}
-                    {isCompleted && repair.completed_at && (
-                      <span>
-                        <Trans>completed</Trans>{" "}
-                        {formatDate(repair.completed_at)}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Actions — status-gated; COMPLETED = DELETE only. */}
-                  <div className="flex flex-wrap justify-end gap-sp-1">
-                    {isPending && (
-                      <BevelButton
-                        className="!px-[8px] !py-[2px] !text-11"
-                        onClick={() => handleStart(repair)}
-                      >
-                        <Trans>START</Trans>
-                      </BevelButton>
-                    )}
-                    {isInProgress && (
-                      <BevelButton
-                        className="!px-[8px] !py-[2px] !text-11"
-                        onClick={() => setCompleteRepair(repair)}
-                      >
-                        <Trans>COMPLETE</Trans>
-                      </BevelButton>
-                    )}
-                    {!isCompleted && (
-                      <BevelButton
-                        className="!px-[8px] !py-[2px] !text-11"
-                        onClick={() => openEdit(repair)}
-                      >
-                        <Trans>EDIT</Trans>
-                      </BevelButton>
-                    )}
-                    <BevelButton
-                      className="!px-[8px] !py-[2px] !text-11"
-                      onClick={() => setDeleteTarget(repair)}
-                    >
-                      <Trans>DELETE</Trans>
-                    </BevelButton>
-                    {/* PHOTOS/FILES — open the record sub-view on the matching
-                        tab. Counts are not carried on the repair list response,
-                        so the labels show no (n) and the list never blocks on a
-                        per-record fetch. */}
-                    <BevelButton
-                      className="!px-[8px] !py-[2px] !text-11"
-                      onClick={() => openRecord(repair, "photos")}
-                    >
-                      <Trans>PHOTOS</Trans>
-                    </BevelButton>
-                    <BevelButton
-                      className="!px-[8px] !py-[2px] !text-11"
-                      onClick={() => openRecord(repair, "files")}
-                    >
-                      <Trans>FILES</Trans>
-                    </BevelButton>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        {recordsContent}
       </RetroDialog>
 
       {/* Nested create/edit form (keyed so a fresh form mounts per target). */}

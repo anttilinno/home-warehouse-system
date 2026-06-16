@@ -18,7 +18,7 @@ export const borrowerFormSchema = z.object({
     .string()
     .optional()
     .default("")
-    .refine((v) => !v || z.string().email().safeParse(v).success, {
+    .refine((v) => !v || z.email().safeParse(v).success, {
       message: "Enter a valid email address.",
     }),
   phone: z.string().optional().default(""),

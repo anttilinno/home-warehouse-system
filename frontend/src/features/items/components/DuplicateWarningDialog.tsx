@@ -33,7 +33,7 @@ export function DuplicateWarningDialog({
   uploading = false,
   onProceed,
   onCancel,
-}: DuplicateWarningDialogProps) {
+}: Readonly<DuplicateWarningDialogProps>) {
   const shown = duplicates.slice(0, MAX_THUMBS);
   const overflow = duplicates.length - shown.length;
 

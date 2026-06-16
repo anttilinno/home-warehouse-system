@@ -74,8 +74,7 @@ func (m *MockService) DeletePhoto(ctx context.Context, id, workspaceID uuid.UUID
 }
 
 func (m *MockService) BulkDeletePhotos(ctx context.Context, itemID, workspaceID uuid.UUID, photoIDs []uuid.UUID) error {
-	args := m.Called(ctx, itemID, workspaceID, photoIDs)
-	return args.Error(0)
+	return m.Called(ctx, itemID, workspaceID, photoIDs).Error(0)
 }
 
 func (m *MockService) BulkUpdateCaptions(ctx context.Context, workspaceID uuid.UUID, updates []itemphoto.CaptionUpdate) error {
@@ -83,12 +82,16 @@ func (m *MockService) BulkUpdateCaptions(ctx context.Context, workspaceID uuid.U
 	return args.Error(0)
 }
 
-func (m *MockService) GetPhotosForDownload(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*itemphoto.ItemPhoto, error) {
-	args := m.Called(ctx, itemID, workspaceID)
+func mockSliceErrGuarded[T any](args mock.Arguments) ([]T, error) {
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*itemphoto.ItemPhoto), args.Error(1)
+	return args.Get(0).([]T), args.Error(1)
+}
+
+func (m *MockService) GetPhotosForDownload(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*itemphoto.ItemPhoto, error) {
+	args := m.Called(ctx, itemID, workspaceID)
+	return mockSliceErrGuarded[*itemphoto.ItemPhoto](args)
 }
 
 func (m *MockService) GetPhotosByIDs(ctx context.Context, photoIDs []uuid.UUID, workspaceID uuid.UUID) ([]*itemphoto.ItemPhoto, error) {

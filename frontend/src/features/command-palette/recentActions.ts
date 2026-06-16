@@ -55,7 +55,7 @@ function isRecentEntry(value: unknown): value is RecentEntry {
  * filtered out (tolerant of stale/tampered data — T-16-04).
  */
 export function getRecent(): RecentEntry[] {
-  if (typeof window === "undefined") {
+  if (typeof globalThis.window === "undefined") {
     return [];
   }
 
@@ -83,7 +83,7 @@ export function getRecent(): RecentEntry[] {
  * swallowed (the MRU is best-effort).
  */
 export function addRecent(entry: RecentEntry): void {
-  if (typeof window === "undefined") {
+  if (typeof globalThis.window === "undefined") {
     return;
   }
 

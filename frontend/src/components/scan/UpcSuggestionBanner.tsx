@@ -28,7 +28,7 @@ export function UpcSuggestionBanner({
   code,
   onUse,
   onDismiss,
-}: UpcSuggestionBannerProps) {
+}: Readonly<UpcSuggestionBannerProps>) {
   const { currentWorkspaceId: wsId } = useWorkspace();
   const isUpc = UPC_RE.test(code);
 

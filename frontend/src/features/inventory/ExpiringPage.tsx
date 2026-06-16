@@ -43,7 +43,7 @@ function daysDeltaFrom(dateStr: string, today: Date): number {
   return Math.round((target - now) / 86_400_000);
 }
 
-function WhenChip({ delta }: { delta: number }) {
+function WhenChip({ delta }: Readonly<{ delta: number }>) {
   if (delta >= 0) {
     // Near future (and today) — butter warning chip.
     return (
@@ -76,7 +76,11 @@ export function ExpiringPage() {
     const items: (ExpiringEntry & { delta: number })[] = (
       data?.items ?? []
     ).map((e) => ({ ...e, delta: daysDeltaFrom(e.date, today) }));
-    items.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+    items.sort((a, b) => {
+      if (a.date < b.date) return -1;
+      if (a.date > b.date) return 1;
+      return 0;
+    });
     return items;
   }, [data]);
 

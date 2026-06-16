@@ -34,11 +34,11 @@ function TitlebarLabel({
   tint,
   glyph,
   label,
-}: {
+}: Readonly<{
   tint: string;
   glyph: string;
   label: string;
-}) {
+}>) {
   return (
     <span
       className={`flex w-full items-center gap-sp-1 border-b-2 border-border-ink ${tint} pinstripes px-sp-2 py-[2px] font-display text-16 uppercase leading-none text-fg-ink`}

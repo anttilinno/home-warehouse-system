@@ -112,7 +112,7 @@ export function WishlistFormDialog({
   mode,
   item,
   onClose,
-}: WishlistFormDialogProps) {
+}: Readonly<WishlistFormDialogProps>) {
   const { t } = useLingui();
   const isEdit = mode === "edit";
   const { create, update } = useWishlistMutations();
@@ -273,15 +273,19 @@ export function WishlistFormDialog({
               error={errors.status?.message}
               {...register("status")}
             >
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s === "wanted"
-                    ? t`Wanted`
-                    : s === "ordered"
-                      ? t`Ordered`
-                      : t`Acquired`}
-                </option>
-              ))}
+              {STATUSES.map((s) => {
+                let label = t`Acquired`;
+                if (s === "wanted") {
+                  label = t`Wanted`;
+                } else if (s === "ordered") {
+                  label = t`Ordered`;
+                }
+                return (
+                  <option key={s} value={s}>
+                    {label}
+                  </option>
+                );
+              })}
             </RetroSelect>
           )}
         </div>

@@ -24,14 +24,14 @@ let audioInitialized = false;
  * iOS rejecting it (resume happens in `primeAudio`/`getAudioContext`).
  */
 function initAudioContext(): void {
-  if (audioInitialized || typeof window === "undefined") {
+  if (audioInitialized || typeof globalThis.window === "undefined") {
     return;
   }
 
   try {
     const AudioContextClass =
-      window.AudioContext ||
-      (window as unknown as { webkitAudioContext?: typeof AudioContext })
+      globalThis.AudioContext ||
+      (globalThis as unknown as { webkitAudioContext?: typeof AudioContext })
         .webkitAudioContext;
 
     if (AudioContextClass) {

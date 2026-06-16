@@ -60,7 +60,7 @@ function backoffDelay(attempt: number): number {
   );
 }
 
-export function SSEProvider({ children }: { children: ReactNode }) {
+export function SSEProvider({ children }: Readonly<{ children: ReactNode }>) {
   const { currentWorkspaceId } = useWorkspace();
 
   const [connected, setConnected] = useState(false);
@@ -172,7 +172,7 @@ export function SSEProvider({ children }: { children: ReactNode }) {
       setConnected(false);
       es?.close();
     };
-    window.addEventListener("auth-expired", onAuthExpired);
+    globalThis.addEventListener("auth-expired", onAuthExpired);
 
     // Nice-to-have: nudge a reconnect when the tab/network comes back, but only
     // if the stream is currently down and we haven't been stopped.
@@ -184,7 +184,7 @@ export function SSEProvider({ children }: { children: ReactNode }) {
         open();
       }
     };
-    window.addEventListener("online", onWake);
+    globalThis.addEventListener("online", onWake);
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") onWake();
     });
@@ -194,8 +194,8 @@ export function SSEProvider({ children }: { children: ReactNode }) {
     return () => {
       stopped = true;
       clearReconnect();
-      window.removeEventListener("auth-expired", onAuthExpired);
-      window.removeEventListener("online", onWake);
+      globalThis.removeEventListener("auth-expired", onAuthExpired);
+      globalThis.removeEventListener("online", onWake);
       es?.close(); // StrictMode + wsId-switch: MUST close to avoid leaks (Pitfall 4)
       setConnected(false);
     };

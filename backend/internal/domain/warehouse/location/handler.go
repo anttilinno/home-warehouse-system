@@ -13,13 +13,18 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	routeLocationByID           = "/locations/{id}"
+)
+
 // RegisterRoutes registers location routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List locations
 	huma.Get(api, "/locations", func(ctx context.Context, input *ListLocationsInput) (*ListLocationsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
@@ -44,10 +49,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Get location by ID
-	huma.Get(api, "/locations/{id}", func(ctx context.Context, input *GetLocationInput) (*GetLocationOutput, error) {
+	huma.Get(api, routeLocationByID, func(ctx context.Context, input *GetLocationInput) (*GetLocationOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		location, err := svc.GetByID(ctx, input.ID, workspaceID)
@@ -64,7 +69,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/locations", func(ctx context.Context, input *CreateLocationInput) (*CreateLocationOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -110,10 +115,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Update location
-	huma.Patch(api, "/locations/{id}", func(ctx context.Context, input *UpdateLocationInput) (*UpdateLocationOutput, error) {
+	huma.Patch(api, routeLocationByID, func(ctx context.Context, input *UpdateLocationInput) (*UpdateLocationOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -163,7 +168,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/locations/{id}/archive", func(ctx context.Context, input *GetLocationInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -194,7 +199,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/locations/{id}/restore", func(ctx context.Context, input *GetLocationInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -222,10 +227,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Delete location
-	huma.Delete(api, "/locations/{id}", func(ctx context.Context, input *GetLocationInput) (*struct{}, error) {
+	huma.Delete(api, routeLocationByID, func(ctx context.Context, input *GetLocationInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -256,7 +261,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/locations/{id}/breadcrumb", func(ctx context.Context, input *GetLocationInput) (*GetBreadcrumbOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		breadcrumb, err := svc.GetBreadcrumb(ctx, input.ID, workspaceID)
@@ -284,7 +289,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/locations/search", func(ctx context.Context, input *SearchLocationsInput) (*SearchLocationsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		locations, err := svc.Search(ctx, workspaceID, input.Query, input.Limit)

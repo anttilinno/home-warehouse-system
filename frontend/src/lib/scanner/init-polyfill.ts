@@ -26,7 +26,7 @@ let polyfillLoaded = false;
  * the polyfill side-effect entry. Never throws on the happy path.
  */
 export async function initBarcodePolyfill(): Promise<void> {
-  if (polyfillLoaded || typeof window === "undefined") {
+  if (polyfillLoaded || typeof globalThis.window === "undefined") {
     return;
   }
 

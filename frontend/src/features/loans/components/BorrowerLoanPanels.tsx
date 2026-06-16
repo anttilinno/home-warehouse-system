@@ -34,7 +34,7 @@ export interface BorrowerLoanPanelsProps {
 export function BorrowerLoanPanels({
   wsId,
   borrowerId,
-}: BorrowerLoanPanelsProps) {
+}: Readonly<BorrowerLoanPanelsProps>) {
   const { data } = useBorrowerLoans(wsId, borrowerId);
   const active = useMemo(() => data?.active ?? [], [data]);
   const history = useMemo(() => data?.history ?? [], [data]);
@@ -51,7 +51,7 @@ interface ActiveLoansPanelProps {
   active: Loan[];
 }
 
-function ActiveLoansPanel({ active }: ActiveLoansPanelProps) {
+function ActiveLoansPanel({ active }: Readonly<ActiveLoansPanelProps>) {
   if (active.length === 0) {
     return (
       <Window title={<Trans>ACTIVE LOANS</Trans>} titlebarVariant="mint">
@@ -78,7 +78,7 @@ interface ActiveLoanRowProps {
   loan: Loan;
 }
 
-function ActiveLoanRow({ loan }: ActiveLoanRowProps) {
+function ActiveLoanRow({ loan }: Readonly<ActiveLoanRowProps>) {
   const [openDialog, setOpenDialog] = useState<"return" | "extend" | null>(
     null,
   );
@@ -121,7 +121,7 @@ function ActiveLoanRow({ loan }: ActiveLoanRowProps) {
  * the day magnitude is display-only formatting derived from due_date. Danger
  * `⚠ −{n}d` when overdue, neutral `due in {n}d` otherwise.
  */
-function DueChip({ loan }: { loan: Loan }) {
+function DueChip({ loan }: Readonly<{ loan: Loan }>) {
   if (!loan.due_date) return null;
   const days = daysFromNow(loan.due_date);
   if (loan.is_overdue) {
@@ -142,7 +142,7 @@ interface BorrowerLoanHistoryProps {
   history: Loan[];
 }
 
-function BorrowerLoanHistory({ history }: BorrowerLoanHistoryProps) {
+function BorrowerLoanHistory({ history }: Readonly<BorrowerLoanHistoryProps>) {
   // I18N-03: history dates honor the user's date_format preference.
   const formatDate = useDateFormat();
   if (history.length === 0) {

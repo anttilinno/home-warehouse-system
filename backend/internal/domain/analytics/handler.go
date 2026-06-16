@@ -10,6 +10,8 @@ import (
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 )
 
+const msgWorkspaceContextRequired = "workspace context required"
+
 // Handler handles analytics-related HTTP requests
 type Handler struct {
 	svc ServiceInterface
@@ -226,7 +228,7 @@ func (h *Handler) RegisterRoutes(api huma.API) {
 func (h *Handler) GetDashboardStats(ctx context.Context, input *DashboardStatsRequest) (*DashboardStatsResponse, error) {
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("workspace context required")
+		return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 	}
 	stats, err := h.svc.GetDashboardStats(ctx, workspaceID)
 	if err != nil {
@@ -239,7 +241,7 @@ func (h *Handler) GetDashboardStats(ctx context.Context, input *DashboardStatsRe
 func (h *Handler) GetCategoryStats(ctx context.Context, input *CategoryStatsRequest) (*CategoryStatsResponse, error) {
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("workspace context required")
+		return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 	}
 	stats, err := h.svc.GetCategoryStats(ctx, workspaceID, int32(input.Limit))
 	if err != nil {
@@ -252,7 +254,7 @@ func (h *Handler) GetCategoryStats(ctx context.Context, input *CategoryStatsRequ
 func (h *Handler) GetLoanStats(ctx context.Context, input *LoanStatsRequest) (*LoanStatsResponse, error) {
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("workspace context required")
+		return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 	}
 	stats, err := h.svc.GetLoanStats(ctx, workspaceID)
 	if err != nil {
@@ -265,7 +267,7 @@ func (h *Handler) GetLoanStats(ctx context.Context, input *LoanStatsRequest) (*L
 func (h *Handler) GetLocationValues(ctx context.Context, input *LocationValuesRequest) (*LocationValuesResponse, error) {
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("workspace context required")
+		return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 	}
 	values, err := h.svc.GetInventoryValueByLocation(ctx, workspaceID, int32(input.Limit))
 	if err != nil {
@@ -278,7 +280,7 @@ func (h *Handler) GetLocationValues(ctx context.Context, input *LocationValuesRe
 func (h *Handler) GetRecentActivity(ctx context.Context, input *RecentActivityRequest) (*RecentActivityResponse, error) {
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("workspace context required")
+		return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 	}
 	activity, err := h.svc.GetRecentActivity(ctx, workspaceID, int32(input.Limit))
 	if err != nil {
@@ -291,7 +293,7 @@ func (h *Handler) GetRecentActivity(ctx context.Context, input *RecentActivityRe
 func (h *Handler) GetConditionBreakdown(ctx context.Context, input *ConditionBreakdownRequest) (*ConditionBreakdownResponse, error) {
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("workspace context required")
+		return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 	}
 	breakdown, err := h.svc.GetConditionBreakdown(ctx, workspaceID)
 	if err != nil {
@@ -304,7 +306,7 @@ func (h *Handler) GetConditionBreakdown(ctx context.Context, input *ConditionBre
 func (h *Handler) GetStatusBreakdown(ctx context.Context, input *StatusBreakdownRequest) (*StatusBreakdownResponse, error) {
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("workspace context required")
+		return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 	}
 	breakdown, err := h.svc.GetStatusBreakdown(ctx, workspaceID)
 	if err != nil {
@@ -317,7 +319,7 @@ func (h *Handler) GetStatusBreakdown(ctx context.Context, input *StatusBreakdown
 func (h *Handler) GetTopBorrowers(ctx context.Context, input *TopBorrowersRequest) (*TopBorrowersResponse, error) {
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("workspace context required")
+		return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 	}
 	borrowers, err := h.svc.GetTopBorrowers(ctx, workspaceID, int32(input.Limit))
 	if err != nil {
@@ -330,7 +332,7 @@ func (h *Handler) GetTopBorrowers(ctx context.Context, input *TopBorrowersReques
 func (h *Handler) GetAnalyticsSummary(ctx context.Context, input *AnalyticsSummaryRequest) (*AnalyticsSummaryResponse, error) {
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("workspace context required")
+		return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 	}
 	summary, err := h.svc.GetAnalyticsSummary(ctx, workspaceID)
 	if err != nil {
@@ -343,7 +345,7 @@ func (h *Handler) GetAnalyticsSummary(ctx context.Context, input *AnalyticsSumma
 func (h *Handler) GetMonthlyLoanActivity(ctx context.Context, input *MonthlyLoanActivityRequest) (*MonthlyLoanActivityResponse, error) {
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("workspace context required")
+		return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 	}
 	since := time.Now().AddDate(0, -input.Months, 0)
 	activity, err := h.svc.GetMonthlyLoanActivity(ctx, workspaceID, since)
@@ -357,7 +359,7 @@ func (h *Handler) GetMonthlyLoanActivity(ctx context.Context, input *MonthlyLoan
 func (h *Handler) GetOutOfStockItems(ctx context.Context, input *OutOfStockItemsRequest) (*OutOfStockItemsResponse, error) {
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("workspace context required")
+		return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 	}
 	items, err := h.svc.GetOutOfStockItems(ctx, workspaceID)
 	if err != nil {

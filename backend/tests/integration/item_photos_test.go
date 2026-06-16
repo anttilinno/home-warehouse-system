@@ -19,8 +19,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// testEnv is a placeholder for the integration test environment
-// TODO: Implement proper test environment setup
+// testEnv is a placeholder for the integration test environment.
+// NOTE: full test environment setup is deferred (this struct is a stub).
 type testEnv struct {
 	router http.Handler
 }

@@ -13,6 +13,12 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	routeWishlistByID           = "/wishlist/{id}"
+	msgWishlistItemNotFound     = "wishlist item not found"
+)
+
 // RegisterRoutes registers wishlist routes on the workspace tree.
 //
 // The acquire flow has no dedicated endpoint: "mark acquired" is
@@ -25,7 +31,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/wishlist", func(ctx context.Context, input *ListWishlistInput) (*ListWishlistOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		var status *Status
@@ -51,16 +57,16 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Get wishlist item by ID
-	huma.Get(api, "/wishlist/{id}", func(ctx context.Context, input *GetWishlistItemInput) (*GetWishlistItemOutput, error) {
+	huma.Get(api, routeWishlistByID, func(ctx context.Context, input *GetWishlistItemInput) (*GetWishlistItemOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		item, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) || errors.Is(err, shared.ErrNotFound) {
-				return nil, huma.Error404NotFound("wishlist item not found")
+				return nil, huma.Error404NotFound(msgWishlistItemNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to get wishlist item")
 		}
@@ -72,7 +78,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/wishlist", func(ctx context.Context, input *CreateWishlistItemInput) (*CreateWishlistItemOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		var createdBy *uuid.UUID
@@ -113,10 +119,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 	// Update wishlist item (details and/or lifecycle transition; setting
 	// status=acquired with acquired_item_id is the "mark acquired" path)
-	huma.Patch(api, "/wishlist/{id}", func(ctx context.Context, input *UpdateWishlistItemInput) (*UpdateWishlistItemOutput, error) {
+	huma.Patch(api, routeWishlistByID, func(ctx context.Context, input *UpdateWishlistItemInput) (*UpdateWishlistItemOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		var status *Status
@@ -138,7 +144,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		})
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) || errors.Is(err, shared.ErrNotFound) {
-				return nil, huma.Error404NotFound("wishlist item not found")
+				return nil, huma.Error404NotFound(msgWishlistItemNotFound)
 			}
 			if errors.Is(err, ErrInvalidStatusTransition) {
 				return nil, huma.Error409Conflict(err.Error())
@@ -155,16 +161,16 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Delete wishlist item
-	huma.Delete(api, "/wishlist/{id}", func(ctx context.Context, input *GetWishlistItemInput) (*struct{}, error) {
+	huma.Delete(api, routeWishlistByID, func(ctx context.Context, input *GetWishlistItemInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		itemID := input.ID
 		if err := svc.Delete(ctx, input.ID, workspaceID); err != nil {
 			if errors.Is(err, ErrItemNotFound) || errors.Is(err, shared.ErrNotFound) {
-				return nil, huma.Error404NotFound("wishlist item not found")
+				return nil, huma.Error404NotFound(msgWishlistItemNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to delete wishlist item")
 		}
@@ -251,7 +257,7 @@ type ListWishlistOutput struct {
 
 type WishlistListResponse struct {
 	Items []WishlistItemResponse `json:"items"`
-	Total int            `json:"total"`
+	Total int                    `json:"total"`
 }
 
 type GetWishlistItemInput struct {

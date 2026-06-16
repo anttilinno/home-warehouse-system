@@ -20,6 +20,8 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/imageprocessor"
 )
 
+const msgFailedConnectDatabase = "Failed to connect to database: %v"
+
 func main() {
 	if len(os.Args) < 2 {
 		printUsage()
@@ -123,7 +125,7 @@ func runRegenerate(workspaceID, photoID string, dryRun bool) {
 
 	pool, err := getDBPool()
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf(msgFailedConnectDatabase, err)
 	}
 	defer pool.Close()
 
@@ -218,7 +220,7 @@ func runCleanup(dryRun bool) {
 
 	pool, err := getDBPool()
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf(msgFailedConnectDatabase, err)
 	}
 	defer pool.Close()
 
@@ -312,7 +314,7 @@ func runReport() {
 
 	pool, err := getDBPool()
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf(msgFailedConnectDatabase, err)
 	}
 	defer pool.Close()
 

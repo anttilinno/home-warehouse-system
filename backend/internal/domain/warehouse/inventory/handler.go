@@ -13,6 +13,12 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+const (
+	eventInventoryUpdated    = "inventory.updated"
+	msgFailedToListInventory = "failed to list inventory"
+	msgInventoryNotFound     = "inventory not found"
+)
+
 // RegisterRoutes registers inventory routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	registerQueryRoutes(api, svc)
@@ -35,7 +41,7 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 			if containerID, perr := uuid.Parse(input.ContainerID); perr == nil {
 				items, err := svc.ListByContainer(ctx, workspaceID, containerID)
 				if err != nil {
-					return nil, huma.Error500InternalServerError("failed to list inventory")
+					return nil, huma.Error500InternalServerError(msgFailedToListInventory)
 				}
 
 				responses := toInventoryResponses(items)
@@ -53,7 +59,7 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
 		inventories, total, err := svc.List(ctx, workspaceID, pagination)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to list inventory")
+			return nil, huma.Error500InternalServerError(msgFailedToListInventory)
 		}
 
 		responses := make([]InventoryResponse, len(inventories))
@@ -80,7 +86,7 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 		inv, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrInventoryNotFound) {
-				return nil, huma.Error404NotFound("inventory not found")
+				return nil, huma.Error404NotFound(msgInventoryNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to get inventory")
 		}
@@ -96,7 +102,7 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 
 		items, err := svc.ListByItem(ctx, workspaceID, input.ItemID)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to list inventory")
+			return nil, huma.Error500InternalServerError(msgFailedToListInventory)
 		}
 
 		return &ListInventoryOutput{Body: InventoryListResponse{Items: toInventoryResponses(items)}}, nil
@@ -110,7 +116,7 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 
 		items, err := svc.ListByLocation(ctx, workspaceID, input.LocationID)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to list inventory")
+			return nil, huma.Error500InternalServerError(msgFailedToListInventory)
 		}
 
 		return &ListInventoryOutput{Body: InventoryListResponse{Items: toInventoryResponses(items)}}, nil
@@ -124,7 +130,7 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 
 		items, err := svc.ListByContainer(ctx, workspaceID, input.ContainerID)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to list inventory")
+			return nil, huma.Error500InternalServerError(msgFailedToListInventory)
 		}
 
 		return &ListInventoryOutput{Body: InventoryListResponse{Items: toInventoryResponses(items)}}, nil
@@ -212,7 +218,7 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 		})
 		if err != nil {
 			if errors.Is(err, ErrInventoryNotFound) {
-				return nil, huma.Error404NotFound("inventory not found")
+				return nil, huma.Error404NotFound(msgInventoryNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -258,7 +264,7 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 		})
 		if err != nil {
 			if errors.Is(err, ErrInventoryNotFound) {
-				return nil, huma.Error404NotFound("inventory not found")
+				return nil, huma.Error404NotFound(msgInventoryNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -268,7 +274,7 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 		if broadcaster != nil && authUser != nil {
 			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "inventory.updated",
+				Type:       eventInventoryUpdated,
 				EntityID:   inv.ID().String(),
 				EntityType: "inventory",
 				UserID:     authUser.ID,
@@ -292,7 +298,7 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 		inv, err := svc.UpdateStatus(ctx, input.ID, workspaceID, input.Body.Status)
 		if err != nil {
 			if errors.Is(err, ErrInventoryNotFound) {
-				return nil, huma.Error404NotFound("inventory not found")
+				return nil, huma.Error404NotFound(msgInventoryNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -302,7 +308,7 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 		if broadcaster != nil && authUser != nil {
 			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "inventory.updated",
+				Type:       eventInventoryUpdated,
 				EntityID:   inv.ID().String(),
 				EntityType: "inventory",
 				UserID:     authUser.ID,
@@ -326,7 +332,7 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 		inv, err := svc.UpdateQuantity(ctx, input.ID, workspaceID, input.Body.Quantity)
 		if err != nil {
 			if errors.Is(err, ErrInventoryNotFound) {
-				return nil, huma.Error404NotFound("inventory not found")
+				return nil, huma.Error404NotFound(msgInventoryNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -336,7 +342,7 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 		if broadcaster != nil && authUser != nil {
 			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "inventory.updated",
+				Type:       eventInventoryUpdated,
 				EntityID:   inv.ID().String(),
 				EntityType: "inventory",
 				UserID:     authUser.ID,
@@ -363,7 +369,7 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 		inv, err := svc.Move(ctx, input.ID, workspaceID, input.Body.LocationID, input.Body.ContainerID)
 		if err != nil {
 			if errors.Is(err, ErrInventoryNotFound) {
-				return nil, huma.Error404NotFound("inventory not found")
+				return nil, huma.Error404NotFound(msgInventoryNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -373,7 +379,7 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 		if broadcaster != nil && authUser != nil {
 			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "inventory.updated",
+				Type:       eventInventoryUpdated,
 				EntityID:   inv.ID().String(),
 				EntityType: "inventory",
 				UserID:     authUser.ID,
@@ -396,7 +402,7 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 
 		if err := svc.Archive(ctx, input.ID, workspaceID); err != nil {
 			if errors.Is(err, ErrInventoryNotFound) {
-				return nil, huma.Error404NotFound("inventory not found")
+				return nil, huma.Error404NotFound(msgInventoryNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -427,7 +433,7 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 
 		if err := svc.Restore(ctx, input.ID, workspaceID); err != nil {
 			if errors.Is(err, ErrInventoryNotFound) {
-				return nil, huma.Error404NotFound("inventory not found")
+				return nil, huma.Error404NotFound(msgInventoryNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}

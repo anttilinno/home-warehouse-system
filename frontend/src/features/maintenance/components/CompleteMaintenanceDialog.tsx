@@ -24,7 +24,7 @@ export function CompleteMaintenanceDialog({
   onClose,
   schedule,
   onCompleted,
-}: CompleteMaintenanceDialogProps) {
+}: Readonly<CompleteMaintenanceDialogProps>) {
   const { t } = useLingui();
   const { completeSchedule } = useMaintenanceMutations();
 

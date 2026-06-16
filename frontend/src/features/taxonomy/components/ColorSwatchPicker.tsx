@@ -48,7 +48,7 @@ export function ColorSwatchPicker({
   value,
   onChange,
   label,
-}: ColorSwatchPickerProps) {
+}: Readonly<ColorSwatchPickerProps>) {
   const { t } = useLingui();
   // Normalize for case-insensitive selection compare (hex may arrive uppercased).
   const current = (value ?? "").toLowerCase();

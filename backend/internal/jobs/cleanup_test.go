@@ -113,10 +113,17 @@ func TestNewCleanupProcessor_WithCustomConfig(t *testing.T) {
 }
 
 func TestNewCleanupProcessor_WithNilPool(t *testing.T) {
+	// Should create processor even with nil pool.
+	assertCleanupProcessorWithDefaultConfig(t)
+}
+
+// assertCleanupProcessorWithDefaultConfig builds a cleanup processor from the
+// default config with a nil pool and asserts it is non-nil. Shared by the
+// nil-pool and default-config constructor tests so their bodies don't duplicate.
+func assertCleanupProcessorWithDefaultConfig(t *testing.T) {
+	t.Helper()
 	config := DefaultCleanupConfig()
 	processor := NewCleanupProcessor(nil, config)
-
-	// Should create processor even with nil pool
 	assert.NotNil(t, processor)
 }
 

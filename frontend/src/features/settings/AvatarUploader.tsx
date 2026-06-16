@@ -68,7 +68,7 @@ export function AvatarUploader() {
   // Cache-bust: the avatar_url is stable, so version it with the query's last
   // update timestamp. Changes on every successful invalidation refetch.
   const cacheBustedSrc =
-    avatarUrl != null ? `${avatarUrl}?v=${me.dataUpdatedAt}` : null;
+    avatarUrl == null ? null : `${avatarUrl}?v=${me.dataUpdatedAt}`;
 
   const busy = upload.isPending || remove.isPending;
 

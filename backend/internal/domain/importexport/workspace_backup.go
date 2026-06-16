@@ -13,6 +13,12 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
 )
 
+const (
+	headerCreatedAt = "Created At"
+	headerUpdatedAt = "Updated At"
+	headerShortCode = "Short Code"
+)
+
 // WorkspaceBackupQueries defines the database operations needed for workspace backup/restore
 type WorkspaceBackupQueries interface {
 	// Export operations
@@ -327,7 +333,7 @@ func (s *WorkspaceBackupService) createCategoriesSheet(f *excelize.File, categor
 	}
 
 	// Headers
-	headers := []string{"ID", "Name", "Parent Category ID", "Description", "Archived", "Created At", "Updated At"}
+	headers := []string{"ID", "Name", "Parent Category ID", "Description", "Archived", headerCreatedAt, headerUpdatedAt}
 	for i, header := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue(sheetName, cell, header)
@@ -368,7 +374,7 @@ func (s *WorkspaceBackupService) createLabelsSheet(f *excelize.File, labels []qu
 		return err
 	}
 
-	headers := []string{"ID", "Name", "Color", "Description", "Archived", "Created At", "Updated At"}
+	headers := []string{"ID", "Name", "Color", "Description", "Archived", headerCreatedAt, headerUpdatedAt}
 	for i, header := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue(sheetName, cell, header)
@@ -405,7 +411,7 @@ func (s *WorkspaceBackupService) createCompaniesSheet(f *excelize.File, companie
 		return err
 	}
 
-	headers := []string{"ID", "Name", "Website", "Notes", "Archived", "Created At", "Updated At"}
+	headers := []string{"ID", "Name", "Website", "Notes", "Archived", headerCreatedAt, headerUpdatedAt}
 	for i, header := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue(sheetName, cell, header)
@@ -442,7 +448,7 @@ func (s *WorkspaceBackupService) createLocationsSheet(f *excelize.File, location
 		return err
 	}
 
-	headers := []string{"ID", "Name", "Parent Location ID", "Description", "Short Code", "Archived", "Created At", "Updated At"}
+	headers := []string{"ID", "Name", "Parent Location ID", "Description", headerShortCode, "Archived", headerCreatedAt, headerUpdatedAt}
 	for i, header := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue(sheetName, cell, header)
@@ -482,7 +488,7 @@ func (s *WorkspaceBackupService) createBorrowersSheet(f *excelize.File, borrower
 		return err
 	}
 
-	headers := []string{"ID", "Name", "Email", "Phone", "Notes", "Archived", "Created At", "Updated At"}
+	headers := []string{"ID", "Name", "Email", "Phone", "Notes", "Archived", headerCreatedAt, headerUpdatedAt}
 	for i, header := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue(sheetName, cell, header)
@@ -520,7 +526,7 @@ func (s *WorkspaceBackupService) createItemsSheet(f *excelize.File, items []quer
 		return err
 	}
 
-	headers := []string{"ID", "SKU", "Name", "Description", "Category ID", "Brand", "Model", "Manufacturer", "Barcode", "Short Code", "Min Stock", "Archived", "Created At", "Updated At"}
+	headers := []string{"ID", "SKU", "Name", "Description", "Category ID", "Brand", "Model", "Manufacturer", "Barcode", headerShortCode, "Min Stock", "Archived", headerCreatedAt, headerUpdatedAt}
 	for i, header := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue(sheetName, cell, header)
@@ -566,7 +572,7 @@ func (s *WorkspaceBackupService) createContainersSheet(f *excelize.File, contain
 		return err
 	}
 
-	headers := []string{"ID", "Name", "Location ID", "Description", "Capacity", "Short Code", "Archived", "Created At", "Updated At"}
+	headers := []string{"ID", "Name", "Location ID", "Description", "Capacity", headerShortCode, "Archived", headerCreatedAt, headerUpdatedAt}
 	for i, header := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue(sheetName, cell, header)
@@ -605,7 +611,7 @@ func (s *WorkspaceBackupService) createInventorySheet(f *excelize.File, inventor
 		return err
 	}
 
-	headers := []string{"ID", "Item ID", "Location ID", "Container ID", "Quantity", "Condition", "Status", "Notes", "Created At", "Updated At"}
+	headers := []string{"ID", "Item ID", "Location ID", "Container ID", "Quantity", "Condition", "Status", "Notes", headerCreatedAt, headerUpdatedAt}
 	for i, header := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue(sheetName, cell, header)
@@ -651,7 +657,7 @@ func (s *WorkspaceBackupService) createLoansSheet(f *excelize.File, loans []quer
 		return err
 	}
 
-	headers := []string{"ID", "Borrower ID", "Inventory ID", "Quantity", "Loaned At", "Due Date", "Returned At", "Notes", "Created At", "Updated At"}
+	headers := []string{"ID", "Borrower ID", "Inventory ID", "Quantity", "Loaned At", "Due Date", "Returned At", "Notes", headerCreatedAt, headerUpdatedAt}
 	for i, header := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue(sheetName, cell, header)
@@ -691,7 +697,7 @@ func (s *WorkspaceBackupService) createAttachmentsSheet(f *excelize.File, attach
 		return err
 	}
 
-	headers := []string{"ID", "Item ID", "File ID", "Type", "Title", "Is Primary", "External Doc ID", "Created At", "Updated At"}
+	headers := []string{"ID", "Item ID", "File ID", "Type", "Title", "Is Primary", "External Doc ID", headerCreatedAt, headerUpdatedAt}
 	for i, header := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue(sheetName, cell, header)

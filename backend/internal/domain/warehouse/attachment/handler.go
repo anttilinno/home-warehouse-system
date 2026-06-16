@@ -27,13 +27,20 @@ import (
 // MaxFileSize is the multipart upload ceiling for item attachments (25 MiB).
 const MaxFileSize = 25 << 20
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	msgAttachmentNotFound       = "attachment not found"
+	msgInvalidAttachmentType    = "invalid attachment type"
+	eventAttachmentCreated      = "attachment.created"
+)
+
 // RegisterRoutes registers attachment routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List attachments for an item
 	huma.Get(api, "/items/{item_id}/attachments", func(ctx context.Context, input *ListAttachmentsInput) (*ListAttachmentsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		attachments, err := svc.ListByItem(ctx, input.ItemID, workspaceID)
@@ -55,12 +62,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/attachments/{id}", func(ctx context.Context, input *GetAttachmentInput) (*GetAttachmentOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		attachment, err := svc.GetAttachment(ctx, input.ID, workspaceID)
 		if err != nil || attachment == nil {
-			return nil, huma.Error404NotFound("attachment not found")
+			return nil, huma.Error404NotFound(msgAttachmentNotFound)
 		}
 
 		return &GetAttachmentOutput{
@@ -73,7 +80,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/items/{item_id}/attachments/upload", func(ctx context.Context, input *UploadAttachmentInput) (*UploadAttachmentOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
@@ -84,7 +91,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		// Validate attachment type
 		attachmentType := AttachmentType(input.Body.AttachmentType)
 		if !attachmentType.IsValid() {
-			return nil, huma.Error400BadRequest("invalid attachment type")
+			return nil, huma.Error400BadRequest(msgInvalidAttachmentType)
 		}
 
 		// In production: handle actual file upload, store to S3/disk
@@ -128,7 +135,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		if broadcaster != nil && authUser != nil {
 			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "attachment.created",
+				Type:       eventAttachmentCreated,
 				EntityID:   attachment.ID().String(),
 				EntityType: "attachment",
 				UserID:     authUser.ID,
@@ -150,7 +157,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/items/{item_id}/attachments", func(ctx context.Context, input *CreateAttachmentRequest) (*CreateAttachmentOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -158,7 +165,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		// Validate attachment type
 		attachmentType := AttachmentType(input.Body.AttachmentType)
 		if !attachmentType.IsValid() {
-			return nil, huma.Error400BadRequest("invalid attachment type")
+			return nil, huma.Error400BadRequest(msgInvalidAttachmentType)
 		}
 
 		attachment, err := svc.CreateAttachment(ctx, CreateAttachmentInput{
@@ -178,7 +185,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		if broadcaster != nil && authUser != nil {
 			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "attachment.created",
+				Type:       eventAttachmentCreated,
 				EntityID:   attachment.ID().String(),
 				EntityType: "attachment",
 				UserID:     authUser.ID,
@@ -200,7 +207,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/items/{item_id}/attachments/{id}/set-primary", func(ctx context.Context, input *SetPrimaryInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -208,7 +215,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		err := svc.SetPrimary(ctx, input.ItemID, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrAttachmentNotFound) {
-				return nil, huma.Error404NotFound("attachment not found")
+				return nil, huma.Error404NotFound(msgAttachmentNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -237,7 +244,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Delete(api, "/attachments/{id}", func(ctx context.Context, input *GetAttachmentInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -245,7 +252,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		err := svc.DeleteAttachment(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrAttachmentNotFound) {
-				return nil, huma.Error404NotFound("attachment not found")
+				return nil, huma.Error404NotFound(msgAttachmentNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -304,7 +311,7 @@ func (h *UploadHandler) HandleUpload(w http.ResponseWriter, r *http.Request) {
 
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		http.Error(w, "workspace context required", http.StatusUnauthorized)
+		http.Error(w, msgWorkspaceContextRequired, http.StatusUnauthorized)
 		return
 	}
 
@@ -337,7 +344,7 @@ func (h *UploadHandler) HandleUpload(w http.ResponseWriter, r *http.Request) {
 	if at := r.FormValue("attachment_type"); at != "" {
 		attachmentType = AttachmentType(at)
 		if !attachmentType.IsValid() {
-			http.Error(w, "invalid attachment type", http.StatusBadRequest)
+			http.Error(w, msgInvalidAttachmentType, http.StatusBadRequest)
 			return
 		}
 	}
@@ -375,7 +382,7 @@ func (h *UploadHandler) HandleUpload(w http.ResponseWriter, r *http.Request) {
 	if h.broadcaster != nil {
 		userName := appMiddleware.GetUserDisplayName(ctx)
 		h.broadcaster.Publish(workspaceID, events.Event{
-			Type:       "attachment.created",
+			Type:       eventAttachmentCreated,
 			EntityID:   attachment.ID().String(),
 			EntityType: "attachment",
 			UserID:     authUser.ID,
@@ -407,7 +414,7 @@ func (h *ServeAttachmentHandler) HandleServe(w http.ResponseWriter, r *http.Requ
 
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		http.Error(w, "workspace context required", http.StatusUnauthorized)
+		http.Error(w, msgWorkspaceContextRequired, http.StatusUnauthorized)
 		return
 	}
 
@@ -420,7 +427,7 @@ func (h *ServeAttachmentHandler) HandleServe(w http.ResponseWriter, r *http.Requ
 	// Workspace-scoped lookup — cross-tenant id resolves to 404.
 	attachment, err := h.svc.GetAttachment(ctx, id, workspaceID)
 	if err != nil || attachment == nil {
-		http.Error(w, "attachment not found", http.StatusNotFound)
+		http.Error(w, msgAttachmentNotFound, http.StatusNotFound)
 		return
 	}
 
@@ -432,7 +439,7 @@ func (h *ServeAttachmentHandler) HandleServe(w http.ResponseWriter, r *http.Requ
 
 	file, err := h.svc.GetFile(ctx, *attachment.FileID(), workspaceID)
 	if err != nil || file == nil {
-		http.Error(w, "attachment not found", http.StatusNotFound)
+		http.Error(w, msgAttachmentNotFound, http.StatusNotFound)
 		return
 	}
 

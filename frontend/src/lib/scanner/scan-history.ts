@@ -26,7 +26,7 @@ const MAX_HISTORY_SIZE = 10;
  * validator are filtered out (tolerant of stale legacy data — T-11-03).
  */
 export function getScanHistory(): ScanHistoryEntry[] {
-  if (typeof window === "undefined") {
+  if (typeof globalThis.window === "undefined") {
     return [];
   }
 
@@ -62,7 +62,7 @@ export function getScanHistory(): ScanHistoryEntry[] {
 export function addToScanHistory(
   entry: Omit<ScanHistoryEntry, "timestamp">,
 ): void {
-  if (typeof window === "undefined") {
+  if (typeof globalThis.window === "undefined") {
     return;
   }
 
@@ -93,7 +93,7 @@ export function addToScanHistory(
  * No-op when no entry matches `code`. Preserves the entry's timestamp/position.
  */
 export function updateScanHistory(code: string, item: Item | null): void {
-  if (typeof window === "undefined") {
+  if (typeof globalThis.window === "undefined") {
     return;
   }
 
@@ -132,7 +132,7 @@ export function updateScanHistory(code: string, item: Item | null): void {
 
 /** Remove a single entry by `code`. */
 export function removeFromScanHistory(code: string): void {
-  if (typeof window === "undefined") {
+  if (typeof globalThis.window === "undefined") {
     return;
   }
 
@@ -147,7 +147,7 @@ export function removeFromScanHistory(code: string): void {
 
 /** Clear all scan history (removes the `hws-scan-history` key). */
 export function clearScanHistory(): void {
-  if (typeof window === "undefined") {
+  if (typeof globalThis.window === "undefined") {
     return;
   }
 

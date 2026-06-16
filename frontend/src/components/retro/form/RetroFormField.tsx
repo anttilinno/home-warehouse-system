@@ -29,7 +29,7 @@ export function RetroFormField({
   error,
   required = false,
   children,
-}: RetroFormFieldProps) {
+}: Readonly<RetroFormFieldProps>) {
   const id = useId();
   const errorId = `${id}-error`;
   const describedBy = error ? errorId : undefined;

@@ -30,7 +30,7 @@ export function RetroPagination({
   pageCount,
   perPage,
   onPageChange,
-}: RetroPaginationProps) {
+}: Readonly<RetroPaginationProps>) {
   const { t } = useLingui();
   const pages = Array.from({ length: pageCount }, (_, i) => i + 1);
 

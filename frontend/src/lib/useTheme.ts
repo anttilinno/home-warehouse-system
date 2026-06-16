@@ -60,7 +60,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // pref, runs in an effect, idempotent — applyTheme just sets a dataset attr).
   useEffect(() => {
     if (pref !== "system") return;
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const mq = globalThis.matchMedia("(prefers-color-scheme: dark)");
     const onChange = () => {
       const applied = applyTheme("system");
       setResolved(applied);

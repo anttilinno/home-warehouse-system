@@ -163,8 +163,9 @@ export function ItemFormPage() {
   useEffect(() => {
     if (!guardActive) return;
     const handler = (e: BeforeUnloadEvent) => {
+      // preventDefault() alone triggers the browser's unsaved-changes prompt
+      // (the legacy returnValue assignment is deprecated).
       e.preventDefault();
-      e.returnValue = "";
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
@@ -203,9 +204,9 @@ export function ItemFormPage() {
           brand: scanBrand,
           ...(values.description ? { description: values.description } : {}),
           ...(values.barcode ? { barcode: values.barcode } : {}),
-          ...(values.minStock !== undefined
-            ? { min_stock_level: values.minStock }
-            : {}),
+          ...(values.minStock === undefined
+            ? {}
+            : { min_stock_level: values.minStock }),
         });
         queryClient.invalidateQueries({ queryKey: ["items", wsId as string] });
         retroToast.success(t`Item saved.`);
@@ -258,7 +259,7 @@ export function ItemFormPage() {
                   id={fieldId}
                   type="text"
                   required={!isEdit}
-                  aria-required={!isEdit ? "true" : undefined}
+                  aria-required={isEdit ? undefined : "true"}
                   disabled={isEdit}
                   readOnly={isEdit}
                   aria-invalid={errors.sku ? true : undefined}

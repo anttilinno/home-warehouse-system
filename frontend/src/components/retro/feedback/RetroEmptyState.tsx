@@ -28,7 +28,7 @@ export function RetroEmptyState({
   heading,
   body,
   action,
-}: RetroEmptyStateProps) {
+}: Readonly<RetroEmptyStateProps>) {
   return (
     <div className="flex flex-col items-center gap-sp-2 px-sp-4 py-sp-5 text-center">
       {eyebrow && (

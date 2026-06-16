@@ -13,13 +13,19 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	routeCompanyByID            = "/companies/{id}"
+	msgCompanyNotFound          = "company not found"
+)
+
 // RegisterRoutes registers company routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List companies
 	huma.Get(api, "/companies", func(ctx context.Context, input *ListCompaniesInput) (*ListCompaniesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
@@ -44,16 +50,16 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Get company by ID
-	huma.Get(api, "/companies/{id}", func(ctx context.Context, input *GetCompanyInput) (*GetCompanyOutput, error) {
+	huma.Get(api, routeCompanyByID, func(ctx context.Context, input *GetCompanyInput) (*GetCompanyOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		company, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrCompanyNotFound) {
-				return nil, huma.Error404NotFound("company not found")
+				return nil, huma.Error404NotFound(msgCompanyNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to get company")
 		}
@@ -67,7 +73,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/companies", func(ctx context.Context, input *CreateCompanyInput) (*CreateCompanyOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -107,10 +113,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Update company
-	huma.Patch(api, "/companies/{id}", func(ctx context.Context, input *UpdateCompanyInput) (*UpdateCompanyOutput, error) {
+	huma.Patch(api, routeCompanyByID, func(ctx context.Context, input *UpdateCompanyInput) (*UpdateCompanyOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -118,7 +124,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		existing, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrCompanyNotFound) {
-				return nil, huma.Error404NotFound("company not found")
+				return nil, huma.Error404NotFound(msgCompanyNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to get company")
 		}
@@ -162,7 +168,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/companies/{id}/archive", func(ctx context.Context, input *GetCompanyInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -170,7 +176,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		err := svc.Archive(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrCompanyNotFound) {
-				return nil, huma.Error404NotFound("company not found")
+				return nil, huma.Error404NotFound(msgCompanyNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -196,7 +202,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/companies/{id}/restore", func(ctx context.Context, input *GetCompanyInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -204,7 +210,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		err := svc.Restore(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrCompanyNotFound) {
-				return nil, huma.Error404NotFound("company not found")
+				return nil, huma.Error404NotFound(msgCompanyNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -227,10 +233,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Delete company
-	huma.Delete(api, "/companies/{id}", func(ctx context.Context, input *GetCompanyInput) (*struct{}, error) {
+	huma.Delete(api, routeCompanyByID, func(ctx context.Context, input *GetCompanyInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -238,7 +244,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		err := svc.Delete(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrCompanyNotFound) {
-				return nil, huma.Error404NotFound("company not found")
+				return nil, huma.Error404NotFound(msgCompanyNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}

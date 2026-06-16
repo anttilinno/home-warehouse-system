@@ -67,7 +67,12 @@ function repairToDefaults(repair?: Repair | null): RepairFormInput {
   };
 }
 
-export function RepairForm({ open, onClose, invId, repair }: RepairFormProps) {
+export function RepairForm({
+  open,
+  onClose,
+  invId,
+  repair,
+}: Readonly<RepairFormProps>) {
   const { t } = useLingui();
   const isEdit = Boolean(repair);
   const { createRepair, updateRepair } = useRepairMutations();

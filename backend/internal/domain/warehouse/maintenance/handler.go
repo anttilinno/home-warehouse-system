@@ -13,13 +13,19 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	routeMaintenanceByID        = "/maintenance/{id}"
+	msgScheduleNotFound         = "maintenance schedule not found"
+)
+
 // RegisterRoutes registers maintenance schedule routes on the workspace tree.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List schedules in workspace (optionally only those due soon)
 	huma.Get(api, "/maintenance", func(ctx context.Context, input *ListSchedulesInput) (*ListSchedulesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
@@ -42,7 +48,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/maintenance/due", func(ctx context.Context, input *ListDueInput) (*ListDueOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		due, err := svc.ListDue(ctx, workspaceID, input.Days)
@@ -67,16 +73,16 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Get schedule by ID
-	huma.Get(api, "/maintenance/{id}", func(ctx context.Context, input *GetScheduleInput) (*GetScheduleOutput, error) {
+	huma.Get(api, routeMaintenanceByID, func(ctx context.Context, input *GetScheduleInput) (*GetScheduleOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		schedule, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrScheduleNotFound) || errors.Is(err, shared.ErrNotFound) {
-				return nil, huma.Error404NotFound("maintenance schedule not found")
+				return nil, huma.Error404NotFound(msgScheduleNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to get maintenance schedule")
 		}
@@ -88,7 +94,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/maintenance", func(ctx context.Context, input *CreateScheduleInput) (*CreateScheduleOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		schedule, err := svc.Create(ctx, CreateInput{
@@ -115,10 +121,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Update schedule
-	huma.Patch(api, "/maintenance/{id}", func(ctx context.Context, input *UpdateScheduleInput) (*UpdateScheduleOutput, error) {
+	huma.Patch(api, routeMaintenanceByID, func(ctx context.Context, input *UpdateScheduleInput) (*UpdateScheduleOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		schedule, err := svc.Update(ctx, input.ID, workspaceID, UpdateInput{
@@ -130,7 +136,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		})
 		if err != nil {
 			if errors.Is(err, ErrScheduleNotFound) || errors.Is(err, shared.ErrNotFound) {
-				return nil, huma.Error404NotFound("maintenance schedule not found")
+				return nil, huma.Error404NotFound(msgScheduleNotFound)
 			}
 			if errors.Is(err, ErrInvalidTitle) || errors.Is(err, ErrInvalidInterval) || errors.Is(err, ErrInvalidNextDue) {
 				return nil, huma.Error400BadRequest(err.Error())
@@ -148,13 +154,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/maintenance/{id}/complete", func(ctx context.Context, input *CompleteScheduleInput) (*CompleteScheduleOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		schedule, err := svc.Complete(ctx, input.ID, workspaceID, input.Body.Notes)
 		if err != nil {
 			if errors.Is(err, ErrScheduleNotFound) || errors.Is(err, shared.ErrNotFound) {
-				return nil, huma.Error404NotFound("maintenance schedule not found")
+				return nil, huma.Error404NotFound(msgScheduleNotFound)
 			}
 			if errors.Is(err, ErrScheduleInactive) {
 				return nil, huma.Error400BadRequest("cannot complete an inactive maintenance schedule")
@@ -168,16 +174,16 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Delete schedule
-	huma.Delete(api, "/maintenance/{id}", func(ctx context.Context, input *GetScheduleInput) (*struct{}, error) {
+	huma.Delete(api, routeMaintenanceByID, func(ctx context.Context, input *GetScheduleInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		scheduleID := input.ID
 		if err := svc.Delete(ctx, input.ID, workspaceID); err != nil {
 			if errors.Is(err, ErrScheduleNotFound) || errors.Is(err, shared.ErrNotFound) {
-				return nil, huma.Error404NotFound("maintenance schedule not found")
+				return nil, huma.Error404NotFound(msgScheduleNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to delete maintenance schedule")
 		}
@@ -204,7 +210,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/inventory/{inventory_id}/maintenance", func(ctx context.Context, input *ListInventorySchedulesInput) (*ListSchedulesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		schedules, err := svc.ListByInventory(ctx, workspaceID, input.InventoryID)

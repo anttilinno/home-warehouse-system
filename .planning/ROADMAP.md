@@ -16,11 +16,11 @@
 - [x] **v2.1 Feature Parity — Items, Loans & Scanning** — Phases 56-63 (shipped 2026-04-17)
 - [~] **v2.2 Scanning & Stabilization** — Phases 64-66 (abandoned 2026-04-30; frontend2 wiped before completion)
 - [x] **v3.0 Retro-OS Pastel Frontend** — Phases 1-17 incl. lettered 7b/10b/13b/14b (shipped 2026-06-14; clean-slate frontend2 rebuild to Retro-OS Pastel fidelity + full legacy parity)
-- [ ] **Backlog — DMS Migration: Docspell → Paperless-ngx** — unscheduled; repoint the stub Docspell integration (schema-only, no client) to Paperless-ngx, the DMS running in the homelab. Schema rename + settings reshape + fresh Paperless API client + drop the compose Docspell trio. Full task breakdown in `docs/ROADMAP.md` § "DMS Migration".
-- [ ] **Backlog — Expiry & Warranty Alerting** — unscheduled; `inventory.warranty_expires`/`expiration_date` are captured but no job consumes them — new asynq reminder job (loan_reminders pattern) + notifications + "expiring soon" widget/filter. Cheapest high-value win. Breakdown in `docs/ROADMAP.md` § "Expiry & Warranty Alerting".
-- [ ] **Backlog — Recurring Maintenance Schedules** — unscheduled; proactive counterpart to repair logs: `maintenance_schedules` table (interval + next_due), due-reminder job, complete-action writes a repair_log and advances next_due in one tx. Breakdown in `docs/ROADMAP.md` § "Recurring Maintenance Schedules".
-- [ ] **Backlog — Shortlink Registry (s.go hardening)** — unscheduled; resolver + claim wizard already shipped — replace the 3-table per-workspace `short_code` scan with a global `warehouse.short_codes` registry (one PK lookup, collisions impossible; audit B5). Backfill with collision policy, then drop per-table indexes. Breakdown in `docs/ROADMAP.md` § "Shortlink Registry".
-- [ ] **Backlog — Wishlist / Purchase Planning** — unscheduled; new `wishlist_items` entity (wanted/ordered/acquired) with acquire-flow handoff into the prefilled item create wizard. Breakdown in `docs/ROADMAP.md` § "Wishlist / Purchase Planning".
+- [x] **DMS Migration: Docspell → Paperless-ngx** — SHIPPED 2026-06-11. Backend migration 006 + Paperless API client, Docspell trio dropped (commit `3dd349d3`); frontend Paperless settings/search/link-to-item delivered by v3.0 Phase 14b (`PaperlessPage.tsx`, route `/settings/paperless`).
+- [x] **Expiry & Warranty Alerting** — SHIPPED 2026-06-11. Backend migration 002 + asynq `expiry_reminders` job (commit `149457ad`); frontend expiry/warranty fields + "expiring" view delivered by v3.0 Phase 7b.
+- [x] **Recurring Maintenance Schedules** — SHIPPED 2026-06-11. Backend migration 003 `maintenance_schedules` + `maintenance_reminders` job (commit `149457ad`); frontend maintenance CRUD + due list + complete-action delivered by v3.0 Phase 10b.
+- [x] **Shortlink Registry (s.go hardening)** — SHIPPED 2026-06-11. Global `warehouse.short_codes` registry end-to-end, replacing the per-workspace 3-table scan (migration 005, commit `86667fd`; closes audit B5).
+- [x] **Wishlist / Purchase Planning** — SHIPPED 2026-06-11. Backend `wishlist_items` domain + repo + routes (migration 004, commit `149457ad`); frontend `WishlistPage` + acquire-flow handoff into the prefilled item create wizard.
 
 ## Phases
 
@@ -269,7 +269,7 @@ See `.planning/milestones/v3.0-ROADMAP.md` for full phase details and `.planning
 | 48-55 | v2.0 | 18 | Complete | 2026-04-14 |
 | 56-63 | v2.1 | 29 | Complete | 2026-04-17 |
 | 64 | v2.2 | 10/10 | Complete | 2026-04-18 |
-| 65 | v2.2 | 10/11 | Gap closure in progress | - |
+| 65 | v2.2 | 11/11 | Complete | 2026-04-19 |
 | 66 | v2.2 | 0/? | Abandoned | - |
 | 67 | v2.2 | 0/? | Abandoned | - |
 | 68 | v2.2 | 0/? | Abandoned | - |
@@ -277,7 +277,7 @@ See `.planning/milestones/v3.0-ROADMAP.md` for full phase details and `.planning
 | 70 | v2.2 | 0/? | Abandoned | - |
 | 71 | v2.2 | 0/? | Abandoned | - |
 | 72 | v2.2 | 0/? | Abandoned | - |
-| 1 | v3.0 | 0/TBD | Not started | - |
+| 1 | v3.0 | 4/4 | Complete   | 2026-05-01 |
 | 2 | v3.0 | 2/2 | Complete   | 2026-06-12 |
 | 3 | v3.0 | 6/6 | Complete   | 2026-06-12 |
 | 4 | v3.0 | 7/7 | Complete   | 2026-06-12 |
@@ -294,12 +294,12 @@ See `.planning/milestones/v3.0-ROADMAP.md` for full phase details and `.planning
 | 13 | v3.0 | 5/5 | Complete   | 2026-06-13 |
 | 13b | v3.0 | 5/5 | Complete   | 2026-06-13 |
 | 14 | v3.0 | 8/8 | Complete   | 2026-06-13 |
-| 14b | v3.0 | 0/TBD | Not started | - |
+| 14b | v3.0 | 5/5 | Complete   | 2026-06-13 |
 | 15 | v3.0 | 4/4 | Complete   | 2026-06-13 |
 | 16 | v3.0 | 3/3 | Complete   | 2026-06-13 |
 | 17 | v3.0 | 4/4 | Complete   | 2026-06-14 |
 
-**Total:** 65 phases complete (185 plans executed: +65-11 gap-closure Wave 8 regression test for G-65-01, Phase 65 now 11/11 SHIPPABLE — Option C Playwright E2E + Go HTTP+Postgres integration test) across 12 milestones; v2.2 (Phases 64-72) active
+**Total:** 65 phases complete (185 plans executed: +65-11 gap-closure Wave 8 regression test for G-65-01, Phase 65 now 11/11 SHIPPABLE — Option C Playwright E2E + Go HTTP+Postgres integration test) across 12 milestones; v2.2 (Phases 64-72) abandoned 2026-04-30 (64-65 shipped, 66-72 never started); v3.0 shipped 2026-06-14
 
 ## Backlog — deferred from v3.0 parity (2026-06-12)
 

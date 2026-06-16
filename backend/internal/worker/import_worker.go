@@ -26,6 +26,12 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/utils/csvparser"
 )
 
+const (
+	msgFailedToCountRows            = "Failed to count rows: %v"
+	msgNameIsRequired               = "name is required"
+	msgFailedToLoadExistingLocation = "failed to load existing locations: %v"
+)
+
 type ImportWorker struct {
 	queue       *queue.Queue
 	importRepo  importjob.Repository
@@ -192,7 +198,7 @@ func (w *ImportWorker) processItemImport(ctx context.Context, job *importjob.Imp
 	// Count total rows
 	totalRows, err := parser.CountRows()
 	if err != nil {
-		job.Fail(fmt.Sprintf("Failed to count rows: %v", err))
+		job.Fail(fmt.Sprintf(msgFailedToCountRows, err))
 		w.saveJob(ctx, job)
 		return err
 	}
@@ -220,7 +226,7 @@ func (w *ImportWorker) processItemImport(ctx context.Context, job *importjob.Imp
 		// Map CSV fields to item
 		name := row["name"]
 		if name == "" {
-			w.saveRowError(ctx, job.ID(), rowNum, strPtr("name"), "name is required", row)
+			w.saveRowError(ctx, job.ID(), rowNum, strPtr("name"), msgNameIsRequired, row)
 			errorCount++
 		} else {
 			// Get or generate SKU
@@ -288,7 +294,7 @@ func (w *ImportWorker) processLocationImport(ctx context.Context, job *importjob
 
 	totalRows, err := parser.CountRows()
 	if err != nil {
-		job.Fail(fmt.Sprintf("Failed to count rows: %v", err))
+		job.Fail(fmt.Sprintf(msgFailedToCountRows, err))
 		w.saveJob(ctx, job)
 		return err
 	}
@@ -307,7 +313,7 @@ func (w *ImportWorker) processLocationImport(ctx context.Context, job *importjob
 		return locationRepo.FindByWorkspace(ctx, job.WorkspaceID(), p)
 	})
 	if err != nil {
-		return w.failJob(ctx, job, fmt.Sprintf("failed to load existing locations: %v", err))
+		return w.failJob(ctx, job, fmt.Sprintf(msgFailedToLoadExistingLocation, err))
 	}
 	locationCache := make(map[string]*location.Location)
 	for _, loc := range existingLocations {
@@ -322,7 +328,7 @@ func (w *ImportWorker) processLocationImport(ctx context.Context, job *importjob
 	err = parser.ParseStream(func(rowNum int, row map[string]string) error {
 		name := row["name"]
 		if name == "" {
-			w.saveRowError(ctx, job.ID(), rowNum, strPtr("name"), "name is required", row)
+			w.saveRowError(ctx, job.ID(), rowNum, strPtr("name"), msgNameIsRequired, row)
 			errorCount++
 		} else {
 			var parentLocation *uuid.UUID
@@ -378,7 +384,7 @@ func (w *ImportWorker) processContainerImport(ctx context.Context, job *importjo
 
 	totalRows, err := parser.CountRows()
 	if err != nil {
-		job.Fail(fmt.Sprintf("Failed to count rows: %v", err))
+		job.Fail(fmt.Sprintf(msgFailedToCountRows, err))
 		w.saveJob(ctx, job)
 		return err
 	}
@@ -398,7 +404,7 @@ func (w *ImportWorker) processContainerImport(ctx context.Context, job *importjo
 		return locationRepo.FindByWorkspace(ctx, job.WorkspaceID(), p)
 	})
 	if err != nil {
-		return w.failJob(ctx, job, fmt.Sprintf("failed to load existing locations: %v", err))
+		return w.failJob(ctx, job, fmt.Sprintf(msgFailedToLoadExistingLocation, err))
 	}
 	locationCache := make(map[string]*location.Location)
 	for _, loc := range existingLocations {
@@ -415,7 +421,7 @@ func (w *ImportWorker) processContainerImport(ctx context.Context, job *importjo
 		locationRef := row["location"]
 
 		if name == "" {
-			w.saveRowError(ctx, job.ID(), rowNum, strPtr("name"), "name is required", row)
+			w.saveRowError(ctx, job.ID(), rowNum, strPtr("name"), msgNameIsRequired, row)
 			errorCount++
 		} else if locationRef == "" {
 			w.saveRowError(ctx, job.ID(), rowNum, strPtr("location"), "location is required", row)
@@ -470,7 +476,7 @@ func (w *ImportWorker) processCategoryImport(ctx context.Context, job *importjob
 
 	totalRows, err := parser.CountRows()
 	if err != nil {
-		job.Fail(fmt.Sprintf("Failed to count rows: %v", err))
+		job.Fail(fmt.Sprintf(msgFailedToCountRows, err))
 		w.saveJob(ctx, job)
 		return err
 	}
@@ -501,7 +507,7 @@ func (w *ImportWorker) processCategoryImport(ctx context.Context, job *importjob
 	err = parser.ParseStream(func(rowNum int, row map[string]string) error {
 		name := row["name"]
 		if name == "" {
-			w.saveRowError(ctx, job.ID(), rowNum, strPtr("name"), "name is required", row)
+			w.saveRowError(ctx, job.ID(), rowNum, strPtr("name"), msgNameIsRequired, row)
 			errorCount++
 		} else {
 			var parentCategoryID *uuid.UUID
@@ -555,7 +561,7 @@ func (w *ImportWorker) processBorrowerImport(ctx context.Context, job *importjob
 
 	totalRows, err := parser.CountRows()
 	if err != nil {
-		job.Fail(fmt.Sprintf("Failed to count rows: %v", err))
+		job.Fail(fmt.Sprintf(msgFailedToCountRows, err))
 		w.saveJob(ctx, job)
 		return err
 	}
@@ -576,7 +582,7 @@ func (w *ImportWorker) processBorrowerImport(ctx context.Context, job *importjob
 	err = parser.ParseStream(func(rowNum int, row map[string]string) error {
 		name := row["name"]
 		if name == "" {
-			w.saveRowError(ctx, job.ID(), rowNum, strPtr("name"), "name is required", row)
+			w.saveRowError(ctx, job.ID(), rowNum, strPtr("name"), msgNameIsRequired, row)
 			errorCount++
 		} else {
 			_, err := borrowerService.Create(ctx, borrower.CreateInput{
@@ -616,12 +622,156 @@ func (w *ImportWorker) processBorrowerImport(ctx context.Context, job *importjob
 	return nil
 }
 
+// inventoryImportCaches holds the name/SKU/short-code → entity lookup maps the
+// inventory importer builds once per job so each row resolves item, location,
+// and container references without a per-row query.
+type inventoryImportCaches struct {
+	items      map[string]*item.Item
+	locations  map[string]*location.Location
+	containers map[string]*container.Container
+}
+
+// buildInventoryImportCaches exhaustively pages the item, location, and
+// container repositories for the workspace and indexes them by lower-cased
+// name / SKU / short code (mirroring the legacy inline cache build verbatim).
+func buildInventoryImportCaches(ctx context.Context, workspaceID uuid.UUID, itemRepo item.Repository, locationRepo location.Repository, containerRepo container.Repository) (*inventoryImportCaches, error) {
+	existingItems, err := findAllPages(ctx, func(ctx context.Context, p shared.Pagination) ([]*item.Item, int, error) {
+		return itemRepo.FindByWorkspace(ctx, workspaceID, p)
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to load existing items: %v", err)
+	}
+	itemCache := make(map[string]*item.Item)
+	for _, itm := range existingItems {
+		itemCache[strings.ToLower(itm.Name())] = itm
+		itemCache[strings.ToLower(itm.SKU())] = itm
+		if itm.ShortCode() != "" {
+			itemCache[strings.ToLower(itm.ShortCode())] = itm
+		}
+	}
+
+	existingLocations, err := findAllPages(ctx, func(ctx context.Context, p shared.Pagination) ([]*location.Location, int, error) {
+		return locationRepo.FindByWorkspace(ctx, workspaceID, p)
+	})
+	if err != nil {
+		return nil, fmt.Errorf(msgFailedToLoadExistingLocation, err)
+	}
+	locationCache := make(map[string]*location.Location)
+	for _, loc := range existingLocations {
+		locationCache[strings.ToLower(loc.Name())] = loc
+		locationCache[strings.ToLower(loc.ShortCode())] = loc
+	}
+
+	existingContainers, err := findAllPages(ctx, func(ctx context.Context, p shared.Pagination) ([]*container.Container, int, error) {
+		return containerRepo.FindByWorkspace(ctx, workspaceID, p)
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to load existing containers: %v", err)
+	}
+	containerCache := make(map[string]*container.Container)
+	for _, cont := range existingContainers {
+		containerCache[strings.ToLower(cont.Name())] = cont
+		containerCache[strings.ToLower(cont.ShortCode())] = cont
+	}
+
+	return &inventoryImportCaches{
+		items:      itemCache,
+		locations:  locationCache,
+		containers: containerCache,
+	}, nil
+}
+
+// parseInventoryQuantity returns the row quantity, defaulting to 1 when the
+// field is blank or not a positive integer.
+func parseInventoryQuantity(quantityStr string) int {
+	if quantityStr != "" {
+		if q, err := strconv.Atoi(quantityStr); err == nil && q > 0 {
+			return q
+		}
+	}
+	return 1
+}
+
+// resolveContainerID looks up an optional container reference, returning nil
+// when the field is blank or unknown.
+func (c *inventoryImportCaches) resolveContainerID(row map[string]string) *uuid.UUID {
+	if containerRef := row["container"]; containerRef != "" {
+		if cont, ok := c.containers[strings.ToLower(containerRef)]; ok {
+			id := cont.ID()
+			return &id
+		}
+	}
+	return nil
+}
+
+// parseInventoryCondition returns the row condition, defaulting to
+// ConditionGood when blank or invalid.
+func parseInventoryCondition(row map[string]string) inventory.Condition {
+	if condStr := strings.ToUpper(row["condition"]); condStr != "" {
+		if cond := inventory.Condition(condStr); cond.IsValid() {
+			return cond
+		}
+	}
+	return inventory.ConditionGood
+}
+
+// parseInventoryStatus returns the row status, defaulting to StatusAvailable
+// when blank or invalid.
+func parseInventoryStatus(row map[string]string) inventory.Status {
+	if statusStr := strings.ToUpper(row["status"]); statusStr != "" {
+		if st := inventory.Status(statusStr); st.IsValid() {
+			return st
+		}
+	}
+	return inventory.StatusAvailable
+}
+
+// parseInventoryPurchasePrice returns the row purchase price, or nil when the
+// field is blank or not an integer.
+func parseInventoryPurchasePrice(row map[string]string) *int {
+	if priceStr := row["purchase_price"]; priceStr != "" {
+		if price, err := strconv.Atoi(priceStr); err == nil {
+			return &price
+		}
+	}
+	return nil
+}
+
+// parseInventoryDateAcquired returns the row date_acquired (YYYY-MM-DD), or nil
+// when the field is blank or unparseable.
+func parseInventoryDateAcquired(row map[string]string) *time.Time {
+	if dateStr := row["date_acquired"]; dateStr != "" {
+		if t, err := time.Parse("2006-01-02", dateStr); err == nil {
+			return &t
+		}
+	}
+	return nil
+}
+
+// buildInventoryCreateInput assembles the inventory.CreateInput for a resolved
+// row from the parsed/defaulted field helpers.
+func buildInventoryCreateInput(workspaceID uuid.UUID, itm *item.Item, loc *location.Location, caches *inventoryImportCaches, row map[string]string) inventory.CreateInput {
+	return inventory.CreateInput{
+		WorkspaceID:   workspaceID,
+		ItemID:        itm.ID(),
+		LocationID:    loc.ID(),
+		ContainerID:   caches.resolveContainerID(row),
+		Quantity:      parseInventoryQuantity(row["quantity"]),
+		Condition:     parseInventoryCondition(row),
+		Status:        parseInventoryStatus(row),
+		DateAcquired:  parseInventoryDateAcquired(row),
+		PurchasePrice: parseInventoryPurchasePrice(row),
+		CurrencyCode:  strPtrFromMap(row, "currency_code"),
+		Notes:         strPtrFromMap(row, "notes"),
+	}
+}
+
 func (w *ImportWorker) processInventoryImport(ctx context.Context, job *importjob.ImportJob) error {
 	parser := csvparser.NewCSVParser(job.FilePath())
 
 	totalRows, err := parser.CountRows()
 	if err != nil {
-		job.Fail(fmt.Sprintf("Failed to count rows: %v", err))
+		job.Fail(fmt.Sprintf(msgFailedToCountRows, err))
 		w.saveJob(ctx, job)
 		return err
 	}
@@ -640,44 +790,9 @@ func (w *ImportWorker) processInventoryImport(ctx context.Context, job *importjo
 	movementService := movement.NewService(movementRepo)
 	inventoryService := inventory.NewService(inventoryRepo, movementService, itemRepo, locationRepo, containerRepo)
 
-	// Build caches for lookups
-	existingItems, err := findAllPages(ctx, func(ctx context.Context, p shared.Pagination) ([]*item.Item, int, error) {
-		return itemRepo.FindByWorkspace(ctx, job.WorkspaceID(), p)
-	})
+	caches, err := buildInventoryImportCaches(ctx, job.WorkspaceID(), itemRepo, locationRepo, containerRepo)
 	if err != nil {
-		return w.failJob(ctx, job, fmt.Sprintf("failed to load existing items: %v", err))
-	}
-	itemCache := make(map[string]*item.Item)
-	for _, itm := range existingItems {
-		itemCache[strings.ToLower(itm.Name())] = itm
-		itemCache[strings.ToLower(itm.SKU())] = itm
-		if itm.ShortCode() != "" {
-			itemCache[strings.ToLower(itm.ShortCode())] = itm
-		}
-	}
-
-	existingLocations, err := findAllPages(ctx, func(ctx context.Context, p shared.Pagination) ([]*location.Location, int, error) {
-		return locationRepo.FindByWorkspace(ctx, job.WorkspaceID(), p)
-	})
-	if err != nil {
-		return w.failJob(ctx, job, fmt.Sprintf("failed to load existing locations: %v", err))
-	}
-	locationCache := make(map[string]*location.Location)
-	for _, loc := range existingLocations {
-		locationCache[strings.ToLower(loc.Name())] = loc
-		locationCache[strings.ToLower(loc.ShortCode())] = loc
-	}
-
-	existingContainers, err := findAllPages(ctx, func(ctx context.Context, p shared.Pagination) ([]*container.Container, int, error) {
-		return containerRepo.FindByWorkspace(ctx, job.WorkspaceID(), p)
-	})
-	if err != nil {
-		return w.failJob(ctx, job, fmt.Sprintf("failed to load existing containers: %v", err))
-	}
-	containerCache := make(map[string]*container.Container)
-	for _, cont := range existingContainers {
-		containerCache[strings.ToLower(cont.Name())] = cont
-		containerCache[strings.ToLower(cont.ShortCode())] = cont
+		return w.failJob(ctx, job, err.Error())
 	}
 
 	processedRows := 0
@@ -685,93 +800,10 @@ func (w *ImportWorker) processInventoryImport(ctx context.Context, job *importjo
 	errorCount := 0
 
 	err = parser.ParseStream(func(rowNum int, row map[string]string) error {
-		itemRef := row["item"]
-		locationRef := row["location"]
-		quantityStr := row["quantity"]
-
-		if itemRef == "" {
-			w.saveRowError(ctx, job.ID(), rowNum, strPtr("item"), "item is required", row)
-			errorCount++
-		} else if locationRef == "" {
-			w.saveRowError(ctx, job.ID(), rowNum, strPtr("location"), "location is required", row)
-			errorCount++
+		if w.importInventoryRow(ctx, job, inventoryService, caches, rowNum, row) {
+			successCount++
 		} else {
-			itm, itemOk := itemCache[strings.ToLower(itemRef)]
-			loc, locOk := locationCache[strings.ToLower(locationRef)]
-
-			if !itemOk {
-				w.saveRowError(ctx, job.ID(), rowNum, strPtr("item"), fmt.Sprintf("item '%s' not found", itemRef), row)
-				errorCount++
-			} else if !locOk {
-				w.saveRowError(ctx, job.ID(), rowNum, strPtr("location"), fmt.Sprintf("location '%s' not found", locationRef), row)
-				errorCount++
-			} else {
-				quantity := 1
-				if quantityStr != "" {
-					if q, err := strconv.Atoi(quantityStr); err == nil && q > 0 {
-						quantity = q
-					}
-				}
-
-				var containerID *uuid.UUID
-				if containerRef := row["container"]; containerRef != "" {
-					if cont, ok := containerCache[strings.ToLower(containerRef)]; ok {
-						id := cont.ID()
-						containerID = &id
-					}
-				}
-
-				condition := inventory.ConditionGood
-				if condStr := strings.ToUpper(row["condition"]); condStr != "" {
-					cond := inventory.Condition(condStr)
-					if cond.IsValid() {
-						condition = cond
-					}
-				}
-
-				status := inventory.StatusAvailable
-				if statusStr := strings.ToUpper(row["status"]); statusStr != "" {
-					st := inventory.Status(statusStr)
-					if st.IsValid() {
-						status = st
-					}
-				}
-
-				var purchasePrice *int
-				if priceStr := row["purchase_price"]; priceStr != "" {
-					if price, err := strconv.Atoi(priceStr); err == nil {
-						purchasePrice = &price
-					}
-				}
-
-				var dateAcquired *time.Time
-				if dateStr := row["date_acquired"]; dateStr != "" {
-					if t, err := time.Parse("2006-01-02", dateStr); err == nil {
-						dateAcquired = &t
-					}
-				}
-
-				_, err := inventoryService.Create(ctx, inventory.CreateInput{
-					WorkspaceID:   job.WorkspaceID(),
-					ItemID:        itm.ID(),
-					LocationID:    loc.ID(),
-					ContainerID:   containerID,
-					Quantity:      quantity,
-					Condition:     condition,
-					Status:        status,
-					DateAcquired:  dateAcquired,
-					PurchasePrice: purchasePrice,
-					CurrencyCode:  strPtrFromMap(row, "currency_code"),
-					Notes:         strPtrFromMap(row, "notes"),
-				})
-
-				if err != nil {
-					w.saveRowError(ctx, job.ID(), rowNum, nil, err.Error(), row)
-					errorCount++
-				} else {
-					successCount++
-				}
-			}
+			errorCount++
 		}
 
 		processedRows++
@@ -793,6 +825,41 @@ func (w *ImportWorker) processInventoryImport(ctx context.Context, job *importjo
 	w.saveJob(ctx, job)
 	w.publishProgress(job, 100)
 	return nil
+}
+
+// importInventoryRow validates and persists a single inventory CSV row,
+// recording a per-row error (and returning false) on any validation or
+// create failure. Returns true only when the row created an inventory record.
+func (w *ImportWorker) importInventoryRow(ctx context.Context, job *importjob.ImportJob, inventoryService *inventory.Service, caches *inventoryImportCaches, rowNum int, row map[string]string) bool {
+	itemRef := row["item"]
+	locationRef := row["location"]
+
+	if itemRef == "" {
+		w.saveRowError(ctx, job.ID(), rowNum, strPtr("item"), "item is required", row)
+		return false
+	}
+	if locationRef == "" {
+		w.saveRowError(ctx, job.ID(), rowNum, strPtr("location"), "location is required", row)
+		return false
+	}
+
+	itm, itemOk := caches.items[strings.ToLower(itemRef)]
+	if !itemOk {
+		w.saveRowError(ctx, job.ID(), rowNum, strPtr("item"), fmt.Sprintf("item '%s' not found", itemRef), row)
+		return false
+	}
+	loc, locOk := caches.locations[strings.ToLower(locationRef)]
+	if !locOk {
+		w.saveRowError(ctx, job.ID(), rowNum, strPtr("location"), fmt.Sprintf("location '%s' not found", locationRef), row)
+		return false
+	}
+
+	input := buildInventoryCreateInput(job.WorkspaceID(), itm, loc, caches, row)
+	if _, err := inventoryService.Create(ctx, input); err != nil {
+		w.saveRowError(ctx, job.ID(), rowNum, nil, err.Error(), row)
+		return false
+	}
+	return true
 }
 
 func (w *ImportWorker) publishProgress(job *importjob.ImportJob, progressPercent int) {

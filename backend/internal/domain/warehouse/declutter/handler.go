@@ -11,13 +11,15 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 )
 
+const msgWorkspaceContextRequired = "workspace context required"
+
 // RegisterRoutes registers declutter routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List unused inventory
 	huma.Get(api, "/declutter", func(ctx context.Context, input *ListInput) (*ListOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		// Build params from input
@@ -51,7 +53,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/declutter/counts", func(ctx context.Context, input *struct{}) (*CountsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		counts, err := svc.GetCounts(ctx, workspaceID)
@@ -75,7 +77,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/inventory/{inventory_id}/mark-used", func(ctx context.Context, input *MarkUsedInput) (*MarkUsedOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		err := svc.MarkUsed(ctx, input.InventoryID, workspaceID)

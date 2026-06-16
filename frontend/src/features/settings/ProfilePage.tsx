@@ -24,7 +24,7 @@ import { AvatarUploader } from "./AvatarUploader";
 
 const profileSchema = z.object({
   full_name: z.string().min(1),
-  email: z.string().email(),
+  email: z.email(),
 });
 
 type ProfileForm = z.infer<typeof profileSchema>;

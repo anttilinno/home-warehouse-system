@@ -10,13 +10,15 @@ import (
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 )
 
+const msgAuthenticationRequired = "authentication required"
+
 // RegisterRoutes registers push subscription routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// Subscribe to push notifications
 	huma.Post(api, "/push/subscribe", func(ctx context.Context, input *SubscribeRequest) (*SubscribeResponse, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		subscription, err := svc.Subscribe(ctx, SubscribeInput{
@@ -45,7 +47,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Post(api, "/push/unsubscribe", func(ctx context.Context, input *UnsubscribeRequest) (*struct{}, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		err := svc.Unsubscribe(ctx, authUser.ID, input.Body.Endpoint)
@@ -60,7 +62,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Delete(api, "/push/subscriptions", func(ctx context.Context, input *struct{}) (*struct{}, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		err := svc.UnsubscribeAll(ctx, authUser.ID)
@@ -75,7 +77,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Get(api, "/push/status", func(ctx context.Context, input *struct{}) (*PushStatusResponse, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		subscriptions, err := svc.GetUserSubscriptions(ctx, authUser.ID)

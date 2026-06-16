@@ -59,13 +59,11 @@ func (m *MockService) Archive(ctx context.Context, id, workspaceID uuid.UUID) er
 }
 
 func (m *MockService) Restore(ctx context.Context, id, workspaceID uuid.UUID) error {
-	args := m.Called(ctx, id, workspaceID)
-	return args.Error(0)
+	return m.Called(ctx, id, workspaceID).Error(0)
 }
 
 func (m *MockService) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
-	args := m.Called(ctx, id, workspaceID)
-	return args.Error(0)
+	return m.Called(ctx, id, workspaceID).Error(0)
 }
 
 // Tests

@@ -43,7 +43,7 @@ export function RetroCombobox({
   error,
   placeholder,
   disabled = false,
-}: RetroComboboxProps) {
+}: Readonly<RetroComboboxProps>) {
   const baseId = useId();
   const listboxId = `${baseId}-listbox`;
   const errorId = `${baseId}-error`;

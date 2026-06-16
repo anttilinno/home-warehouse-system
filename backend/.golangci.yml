@@ -1,0 +1,46 @@
+# golangci-lint v2 config — quality guards mirroring the SonarQube rules that
+# matter (gocognit≈S3776, goconst≈S1192, dupl≈S4144) plus gosec for security.
+# The .githooks/pre-push hook runs this with --new-from-merge-base so it gates
+# NEW code without forcing a retroactive fix of the legacy backlog. A plain
+# `golangci-lint run` (no flag) audits the whole tree — useful on demand.
+# See docs/sonarqube/.
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  # standard = errcheck, govet, ineffassign, staticcheck, unused
+  default: standard
+  enable:
+    - goconst # duplicated string literals (S1192)
+    - gocognit # cognitive complexity (S3776)
+    - dupl # duplicated code blocks (S4144)
+    - gosec # security issues
+  settings:
+    gocognit:
+      # Slightly above Sonar's 15 — pragmatic for Go handler/registration code.
+      min-complexity: 20
+    goconst:
+      min-occurrences: 3
+      min-len: 3
+    dupl:
+      threshold: 150
+  exclusions:
+    generated: lax
+    rules:
+      # Tests and generated sqlc code are exempt from complexity/dup/const/sec
+      # noise — duplicate setup and long table-driven tests are idiomatic.
+      - path: (_test\.go|\.sql\.go)$
+        linters:
+          - gocognit
+          - dupl
+          - goconst
+          - gosec
+          - errcheck
+
+issues:
+  # The "new code only" filter is applied by the pre-push hook via
+  # --new-from-merge-base, not pinned here, so manual runs can audit full-tree.
+  max-issues-per-linter: 0
+  max-same-issues: 0

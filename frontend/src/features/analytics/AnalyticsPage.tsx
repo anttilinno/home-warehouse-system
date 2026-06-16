@@ -40,7 +40,7 @@ export function AnalyticsPage() {
   // Workspace empty-state (mirror DashboardPage): when the account has zero
   // workspaces, render the centered empty-state main and fire no analytics
   // requests (the hooks are gated on wsId, which is null here).
-  if (workspaces && workspaces.length === 0) {
+  if (workspaces?.length === 0) {
     return (
       <main className="grid min-h-screen place-items-center p-sp-4">
         <Window title={<Trans>No workspace</Trans>} titlebarVariant="butter">

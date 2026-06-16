@@ -26,6 +26,14 @@ type MockService struct {
 	mock.Mock
 }
 
+// mockSliceErr unwraps a 2-value (slice, error) testify return with a nil-guard.
+func mockSliceErr[T any](args mock.Arguments) ([]T, error) {
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]T), args.Error(1)
+}
+
 func (m *MockService) Create(ctx context.Context, input CreateInput) (*Category, error) {
 	args := m.Called(ctx, input)
 	if args.Get(0) == nil {
@@ -56,13 +64,11 @@ func (m *MockService) Delete(ctx context.Context, id, workspaceID uuid.UUID) err
 }
 
 func (m *MockService) Archive(ctx context.Context, id, workspaceID uuid.UUID) error {
-	args := m.Called(ctx, id, workspaceID)
-	return args.Error(0)
+	return m.Called(ctx, id, workspaceID).Error(0)
 }
 
 func (m *MockService) Restore(ctx context.Context, id, workspaceID uuid.UUID) error {
-	args := m.Called(ctx, id, workspaceID)
-	return args.Error(0)
+	return m.Called(ctx, id, workspaceID).Error(0)
 }
 
 func (m *MockService) ListByWorkspace(ctx context.Context, workspaceID uuid.UUID) ([]*Category, error) {
@@ -82,11 +88,7 @@ func (m *MockService) ListByParent(ctx context.Context, workspaceID, parentID uu
 }
 
 func (m *MockService) ListRootCategories(ctx context.Context, workspaceID uuid.UUID) ([]*Category, error) {
-	args := m.Called(ctx, workspaceID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]*Category), args.Error(1)
+	return mockSliceErr[*Category](m.Called(ctx, workspaceID))
 }
 
 func (m *MockService) GetBreadcrumb(ctx context.Context, categoryID, workspaceID uuid.UUID) ([]BreadcrumbItem, error) {

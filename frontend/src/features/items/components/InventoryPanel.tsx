@@ -66,7 +66,10 @@ function expiryChip(iso: string): {
   return { label, past, title: iso };
 }
 
-export function InventoryPanel({ wsId, itemId }: InventoryPanelProps) {
+export function InventoryPanel({
+  wsId,
+  itemId,
+}: Readonly<InventoryPanelProps>) {
   const entriesQuery = useQuery({
     queryKey: ["inventory", wsId, "by-item", itemId],
     queryFn: () => inventoryApi.byItem(wsId, itemId),
@@ -168,7 +171,14 @@ export function InventoryPanel({ wsId, itemId }: InventoryPanelProps) {
         {entries.map((entry) => {
           const loc = locationLabel(entry.location_id);
           const ct = containerLabel(entry.container_id);
-          const path = loc ? (ct ? `${loc} / ${ct}` : loc) : "—";
+          let path: string;
+          if (!loc) {
+            path = "—";
+          } else if (ct) {
+            path = `${loc} / ${ct}`;
+          } else {
+            path = loc;
+          }
           const expiryIso = entry.expiration_date ?? entry.warranty_expires;
           const chip = expiryIso ? expiryChip(expiryIso) : null;
           return (

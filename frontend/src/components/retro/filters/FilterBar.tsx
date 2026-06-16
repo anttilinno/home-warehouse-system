@@ -54,7 +54,7 @@ export function FilterBar({
   onClearAll,
   primaryAction,
   className = "",
-}: FilterBarProps) {
+}: Readonly<FilterBarProps>) {
   const { t } = useLingui();
 
   return (
@@ -88,7 +88,15 @@ export function FilterBar({
 
       {filterChips.length > 0 && (
         <div className="flex flex-wrap items-center gap-sp-1">
-          {filterChips.map((chip) => (
+          {filterChips.map((chip) => {
+            // chip.label is ReactNode; for the button's accessible text use the
+            // plain text of a string/number label, falling back to the stable
+            // key when the label is a React element (avoids "[object Object]").
+            const labelText =
+              typeof chip.label === "string" || typeof chip.label === "number"
+                ? String(chip.label)
+                : chip.key;
+            return (
             <span
               key={chip.key}
               className="inline-flex items-center gap-[6px] rounded-chip border border-border-ink bg-titlebar-blue px-sp-2 py-px text-11 font-bold uppercase tracking-7 text-fg-ink"
@@ -97,15 +105,16 @@ export function FilterBar({
               <span>{chip.displayValue}</span>
               <button
                 type="button"
-                aria-label={t`Remove ${String(chip.label)} filter`}
-                title={t`Remove ${String(chip.label)} filter`}
+                aria-label={t`Remove ${labelText} filter`}
+                title={t`Remove ${labelText} filter`}
                 onClick={() => onRemoveFilter(chip.key)}
                 className="cursor-pointer text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
               >
                 <span aria-hidden="true">✕</span>
               </button>
             </span>
-          ))}
+            );
+          })}
           <button
             type="button"
             onClick={onClearAll}

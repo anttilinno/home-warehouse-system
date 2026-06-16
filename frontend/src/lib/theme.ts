@@ -15,9 +15,9 @@ const VALID_PREFS: readonly ThemePref[] = ["light", "dark", "system"];
 /** True when the OS reports a dark color-scheme preference. SSR/JSDOM-safe. */
 export function prefersDark(): boolean {
   return (
-    typeof window !== "undefined" &&
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches
+    typeof globalThis.window !== "undefined" &&
+    typeof globalThis.matchMedia === "function" &&
+    globalThis.matchMedia("(prefers-color-scheme: dark)").matches
   );
 }
 

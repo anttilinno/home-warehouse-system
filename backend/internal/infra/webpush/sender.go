@@ -13,6 +13,8 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/pushsubscription"
 )
 
+const msgPushServiceReturnedStatus = "push service returned status %d"
+
 // PushMessage represents a push notification message.
 type PushMessage struct {
 	Title       string                 `json:"title"`
@@ -146,7 +148,7 @@ func (s *Sender) sendToSubscription(ctx context.Context, sub *pushsubscription.P
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("push service returned status %d", resp.StatusCode)
+		return fmt.Errorf(msgPushServiceReturnedStatus, resp.StatusCode)
 	}
 
 	return nil
@@ -159,8 +161,8 @@ func isInvalidSubscriptionError(err error) bool {
 	}
 	// HTTP 404 (Not Found) or 410 (Gone) indicates the subscription is no longer valid
 	errStr := err.Error()
-	return errStr == fmt.Sprintf("push service returned status %d", http.StatusNotFound) ||
-		errStr == fmt.Sprintf("push service returned status %d", http.StatusGone)
+	return errStr == fmt.Sprintf(msgPushServiceReturnedStatus, http.StatusNotFound) ||
+		errStr == fmt.Sprintf(msgPushServiceReturnedStatus, http.StatusGone)
 }
 
 // IsEnabled returns whether web push is enabled (VAPID keys are configured).

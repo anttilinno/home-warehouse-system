@@ -48,7 +48,7 @@ export interface ActiveLoanPanelProps {
  * RETURN/EXTEND when on loan; a danger overdue chip + line (server is_overdue)
  * when overdue.
  */
-export function ActiveLoanPanel({ active, itemId }: ActiveLoanPanelProps) {
+export function ActiveLoanPanel({ active, itemId }: Readonly<ActiveLoanPanelProps>) {
   const navigate = useNavigate();
   const [openDialog, setOpenDialog] = useState<"return" | "extend" | null>(
     null,
@@ -133,7 +133,7 @@ export interface LoanHistoryListProps {
  * checkout date · return date (or `— still out`) · status pill. Empty → the
  * NO LOAN HISTORY empty state.
  */
-export function LoanHistoryList({ history }: LoanHistoryListProps) {
+export function LoanHistoryList({ history }: Readonly<LoanHistoryListProps>) {
   // I18N-03: history dates honor the user's date_format preference.
   const formatDate = useDateFormat();
   if (history.length === 0) {
@@ -187,7 +187,7 @@ export interface LoanPanelsProps {
  * panel — used by the detail side rail. The HISTORY tab reads the same query via
  * {@link useItemLoans} and renders {@link LoanHistoryList} directly.
  */
-export function LoanPanels({ wsId, itemId }: LoanPanelsProps) {
+export function LoanPanels({ wsId, itemId }: Readonly<LoanPanelsProps>) {
   const { data } = useItemLoans(wsId, itemId);
   const active = useMemo(() => data?.active ?? [], [data]);
   return <ActiveLoanPanel active={active} itemId={itemId} />;

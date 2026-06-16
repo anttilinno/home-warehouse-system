@@ -17,7 +17,7 @@ export function ReturnLoanDialog({
   open,
   onClose,
   loan,
-}: ReturnLoanDialogProps) {
+}: Readonly<ReturnLoanDialogProps>) {
   const { t } = useLingui();
   const { returnLoan } = useLoanMutations();
 

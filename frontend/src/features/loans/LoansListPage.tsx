@@ -253,6 +253,14 @@ export function LoansListPage() {
           <tbody>
             {visible.map((loan) => {
               const status = loanStatus(loan);
+              let statusLabel: ReactNode;
+              if (status.label === "OVERDUE") {
+                statusLabel = <Trans>Overdue</Trans>;
+              } else if (status.label === "RETURNED") {
+                statusLabel = <Trans>Returned</Trans>;
+              } else {
+                statusLabel = <Trans>Active</Trans>;
+              }
               return (
                 <tr
                   key={loan.id}
@@ -269,13 +277,7 @@ export function LoansListPage() {
                   <td className="font-mono">{renderDue(loan)}</td>
                   <td>
                     <StatusPill variant={status.variant}>
-                      {status.label === "OVERDUE" ? (
-                        <Trans>Overdue</Trans>
-                      ) : status.label === "RETURNED" ? (
-                        <Trans>Returned</Trans>
-                      ) : (
-                        <Trans>Active</Trans>
-                      )}
+                      {statusLabel}
                     </StatusPill>
                   </td>
                   {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops row-click propagation only */}

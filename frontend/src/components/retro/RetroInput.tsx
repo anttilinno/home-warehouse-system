@@ -16,7 +16,7 @@ export function RetroInput({
   className = "",
   id: idProp,
   ...props
-}: RetroInputProps) {
+}: Readonly<RetroInputProps>) {
   const autoId = useId();
   const id = idProp ?? autoId;
   const errorId = `${id}-error`;

@@ -19,7 +19,10 @@ export interface SidebarUserMenuProps {
   onLogout: () => void;
 }
 
-export function SidebarUserMenu({ user, onLogout }: SidebarUserMenuProps) {
+export function SidebarUserMenu({
+  user,
+  onLogout,
+}: Readonly<SidebarUserMenuProps>) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);

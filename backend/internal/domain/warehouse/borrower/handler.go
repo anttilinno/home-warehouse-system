@@ -13,13 +13,18 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	routeBorrowerByID           = "/borrowers/{id}"
+)
+
 // RegisterRoutes registers borrower routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List borrowers
 	huma.Get(api, "/borrowers", func(ctx context.Context, input *ListBorrowersInput) (*ListBorrowersOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
@@ -39,10 +44,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Get borrower by ID
-	huma.Get(api, "/borrowers/{id}", func(ctx context.Context, input *GetBorrowerInput) (*GetBorrowerOutput, error) {
+	huma.Get(api, routeBorrowerByID, func(ctx context.Context, input *GetBorrowerInput) (*GetBorrowerOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		borrower, err := svc.GetByID(ctx, input.ID, workspaceID)
@@ -59,7 +64,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/borrowers", func(ctx context.Context, input *CreateBorrowerInput) (*CreateBorrowerOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -97,10 +102,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Update borrower
-	huma.Patch(api, "/borrowers/{id}", func(ctx context.Context, input *UpdateBorrowerInput) (*UpdateBorrowerOutput, error) {
+	huma.Patch(api, routeBorrowerByID, func(ctx context.Context, input *UpdateBorrowerInput) (*UpdateBorrowerOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -141,10 +146,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Delete borrower (hard delete; archive endpoint is separate)
-	huma.Delete(api, "/borrowers/{id}", func(ctx context.Context, input *DeleteBorrowerInput) (*struct{}, error) {
+	huma.Delete(api, routeBorrowerByID, func(ctx context.Context, input *DeleteBorrowerInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -177,7 +182,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/borrowers/{id}/archive", func(ctx context.Context, input *GetBorrowerInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -206,7 +211,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/borrowers/{id}/restore", func(ctx context.Context, input *GetBorrowerInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -235,7 +240,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/borrowers/search", func(ctx context.Context, input *SearchBorrowersInput) (*SearchBorrowersOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		borrowers, err := svc.Search(ctx, workspaceID, input.Query, input.Limit)

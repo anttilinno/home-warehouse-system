@@ -75,14 +75,14 @@ export function CategoriesTab() {
     fetchCount("category", node.id)
       .then((count) =>
         setArchiveTarget((prev) =>
-          prev && prev.id === node.id ? { ...prev, count } : prev,
+          prev?.id === node.id ? { ...prev, count } : prev,
         ),
       )
       .catch(() =>
         // On a count read failure, fall back to the plain (zero) confirm — the
         // archive is advisory either way.
         setArchiveTarget((prev) =>
-          prev && prev.id === node.id ? { ...prev, count: 0 } : prev,
+          prev?.id === node.id ? { ...prev, count: 0 } : prev,
         ),
       );
   }

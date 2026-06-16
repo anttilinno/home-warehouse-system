@@ -46,7 +46,7 @@ export function useMaintenanceMutations() {
   const queryClient = useQueryClient();
   const { t } = useLingui();
 
-  const prefix: QueryKey = ["maintenance", wsId as string];
+  const prefix: QueryKey = ["maintenance", wsId];
 
   function invalidate() {
     // Prefix-match (default exact:false) — covers by-inventory + due + list + by-id.
@@ -102,7 +102,7 @@ export function useMaintenanceMutations() {
     mutationFn: ({ id, body }) =>
       maintenanceApi.update(wsId as string, id, body),
     onMutate: ({ id, body }) =>
-      optimisticPatch(id, body as Partial<MaintenanceSchedule>),
+      optimisticPatch(id, body),
     onError: (_err, _arg, ctx) => {
       restore(ctx);
       retroToast.error(t`Couldn't save this schedule.`);

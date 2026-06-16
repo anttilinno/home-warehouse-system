@@ -58,7 +58,7 @@ export function RetroConfirmDialog({
   confirmVariant = "danger",
   confirmDisabled = false,
   children,
-}: RetroConfirmDialogProps) {
+}: Readonly<RetroConfirmDialogProps>) {
   const cancelRef = useRef<HTMLButtonElement>(null);
 
   // Autofocus Cancel after the dialog mounts (RetroDialog focuses the dialog

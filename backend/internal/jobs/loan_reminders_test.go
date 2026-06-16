@@ -530,6 +530,14 @@ func TestNewLoanReminderScheduler_NilPool(t *testing.T) {
 }
 
 func TestNewLoanReminderScheduler_NilClient(t *testing.T) {
+	assertLoanReminderSchedulerNonNil(t)
+}
+
+// assertLoanReminderSchedulerNonNil constructs a LoanReminderScheduler with nil
+// dependencies and asserts it is non-nil. Shared by the constructor tests that
+// otherwise have identical bodies.
+func assertLoanReminderSchedulerNonNil(t *testing.T) {
+	t.Helper()
 	scheduler := NewLoanReminderScheduler(nil, nil)
 	assert.NotNil(t, scheduler)
 }
@@ -901,10 +909,8 @@ func TestLoanReminderProcessor_ConcurrentProcessing(t *testing.T) {
 // =============================================================================
 
 func TestNewLoanReminderScheduler_ReturnsValidInstance(t *testing.T) {
-	scheduler := NewLoanReminderScheduler(nil, nil)
-
-	// Scheduler should not be nil even with nil dependencies
-	assert.NotNil(t, scheduler)
+	// Scheduler should not be nil even with nil dependencies.
+	assertLoanReminderSchedulerNonNil(t)
 }
 
 func TestNewLoanReminderScheduler_MultipleInstances(t *testing.T) {

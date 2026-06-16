@@ -13,6 +13,14 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/user"
 )
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	msgAuthenticationRequired   = "authentication required"
+	msgFailedCheckPermissions   = "failed to check permissions"
+	msgFailedFetchUserDetails   = "failed to fetch user details"
+	msgPendingChangeNotFound    = "pending change not found"
+)
+
 // ServiceInterface defines the interface for pending change operations
 type ServiceInterface interface {
 	ListPendingForWorkspace(ctx context.Context, workspaceID uuid.UUID) ([]*PendingChange, error)
@@ -22,35 +30,83 @@ type ServiceInterface interface {
 
 // RegisterRoutes registers pending change management routes
 func RegisterRoutes(api huma.API, svc *Service, userRepo user.Repository) {
-	// List all pending changes (owner/admin only)
-	huma.Get(api, "/pending-changes", func(ctx context.Context, input *ListPendingChangesInput) (*ListPendingChangesOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+	huma.Get(api, "/pending-changes", listPendingChanges(svc, userRepo))
+	huma.Get(api, "/pending-changes/{id}", getPendingChange(svc, userRepo))
+	huma.Get(api, "/my-pending-changes", listMyPendingChanges(svc, userRepo))
+	huma.Post(api, "/pending-changes/{id}/approve", approvePendingChange(svc, userRepo))
+	huma.Post(api, "/pending-changes/{id}/reject", rejectPendingChange(svc, userRepo))
+}
+
+// requireWorkspaceAndUser resolves the workspace and authenticated user from
+// the request context, returning the matching huma error when either is
+// absent. Centralizes the two guards every pending-change handler runs first.
+func requireWorkspaceAndUser(ctx context.Context) (uuid.UUID, *appMiddleware.AuthUser, error) {
+	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+	if !ok {
+		return uuid.Nil, nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
+	}
+	authUser, ok := appMiddleware.GetAuthUser(ctx)
+	if !ok {
+		return uuid.Nil, nil, huma.Error401Unauthorized(msgAuthenticationRequired)
+	}
+	return workspaceID, authUser, nil
+}
+
+// parseStatusFilter resolves the optional status query param into a *Status,
+// returning a 400 huma error for an unparseable value and (nil, nil) when the
+// filter is omitted.
+func parseStatusFilter(raw string) (*Status, error) {
+	if raw == "" {
+		return nil, nil
+	}
+	status, err := ParseStatus(raw)
+	if err != nil {
+		return nil, huma.Error400BadRequest("invalid status filter")
+	}
+	return &status, nil
+}
+
+// enrichChanges converts a change slice into the list response envelope using
+// a memoized user lookup (collapsing the per-change requester/reviewer fetches
+// into one query per distinct user in the page).
+func enrichChanges(ctx context.Context, userRepo user.Repository, changes []*PendingChange) (*ListPendingChangesOutput, error) {
+	users := newUserLookup(userRepo)
+	responses := make([]PendingChangeResponse, len(changes))
+	for i, change := range changes {
+		resp, err := toPendingChangeResponse(ctx, change, users.find)
+		if err != nil {
+			return nil, huma.Error500InternalServerError(msgFailedFetchUserDetails)
+		}
+		responses[i] = resp
+	}
+	return &ListPendingChangesOutput{
+		Body: PendingChangeListResponse{
+			Changes: responses,
+			Total:   len(responses),
+		},
+	}, nil
+}
+
+// listPendingChanges returns the handler for GET /pending-changes (owner/admin only).
+func listPendingChanges(svc *Service, userRepo user.Repository) func(context.Context, *ListPendingChangesInput) (*ListPendingChangesOutput, error) {
+	return func(ctx context.Context, input *ListPendingChangesInput) (*ListPendingChangesOutput, error) {
+		workspaceID, authUser, err := requireWorkspaceAndUser(ctx)
+		if err != nil {
+			return nil, err
 		}
 
 		// Check authorization (owner/admin only)
-		authUser, ok := appMiddleware.GetAuthUser(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
-		}
-
 		canReview, err := svc.canReviewChanges(ctx, authUser.ID, workspaceID)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to check permissions")
+			return nil, huma.Error500InternalServerError(msgFailedCheckPermissions)
 		}
 		if !canReview {
 			return nil, huma.Error403Forbidden("only owners and admins can view all pending changes")
 		}
 
-		// Parse status filter if provided
-		var statusFilter *Status
-		if input.Status != "" {
-			status, err := ParseStatus(input.Status)
-			if err != nil {
-				return nil, huma.Error400BadRequest("invalid status filter")
-			}
-			statusFilter = &status
+		statusFilter, err := parseStatusFilter(input.Status)
+		if err != nil {
+			return nil, err
 		}
 
 		// Fetch pending changes
@@ -59,54 +115,33 @@ func RegisterRoutes(api huma.API, svc *Service, userRepo user.Repository) {
 			return nil, huma.Error500InternalServerError("failed to list pending changes")
 		}
 
-		// Enrich with user details. The memoized lookup collapses the
-		// per-change requester/reviewer fetches (2N+1 queries) into one
-		// query per distinct user in the page.
-		users := newUserLookup(userRepo)
-		responses := make([]PendingChangeResponse, len(changes))
-		for i, change := range changes {
-			resp, err := toPendingChangeResponse(ctx, change, users.find)
-			if err != nil {
-				return nil, huma.Error500InternalServerError("failed to fetch user details")
-			}
-			responses[i] = resp
-		}
+		return enrichChanges(ctx, userRepo, changes)
+	}
+}
 
-		return &ListPendingChangesOutput{
-			Body: PendingChangeListResponse{
-				Changes: responses,
-				Total:   len(responses),
-			},
-		}, nil
-	})
-
-	// Get single pending change by ID
-	huma.Get(api, "/pending-changes/{id}", func(ctx context.Context, input *GetPendingChangeInput) (*GetPendingChangeOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
-		}
-
-		authUser, ok := appMiddleware.GetAuthUser(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+// getPendingChange returns the handler for GET /pending-changes/{id}.
+func getPendingChange(svc *Service, userRepo user.Repository) func(context.Context, *GetPendingChangeInput) (*GetPendingChangeOutput, error) {
+	return func(ctx context.Context, input *GetPendingChangeInput) (*GetPendingChangeOutput, error) {
+		workspaceID, authUser, err := requireWorkspaceAndUser(ctx)
+		if err != nil {
+			return nil, err
 		}
 
 		// Fetch the pending change
 		change, err := svc.repo.FindByID(ctx, input.ID, workspaceID)
 		if err != nil {
-			return nil, huma.Error404NotFound("pending change not found")
+			return nil, huma.Error404NotFound(msgPendingChangeNotFound)
 		}
 
 		// Verify it belongs to the same workspace
 		if change.WorkspaceID() != workspaceID {
-			return nil, huma.Error404NotFound("pending change not found")
+			return nil, huma.Error404NotFound(msgPendingChangeNotFound)
 		}
 
 		// Check authorization: either the requester or an owner/admin
 		canReview, err := svc.canReviewChanges(ctx, authUser.ID, workspaceID)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to check permissions")
+			return nil, huma.Error500InternalServerError(msgFailedCheckPermissions)
 		}
 		isRequester := change.RequesterID() == authUser.ID
 
@@ -117,34 +152,26 @@ func RegisterRoutes(api huma.API, svc *Service, userRepo user.Repository) {
 		// Enrich with user details
 		resp, err := toPendingChangeResponse(ctx, change, userRepo.FindByID)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to fetch user details")
+			return nil, huma.Error500InternalServerError(msgFailedFetchUserDetails)
 		}
 
 		return &GetPendingChangeOutput{
 			Body: resp,
 		}, nil
-	})
+	}
+}
 
-	// List requester's own pending changes
-	huma.Get(api, "/my-pending-changes", func(ctx context.Context, input *ListMyPendingChangesInput) (*ListPendingChangesOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+// listMyPendingChanges returns the handler for GET /my-pending-changes.
+func listMyPendingChanges(svc *Service, userRepo user.Repository) func(context.Context, *ListMyPendingChangesInput) (*ListPendingChangesOutput, error) {
+	return func(ctx context.Context, input *ListMyPendingChangesInput) (*ListPendingChangesOutput, error) {
+		workspaceID, authUser, err := requireWorkspaceAndUser(ctx)
+		if err != nil {
+			return nil, err
 		}
 
-		authUser, ok := appMiddleware.GetAuthUser(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
-		}
-
-		// Parse status filter if provided
-		var statusFilter *Status
-		if input.Status != "" {
-			status, err := ParseStatus(input.Status)
-			if err != nil {
-				return nil, huma.Error400BadRequest("invalid status filter")
-			}
-			statusFilter = &status
+		statusFilter, err := parseStatusFilter(input.Status)
+		if err != nil {
+			return nil, err
 		}
 
 		// Fetch requester's pending changes
@@ -161,140 +188,114 @@ func RegisterRoutes(api huma.API, svc *Service, userRepo user.Repository) {
 			}
 		}
 
-		// Enrich with user details (memoized — see ListPendingChanges above).
-		users := newUserLookup(userRepo)
-		responses := make([]PendingChangeResponse, len(filteredChanges))
-		for i, change := range filteredChanges {
-			resp, err := toPendingChangeResponse(ctx, change, users.find)
-			if err != nil {
-				return nil, huma.Error500InternalServerError("failed to fetch user details")
-			}
-			responses[i] = resp
-		}
+		return enrichChanges(ctx, userRepo, filteredChanges)
+	}
+}
 
-		return &ListPendingChangesOutput{
-			Body: PendingChangeListResponse{
-				Changes: responses,
-				Total:   len(responses),
-			},
-		}, nil
-	})
+// requireReviewableChange enforces the owner/admin guard and confirms the
+// change exists within the workspace, returning the matching huma error
+// otherwise. Shared by the approve and reject handlers.
+func requireReviewableChange(ctx context.Context, svc *Service, changeID, workspaceID uuid.UUID, authUserID uuid.UUID, forbiddenMsg string) error {
+	canReview, err := svc.canReviewChanges(ctx, authUserID, workspaceID)
+	if err != nil {
+		return huma.Error500InternalServerError(msgFailedCheckPermissions)
+	}
+	if !canReview {
+		return huma.Error403Forbidden(forbiddenMsg)
+	}
 
-	// Approve pending change (owner/admin only)
-	huma.Post(api, "/pending-changes/{id}/approve", func(ctx context.Context, input *ApprovePendingChangeInput) (*ApprovePendingChangeOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
-		}
+	change, err := svc.repo.FindByID(ctx, changeID, workspaceID)
+	if err != nil {
+		return huma.Error404NotFound(msgPendingChangeNotFound)
+	}
+	if change.WorkspaceID() != workspaceID {
+		return huma.Error404NotFound(msgPendingChangeNotFound)
+	}
+	return nil
+}
 
-		authUser, ok := appMiddleware.GetAuthUser(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
-		}
+// fetchUpdatedChangeResponse re-reads a change after a review action and
+// enriches it with user details for the response body.
+func fetchUpdatedChangeResponse(ctx context.Context, svc *Service, userRepo user.Repository, changeID, workspaceID uuid.UUID) (PendingChangeResponse, error) {
+	updatedChange, err := svc.repo.FindByID(ctx, changeID, workspaceID)
+	if err != nil {
+		return PendingChangeResponse{}, huma.Error500InternalServerError("failed to fetch updated change")
+	}
+	resp, err := toPendingChangeResponse(ctx, updatedChange, userRepo.FindByID)
+	if err != nil {
+		return PendingChangeResponse{}, huma.Error500InternalServerError(msgFailedFetchUserDetails)
+	}
+	return resp, nil
+}
 
-		// Check authorization (owner/admin only)
-		canReview, err := svc.canReviewChanges(ctx, authUser.ID, workspaceID)
+// mapReviewActionError maps the shared approve/reject service errors to their
+// huma responses, falling back to the supplied 500 message otherwise.
+func mapReviewActionError(err error, fallbackMsg string) error {
+	if errors.Is(err, ErrChangeAlreadyReviewed) {
+		return huma.Error400BadRequest("change has already been reviewed")
+	}
+	if errors.Is(err, ErrUnauthorized) {
+		return huma.Error403Forbidden("insufficient permissions")
+	}
+	return huma.Error500InternalServerError(fallbackMsg)
+}
+
+// approvePendingChange returns the handler for POST /pending-changes/{id}/approve (owner/admin only).
+func approvePendingChange(svc *Service, userRepo user.Repository) func(context.Context, *ApprovePendingChangeInput) (*ApprovePendingChangeOutput, error) {
+	return func(ctx context.Context, input *ApprovePendingChangeInput) (*ApprovePendingChangeOutput, error) {
+		workspaceID, authUser, err := requireWorkspaceAndUser(ctx)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to check permissions")
-		}
-		if !canReview {
-			return nil, huma.Error403Forbidden("only owners and admins can approve changes")
+			return nil, err
 		}
 
-		// Verify the change belongs to this workspace
-		change, err := svc.repo.FindByID(ctx, input.ID, workspaceID)
-		if err != nil {
-			return nil, huma.Error404NotFound("pending change not found")
-		}
-		if change.WorkspaceID() != workspaceID {
-			return nil, huma.Error404NotFound("pending change not found")
+		if err := requireReviewableChange(ctx, svc, input.ID, workspaceID, authUser.ID, "only owners and admins can approve changes"); err != nil {
+			return nil, err
 		}
 
 		// Approve the change
 		if err := svc.ApproveChange(ctx, input.ID, workspaceID, authUser.ID); err != nil {
-			if errors.Is(err, ErrChangeAlreadyReviewed) {
-				return nil, huma.Error400BadRequest("change has already been reviewed")
-			}
-			if errors.Is(err, ErrUnauthorized) {
-				return nil, huma.Error403Forbidden("insufficient permissions")
-			}
-			return nil, huma.Error500InternalServerError("failed to approve change")
+			return nil, mapReviewActionError(err, "failed to approve change")
 		}
 
 		// Fetch the updated change with applied entity details
-		updatedChange, err := svc.repo.FindByID(ctx, input.ID, workspaceID)
+		resp, err := fetchUpdatedChangeResponse(ctx, svc, userRepo, input.ID, workspaceID)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to fetch updated change")
-		}
-
-		// Enrich with user details
-		resp, err := toPendingChangeResponse(ctx, updatedChange, userRepo.FindByID)
-		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to fetch user details")
+			return nil, err
 		}
 
 		return &ApprovePendingChangeOutput{
 			Body: resp,
 		}, nil
-	})
+	}
+}
 
-	// Reject pending change (owner/admin only)
-	huma.Post(api, "/pending-changes/{id}/reject", func(ctx context.Context, input *RejectPendingChangeInput) (*RejectPendingChangeOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
-		}
-
-		authUser, ok := appMiddleware.GetAuthUser(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
-		}
-
-		// Check authorization (owner/admin only)
-		canReview, err := svc.canReviewChanges(ctx, authUser.ID, workspaceID)
+// rejectPendingChange returns the handler for POST /pending-changes/{id}/reject (owner/admin only).
+func rejectPendingChange(svc *Service, userRepo user.Repository) func(context.Context, *RejectPendingChangeInput) (*RejectPendingChangeOutput, error) {
+	return func(ctx context.Context, input *RejectPendingChangeInput) (*RejectPendingChangeOutput, error) {
+		workspaceID, authUser, err := requireWorkspaceAndUser(ctx)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to check permissions")
-		}
-		if !canReview {
-			return nil, huma.Error403Forbidden("only owners and admins can reject changes")
+			return nil, err
 		}
 
-		// Verify the change belongs to this workspace
-		change, err := svc.repo.FindByID(ctx, input.ID, workspaceID)
-		if err != nil {
-			return nil, huma.Error404NotFound("pending change not found")
-		}
-		if change.WorkspaceID() != workspaceID {
-			return nil, huma.Error404NotFound("pending change not found")
+		if err := requireReviewableChange(ctx, svc, input.ID, workspaceID, authUser.ID, "only owners and admins can reject changes"); err != nil {
+			return nil, err
 		}
 
 		// Reject the change
 		if err := svc.RejectChange(ctx, input.ID, workspaceID, authUser.ID, input.Body.Reason); err != nil {
-			if errors.Is(err, ErrChangeAlreadyReviewed) {
-				return nil, huma.Error400BadRequest("change has already been reviewed")
-			}
-			if errors.Is(err, ErrUnauthorized) {
-				return nil, huma.Error403Forbidden("insufficient permissions")
-			}
-			return nil, huma.Error500InternalServerError("failed to reject change")
+			return nil, mapReviewActionError(err, "failed to reject change")
 		}
 
 		// Fetch the updated change
-		updatedChange, err := svc.repo.FindByID(ctx, input.ID, workspaceID)
+		resp, err := fetchUpdatedChangeResponse(ctx, svc, userRepo, input.ID, workspaceID)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to fetch updated change")
-		}
-
-		// Enrich with user details
-		resp, err := toPendingChangeResponse(ctx, updatedChange, userRepo.FindByID)
-		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to fetch user details")
+			return nil, err
 		}
 
 		return &RejectPendingChangeOutput{
 			Body: resp,
 		}, nil
-	})
+	}
 }
 
 // userLookup memoizes user fetches within a single request so list

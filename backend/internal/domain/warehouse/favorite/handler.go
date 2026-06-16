@@ -11,18 +11,23 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 )
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	msgAuthenticationRequired   = "authentication required"
+)
+
 // RegisterRoutes registers favorite routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List user's favorites
 	huma.Get(api, "/favorites", func(ctx context.Context, input *struct{}) (*ListFavoritesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		favorites, err := svc.ListFavorites(ctx, authUser.ID, workspaceID)
@@ -44,12 +49,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/favorites", func(ctx context.Context, input *ToggleFavoriteInput) (*ToggleFavoriteOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		favoriteType := FavoriteType(input.Body.FavoriteType)
@@ -94,12 +99,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/favorites/check/{favorite_type}/{target_id}", func(ctx context.Context, input *CheckFavoriteInput) (*CheckFavoriteOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		favoriteType := FavoriteType(input.FavoriteType_)

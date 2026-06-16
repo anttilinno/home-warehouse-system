@@ -43,7 +43,7 @@ export function BarcodeScanner({
   onError,
   torchSupported = false,
   torchEnabled = false,
-}: BarcodeScannerProps) {
+}: Readonly<BarcodeScannerProps>) {
   const handleScan = useCallback(
     (codes: IDetectedBarcode[]) => {
       // Double-fire / render-loop guard: drop empty arrays and any decode that

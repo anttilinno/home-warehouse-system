@@ -280,8 +280,25 @@ func TestNewRepairReminderScheduler_NilPool(t *testing.T) {
 }
 
 func TestNewRepairReminderScheduler_NilClient(t *testing.T) {
+	assertRepairReminderSchedulerNonNil(t)
+}
+
+// assertRepairReminderSchedulerNonNil constructs a RepairReminderScheduler with
+// nil dependencies and asserts it is non-nil. Shared by the scheduler
+// constructor tests that otherwise have identical bodies.
+func assertRepairReminderSchedulerNonNil(t *testing.T) {
+	t.Helper()
 	scheduler := NewRepairReminderScheduler(nil, nil)
 	assert.NotNil(t, scheduler)
+}
+
+// assertRepairReminderProcessorNonNil constructs a RepairReminderProcessor with
+// nil dependencies and asserts it is non-nil. Shared by the processor
+// constructor tests that otherwise have identical bodies.
+func assertRepairReminderProcessorNonNil(t *testing.T) {
+	t.Helper()
+	processor := NewRepairReminderProcessor(nil, nil)
+	assert.NotNil(t, processor)
 }
 
 // =============================================================================
@@ -368,9 +385,8 @@ func TestNewRepairReminderProcessor(t *testing.T) {
 }
 
 func TestNewRepairReminderProcessor_WithNilDependencies(t *testing.T) {
-	processor := NewRepairReminderProcessor(nil, nil)
-	assert.NotNil(t, processor)
-	// Processor should handle nil pool and nil push sender gracefully
+	// Processor should handle nil pool and nil push sender gracefully.
+	assertRepairReminderProcessorNonNil(t)
 }
 
 // =============================================================================
@@ -607,11 +623,9 @@ func TestNewScheduleRepairRemindersTask_Concurrent(t *testing.T) {
 // =============================================================================
 
 func TestNewRepairReminderScheduler_ReturnsValidInstance(t *testing.T) {
-	scheduler := NewRepairReminderScheduler(nil, nil)
-
 	// Scheduler should not be nil even with nil dependencies
-	// (dependencies are used lazily when methods are called)
-	assert.NotNil(t, scheduler)
+	// (dependencies are used lazily when methods are called).
+	assertRepairReminderSchedulerNonNil(t)
 }
 
 func TestNewRepairReminderScheduler_MultipleInstances(t *testing.T) {

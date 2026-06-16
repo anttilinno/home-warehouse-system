@@ -34,10 +34,10 @@ const PROVIDERS: Provider[] = [
 // Full-page redirect — OAuth initiate cannot use the api client (needs a
 // top-level navigation, not an XHR). Assigning `.href` is the testable seam.
 function navigateTo(href: string): void {
-  window.location.href = href;
+  globalThis.location.href = href;
 }
 
-function ProviderTile({ initial }: { initial: string }) {
+function ProviderTile({ initial }: Readonly<{ initial: string }>) {
   return (
     <span
       aria-hidden="true"
@@ -171,11 +171,11 @@ function UnlinkAction({
   provider,
   canUnlink,
   onUnlink,
-}: {
+}: Readonly<{
   provider: Provider;
   canUnlink: boolean;
   onUnlink: () => void;
-}) {
+}>) {
   const noteId = `unlink-lock-${provider.id}`;
   if (!canUnlink) {
     return (
