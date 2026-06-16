@@ -60,29 +60,39 @@ the single highest-ROI action.
 
 ---
 
-## Phase 1 — Frontend a11y cluster 🟡 (clears all 15 bugs)
+## Phase 1 — Frontend a11y cluster ⚠️ TRIAGE, NOT FIX (43 issues)
 
-**All 15 FE "bugs" are `typescript:S1082`** — visible non-interactive elements
-with a click handler but no keyboard listener. Fixing this group flips
-Reliability **B→A** and aligns with the Phase-17 axe-playwright CI sweep.
+Rules in scope: `S1082` (15, "bugs") + `S6848` (10) + `S6847` (6) + `S6819` (12).
 
-Rules in scope (43 issues): `S1082` (15, bugs) + `S6848` (10) + `S6847` (6) +
-`S6819` (12).
+**Finding (2026-06-16, on inspection): these 43 are Sonar false-positives
+against deliberate, already-documented accessibility. Do NOT mass-edit — fixing
+them would degrade correct code.** Every flagged site is one of:
 
-Files (from raw): `Bottombar.tsx`, `LogoutConfirm.tsx`, `MobileDrawer.tsx`,
-`RetroTree.tsx`, `Popover.tsx`, `RetroDialog.tsx`, `CommandPalette.tsx`,
-`PhotoLightbox.tsx`, `LoanRowActions.tsx`.
+- **Mouse-only scrim backdrop** (`onClick={onClose}`) where keyboard dismissal
+  is owned by `useModalStack` (ESC). Already carries `biome-ignore`
+  justifications. Sites: `LogoutConfirm`, `CommandPalette`, `PhotoLightbox`,
+  `Bottombar` (more-shortcuts scrim), `MobileDrawer`.
+- **`stopPropagation` guards** on dialog wrappers — `onClick={(e) =>
+  e.stopPropagation()}` is not a user control, so a keyboard handler is wrong.
+  Sites: `LoanRowActions`, `RetroTree` row-action cluster, the inner dialog of
+  each overlay above.
+- **Correct inline-SVG pattern** — `<svg role="img" aria-label=…>` (HudRow
+  capacity/sparkline gauges) is best practice; it cannot become an `<img>`.
 
-**Approach:**
-- Clickable `<div>`/`<span>` → either a real `<button>` (preferred) or add
-  `role` + `tabIndex={0}` + `onKeyDown` (Enter/Space) alongside `onClick`.
-- `S6819`: replace `role="dialog"` hand-rolls with the native `<dialog>`
-  element where the overlay primitives allow (RetroDialog, Popover).
-- `S6847`: remove listeners from elements that should not be interactive, or
-  promote them to interactive.
+Adding `onKeyDown`/`tabIndex` to scrims, or swapping `role="dialog"` for native
+`<dialog>` (which would break the existing focus-trap/modal-stack/ESC
+contract), is a regression, not a fix.
 
-**Verify:** `bun run test`, axe-playwright sweep, manual Tab/Enter/Esc on each
-overlay. Risk medium — touches interaction; keep existing keyboard behavior.
+**Correct disposition:** mark these issues **"Won't fix" / "Safe"** in
+SonarQube on the Phase 9 re-scan, using the in-code `biome-ignore` rationales.
+This is a triage action, not a code change. (The two arguably-real swaps —
+`role="status"` → `<output>`, `role="progressbar"` → `<progress>` in a couple
+of status regions — are low-value; the current `role=` patterns are already
+fully accessible. Optional.)
+
+**Net:** Reliability **B→A does NOT come from editing these** — it comes from
+marking them won't-fix. The codebase already handles a11y correctly; Sonar just
+can't see the `biome-ignore` justifications or the ESC-via-modal-stack design.
 
 ---
 
