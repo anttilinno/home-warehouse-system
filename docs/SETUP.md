@@ -94,6 +94,6 @@ This file is git-ignored, keeping secrets out of version control.
 │   ├── db/             # Database migrations
 │   └── tests/          # Integration tests
 ├── docs/               # Documentation
-├── frontend/           # Next.js frontend
+├── frontend/           # Vite + React 19 frontend
 └── docker-compose.yml  # PostgreSQL + Redis
 ```
