@@ -234,12 +234,18 @@ confirm each function ≤15.
 2. **Import coverage** so the 0% becomes real: scan with
    `sonar.javascript.lcov.reportPaths` (Vitest `coverage/lcov.info`) and
    `sonar.go.coverage.reportPaths` (`go test -coverprofile=coverage.out`).
-3. **Prevent regression without a Sonar server** — wire the equivalent linters
-   into existing CI so issues can't silently return:
-   - Go (`golangci-lint`): `goconst` (=S1192), `gocognit`/`gocyclo` (=S3776),
-     `dupl` (=S4144), `funlen`/`maintidx`, `gosec`.
-   - FE (biome/eslint): sonar-equivalent a11y + complexity rules; keep the
-     axe-playwright sweep from Phase 17.
+3. **Prevent regression without a Sonar server** — DONE via a git `pre-push`
+   hook (`.githooks/pre-push`, enabled by `mise run setup`), not CI:
+   - Go: `backend/.golangci.yml` enables `goconst` (=S1192), `gocognit`
+     (=S3776), `dupl` (=S4144), `gosec` + the standard set. The hook runs it
+     with `--new-from-merge-base=origin/master`, so it blocks NEW regressions
+     without flagging the legacy backlog; a manual `golangci-lint run` audits
+     full-tree.
+   - FE: the hook runs `biome lint --diagnostic-level=error` (blocks new
+     correctness errors; legacy style warnings don't fail) + `tsc`.
+   - Only runs the guard for the side of the tree that changed; bypass with
+     `git push --no-verify`. (The hook already caught + fixed 27 SA1006
+     regressions introduced by the Phase 4 const extraction.)
 
 ---
 

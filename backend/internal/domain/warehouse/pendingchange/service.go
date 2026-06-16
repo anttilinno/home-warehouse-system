@@ -3,6 +3,7 @@ package pendingchange
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -570,7 +571,7 @@ func (s *Service) applyItemChange(ctx context.Context, change *PendingChange) er
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForUpdateAction)
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var input item.UpdateInput
 		if err := json.Unmarshal(change.Payload(), &input); err != nil {
@@ -582,7 +583,7 @@ func (s *Service) applyItemChange(ctx context.Context, change *PendingChange) er
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForDeleteAction)
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.itemSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete item: %w", err)
@@ -618,7 +619,7 @@ func (s *Service) applyCategoryChange(ctx context.Context, change *PendingChange
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForUpdateAction)
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			Name             string     `json:"name"`
@@ -638,7 +639,7 @@ func (s *Service) applyCategoryChange(ctx context.Context, change *PendingChange
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForDeleteAction)
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.categorySvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete category: %w", err)
@@ -676,7 +677,7 @@ func (s *Service) applyLocationChange(ctx context.Context, change *PendingChange
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForUpdateAction)
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			Name           string     `json:"name"`
@@ -696,7 +697,7 @@ func (s *Service) applyLocationChange(ctx context.Context, change *PendingChange
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForDeleteAction)
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.locationSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete location: %w", err)
@@ -736,7 +737,7 @@ func (s *Service) applyContainerChange(ctx context.Context, change *PendingChang
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForUpdateAction)
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			Name        string    `json:"name"`
@@ -758,7 +759,7 @@ func (s *Service) applyContainerChange(ctx context.Context, change *PendingChang
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForDeleteAction)
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.containerSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete container: %w", err)
@@ -814,7 +815,7 @@ func (s *Service) applyInventoryChange(ctx context.Context, change *PendingChang
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForUpdateAction)
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			LocationID      uuid.UUID  `json:"location_id"`
@@ -848,7 +849,7 @@ func (s *Service) applyInventoryChange(ctx context.Context, change *PendingChang
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForDeleteAction)
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.inventoryRepo.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete inventory: %w", err)
@@ -886,7 +887,7 @@ func (s *Service) applyBorrowerChange(ctx context.Context, change *PendingChange
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForUpdateAction)
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var input borrower.UpdateInput
 		if err := json.Unmarshal(change.Payload(), &input); err != nil {
@@ -898,7 +899,7 @@ func (s *Service) applyBorrowerChange(ctx context.Context, change *PendingChange
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForDeleteAction)
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.borrowerSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete borrower: %w", err)
@@ -957,7 +958,7 @@ func (s *Service) applyLoanChange(ctx context.Context, change *PendingChange) er
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForUpdateAction)
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			DueDate *string `json:"due_date"`
@@ -982,7 +983,7 @@ func (s *Service) applyLoanChange(ctx context.Context, change *PendingChange) er
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForDeleteAction)
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.loanRepo.Delete(ctx, *change.EntityID()); err != nil {
 			return fmt.Errorf("failed to delete loan: %w", err)
@@ -1018,7 +1019,7 @@ func (s *Service) applyLabelChange(ctx context.Context, change *PendingChange) e
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForUpdateAction)
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			Name        string  `json:"name"`
@@ -1038,7 +1039,7 @@ func (s *Service) applyLabelChange(ctx context.Context, change *PendingChange) e
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForDeleteAction)
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.labelSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete label: %w", err)
@@ -1081,7 +1082,7 @@ func (s *Service) applyMaintenanceChange(ctx context.Context, change *PendingCha
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForUpdateAction)
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			Title        *string    `json:"title"`
@@ -1105,7 +1106,7 @@ func (s *Service) applyMaintenanceChange(ctx context.Context, change *PendingCha
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForDeleteAction)
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.maintenanceSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete maintenance schedule: %w", err)
@@ -1159,7 +1160,7 @@ func (s *Service) applyWishlistChange(ctx context.Context, change *PendingChange
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForUpdateAction)
+			return errors.New(msgEntityIDRequiredForUpdateAction)
 		}
 		var p struct {
 			Name              *string    `json:"name"`
@@ -1196,7 +1197,7 @@ func (s *Service) applyWishlistChange(ctx context.Context, change *PendingChange
 
 	case ActionDelete:
 		if change.EntityID() == nil {
-			return fmt.Errorf(msgEntityIDRequiredForDeleteAction)
+			return errors.New(msgEntityIDRequiredForDeleteAction)
 		}
 		if err := s.wishlistSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete wishlist item: %w", err)

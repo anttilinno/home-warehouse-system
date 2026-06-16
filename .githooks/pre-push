@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Pre-push quality gate.
+#
+# Mirrors the SonarQube rules that matter — backend: golangci-lint
+# (gocognit/goconst/dupl/gosec, see backend/.golangci.yml); frontend: biome +
+# tsc. Runs only for the part of the tree that changed relative to
+# origin/master, and golangci uses --new-from-merge-base so it blocks NEW
+# regressions without flagging the legacy backlog.
+#
+# Enable once:  git config core.hooksPath .githooks   (done by `mise run setup`)
+# Bypass once:  git push --no-verify
+set -uo pipefail
+
+REMOTE_BASE="origin/master"
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT" || exit 1
+
+# Need the base ref to compute "new" code. If missing (offline / fresh clone),
+# skip rather than block or flag the whole legacy tree.
+if ! git rev-parse --verify --quiet "$REMOTE_BASE" >/dev/null; then
+  echo "pre-push: $REMOTE_BASE not found locally — skipping quality gate." >&2
+  exit 0
+fi
+
+BASE="$(git merge-base "$REMOTE_BASE" HEAD)"
+CHANGED="$(git diff --name-only "$BASE"...HEAD)"
+fail=0
+
+if grep -q '^backend/' <<<"$CHANGED"; then
+  echo "pre-push: backend changed — golangci-lint (new code) + go build…"
+  (
+    cd backend || exit 1
+    golangci-lint run --new-from-merge-base="$REMOTE_BASE" ./... || exit 1
+    go build ./... || exit 1
+  ) || fail=1
+fi
+
+if grep -q '^frontend/' <<<"$CHANGED"; then
+  echo "pre-push: frontend changed — biome lint + tsc…"
+  (
+    cd frontend || exit 1
+    # Gate on biome ERRORS (correctness) only — pre-existing style warnings
+    # must not block pushes.
+    bunx biome lint --diagnostic-level=error src || exit 1
+    bun run lint:tsc || exit 1
+  ) || fail=1
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo "pre-push: quality gate FAILED. Fix the issues above, or bypass with 'git push --no-verify'." >&2
+  exit 1
+fi
+
+echo "pre-push: quality gate passed."
+exit 0

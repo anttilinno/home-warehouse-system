@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -556,7 +557,7 @@ func (s *Service) importRow(ctx context.Context, workspaceID uuid.UUID, entityTy
 func (s *Service) importCategory(ctx context.Context, workspaceID uuid.UUID, row map[string]string) error {
 	name := row["name"]
 	if name == "" {
-		return fmt.Errorf(msgNameIsRequired)
+		return errors.New(msgNameIsRequired)
 	}
 
 	var parentID pgtype.UUID
@@ -583,7 +584,7 @@ func (s *Service) importCategory(ctx context.Context, workspaceID uuid.UUID, row
 func (s *Service) importLabel(ctx context.Context, workspaceID uuid.UUID, row map[string]string) error {
 	name := row["name"]
 	if name == "" {
-		return fmt.Errorf(msgNameIsRequired)
+		return errors.New(msgNameIsRequired)
 	}
 
 	color := row["color"]
@@ -604,7 +605,7 @@ func (s *Service) importLabel(ctx context.Context, workspaceID uuid.UUID, row ma
 func (s *Service) importCompany(ctx context.Context, workspaceID uuid.UUID, row map[string]string) error {
 	name := row["name"]
 	if name == "" {
-		return fmt.Errorf(msgNameIsRequired)
+		return errors.New(msgNameIsRequired)
 	}
 
 	_, err := s.repo.CreateCompany(ctx, queries.CreateCompanyParams{
@@ -620,7 +621,7 @@ func (s *Service) importCompany(ctx context.Context, workspaceID uuid.UUID, row 
 func (s *Service) importBorrower(ctx context.Context, workspaceID uuid.UUID, row map[string]string) error {
 	name := row["name"]
 	if name == "" {
-		return fmt.Errorf(msgNameIsRequired)
+		return errors.New(msgNameIsRequired)
 	}
 
 	_, err := s.repo.CreateBorrower(ctx, queries.CreateBorrowerParams{
@@ -637,7 +638,7 @@ func (s *Service) importBorrower(ctx context.Context, workspaceID uuid.UUID, row
 func (s *Service) importLocation(ctx context.Context, workspaceID uuid.UUID, row map[string]string) error {
 	name := row["name"]
 	if name == "" {
-		return fmt.Errorf(msgNameIsRequired)
+		return errors.New(msgNameIsRequired)
 	}
 
 	var parentID pgtype.UUID
@@ -665,7 +666,7 @@ func (s *Service) importLocation(ctx context.Context, workspaceID uuid.UUID, row
 func (s *Service) importItem(ctx context.Context, workspaceID uuid.UUID, row map[string]string) error {
 	name := row["name"]
 	if name == "" {
-		return fmt.Errorf(msgNameIsRequired)
+		return errors.New(msgNameIsRequired)
 	}
 
 	var categoryID pgtype.UUID
@@ -703,7 +704,7 @@ func (s *Service) importItem(ctx context.Context, workspaceID uuid.UUID, row map
 func (s *Service) importContainer(ctx context.Context, workspaceID uuid.UUID, row map[string]string) error {
 	name := row["name"]
 	if name == "" {
-		return fmt.Errorf(msgNameIsRequired)
+		return errors.New(msgNameIsRequired)
 	}
 
 	locationName := row["location_name"]
