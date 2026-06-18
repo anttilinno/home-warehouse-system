@@ -17,9 +17,20 @@ import (
 const msgWorkspaceContextRequired = "workspace context required"
 
 // RegisterRoutes registers repair attachment routes under /repairs/{repairLogId}/attachments.
+// Each handler is a package factory func (see below) so this stays a flat list
+// of registrations rather than a single god-function of inline closures.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List attachments for a repair log
-	huma.Get(api, "/repairs/{repairLogId}/attachments", func(ctx context.Context, input *ListAttachmentsInput) (*ListAttachmentsOutput, error) {
+	huma.Get(api, "/repairs/{repairLogId}/attachments", listAttachments(svc))
+	// Link existing file to repair as attachment
+	huma.Post(api, "/repairs/{repairLogId}/attachments", createAttachment(svc, broadcaster))
+	// Unlink attachment from repair
+	huma.Delete(api, "/repairs/{repairLogId}/attachments/{attachmentId}", deleteAttachment(svc, broadcaster))
+}
+
+// listAttachments lists attachments for a repair log.
+func listAttachments(svc ServiceInterface) func(context.Context, *ListAttachmentsInput) (*ListAttachmentsOutput, error) {
+	return func(ctx context.Context, input *ListAttachmentsInput) (*ListAttachmentsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -41,10 +52,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				Total: len(items),
 			},
 		}, nil
-	})
+	}
+}
 
-	// Link existing file to repair as attachment
-	huma.Post(api, "/repairs/{repairLogId}/attachments", func(ctx context.Context, input *CreateAttachmentInput) (*CreateAttachmentOutput, error) {
+// createAttachment links an existing file to a repair as an attachment.
+func createAttachment(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *CreateAttachmentInput) (*CreateAttachmentOutput, error) {
+	return func(ctx context.Context, input *CreateAttachmentInput) (*CreateAttachmentOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -71,30 +84,21 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		// Publish SSE event
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "repairattachment.created",
-				EntityID:   ra.ID().String(),
-				EntityType: "repairattachment",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"id":            ra.ID(),
-					"repair_log_id": ra.RepairLogID(),
-					"file_id":       ra.FileID(),
-					"user_name":     userName,
-				},
-			})
-		}
+		publishEvent(ctx, broadcaster, workspaceID, "repairattachment.created", ra.ID().String(), map[string]any{
+			"id":            ra.ID(),
+			"repair_log_id": ra.RepairLogID(),
+			"file_id":       ra.FileID(),
+		})
 
 		return &CreateAttachmentOutput{
 			Body: toAttachmentResponse(ra),
 		}, nil
-	})
+	}
+}
 
-	// Unlink attachment from repair
-	huma.Delete(api, "/repairs/{repairLogId}/attachments/{attachmentId}", func(ctx context.Context, input *DeleteAttachmentInput) (*struct{}, error) {
+// deleteAttachment unlinks an attachment from a repair.
+func deleteAttachment(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *DeleteAttachmentInput) (*struct{}, error) {
+	return func(ctx context.Context, input *DeleteAttachmentInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -110,23 +114,29 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		// Publish SSE event
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "repairattachment.deleted",
-				EntityID:   attachmentID.String(),
-				EntityType: "repairattachment",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"id":            attachmentID,
-					"repair_log_id": input.RepairLogID,
-					"user_name":     userName,
-				},
-			})
-		}
+		publishEvent(ctx, broadcaster, workspaceID, "repairattachment.deleted", attachmentID.String(), map[string]any{
+			"id":            attachmentID,
+			"repair_log_id": input.RepairLogID,
+		})
 
 		return nil, nil
+	}
+}
+
+// publishEvent broadcasts a repairattachment SSE event, injecting the actor's
+// display name into data. It no-ops when there is no broadcaster or auth user.
+func publishEvent(ctx context.Context, broadcaster *events.Broadcaster, workspaceID uuid.UUID, eventType, entityID string, data map[string]any) {
+	authUser, _ := appMiddleware.GetAuthUser(ctx)
+	if broadcaster == nil || authUser == nil {
+		return
+	}
+	data["user_name"] = appMiddleware.GetUserDisplayName(ctx)
+	broadcaster.Publish(workspaceID, events.Event{
+		Type:       eventType,
+		EntityID:   entityID,
+		EntityType: "repairattachment",
+		UserID:     authUser.ID,
+		Data:       data,
 	})
 }
 

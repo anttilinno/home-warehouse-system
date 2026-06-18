@@ -28,7 +28,52 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 // registerQueryRoutes registers read-only inventory routes.
 func registerQueryRoutes(api huma.API, svc ServiceInterface) {
-	huma.Get(api, "/inventory", func(ctx context.Context, input *ListInventoryInput) (*ListInventoryOutput, error) {
+	huma.Get(api, "/inventory", listInventory(svc))
+	huma.Get(api, "/inventory/{id}", getInventory(svc))
+	huma.Get(api, "/inventory/by-item/{item_id}", listInventoryByItem(svc))
+	huma.Get(api, "/inventory/by-location/{location_id}", listInventoryByLocation(svc))
+	huma.Get(api, "/inventory/by-container/{container_id}", listInventoryByContainer(svc))
+	huma.Get(api, "/inventory/available/{item_id}", listAvailableInventory(svc))
+	huma.Get(api, "/inventory/total-quantity/{item_id}", getTotalQuantity(svc))
+	huma.Get(api, "/inventory/expiring", listExpiringInventory(svc))
+}
+
+// registerMutationRoutes registers create/update inventory routes.
+func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
+	huma.Post(api, "/inventory", createInventory(svc, broadcaster))
+	huma.Patch(api, "/inventory/{id}", updateInventory(svc, broadcaster))
+	huma.Patch(api, "/inventory/{id}/status", updateInventoryStatus(svc, broadcaster))
+	huma.Patch(api, "/inventory/{id}/quantity", updateInventoryQuantity(svc, broadcaster))
+}
+
+// registerActionRoutes registers inventory action routes (move, archive, restore).
+func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
+	huma.Post(api, "/inventory/{id}/move", moveInventory(svc, broadcaster))
+	huma.Post(api, "/inventory/{id}/archive", archiveInventory(svc, broadcaster))
+	huma.Post(api, "/inventory/{id}/restore", restoreInventory(svc, broadcaster))
+}
+
+// publishInventoryEvent emits an SSE event for an inventory mutation, mirroring
+// the per-route inline publish blocks: it no-ops when there is no broadcaster or
+// no authenticated user, and injects the user display name into the data map.
+func publishInventoryEvent(ctx context.Context, broadcaster *events.Broadcaster, workspaceID uuid.UUID, eventType, entityID string, data map[string]any) {
+	authUser, _ := appMiddleware.GetAuthUser(ctx)
+	if broadcaster == nil || authUser == nil {
+		return
+	}
+	data["user_name"] = appMiddleware.GetUserDisplayName(ctx)
+	broadcaster.Publish(workspaceID, events.Event{
+		Type:       eventType,
+		EntityID:   entityID,
+		EntityType: "inventory",
+		UserID:     authUser.ID,
+		Data:       data,
+	})
+}
+
+// listInventory lists inventory in the workspace (optionally scoped to a container).
+func listInventory(svc ServiceInterface) func(context.Context, *ListInventoryInput) (*ListInventoryOutput, error) {
+	return func(ctx context.Context, input *ListInventoryInput) (*ListInventoryOutput, error) {
 		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
 		if err != nil {
 			return nil, huma.Error401Unauthorized(err.Error())
@@ -75,9 +120,12 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 				TotalPages: (total + input.Limit - 1) / input.Limit,
 			},
 		}, nil
-	})
+	}
+}
 
-	huma.Get(api, "/inventory/{id}", func(ctx context.Context, input *GetInventoryInput) (*GetInventoryOutput, error) {
+// getInventory returns a single inventory entry by ID.
+func getInventory(svc ServiceInterface) func(context.Context, *GetInventoryInput) (*GetInventoryOutput, error) {
+	return func(ctx context.Context, input *GetInventoryInput) (*GetInventoryOutput, error) {
 		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
 		if err != nil {
 			return nil, huma.Error401Unauthorized(err.Error())
@@ -92,9 +140,12 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 		}
 
 		return &GetInventoryOutput{Body: toInventoryResponse(inv)}, nil
-	})
+	}
+}
 
-	huma.Get(api, "/inventory/by-item/{item_id}", func(ctx context.Context, input *GetByItemInput) (*ListInventoryOutput, error) {
+// listInventoryByItem lists inventory entries for an item.
+func listInventoryByItem(svc ServiceInterface) func(context.Context, *GetByItemInput) (*ListInventoryOutput, error) {
+	return func(ctx context.Context, input *GetByItemInput) (*ListInventoryOutput, error) {
 		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
 		if err != nil {
 			return nil, huma.Error401Unauthorized(err.Error())
@@ -106,9 +157,12 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 		}
 
 		return &ListInventoryOutput{Body: InventoryListResponse{Items: toInventoryResponses(items)}}, nil
-	})
+	}
+}
 
-	huma.Get(api, "/inventory/by-location/{location_id}", func(ctx context.Context, input *GetByLocationInput) (*ListInventoryOutput, error) {
+// listInventoryByLocation lists inventory entries for a location.
+func listInventoryByLocation(svc ServiceInterface) func(context.Context, *GetByLocationInput) (*ListInventoryOutput, error) {
+	return func(ctx context.Context, input *GetByLocationInput) (*ListInventoryOutput, error) {
 		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
 		if err != nil {
 			return nil, huma.Error401Unauthorized(err.Error())
@@ -120,9 +174,12 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 		}
 
 		return &ListInventoryOutput{Body: InventoryListResponse{Items: toInventoryResponses(items)}}, nil
-	})
+	}
+}
 
-	huma.Get(api, "/inventory/by-container/{container_id}", func(ctx context.Context, input *GetByContainerInput) (*ListInventoryOutput, error) {
+// listInventoryByContainer lists inventory entries for a container.
+func listInventoryByContainer(svc ServiceInterface) func(context.Context, *GetByContainerInput) (*ListInventoryOutput, error) {
+	return func(ctx context.Context, input *GetByContainerInput) (*ListInventoryOutput, error) {
 		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
 		if err != nil {
 			return nil, huma.Error401Unauthorized(err.Error())
@@ -134,9 +191,12 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 		}
 
 		return &ListInventoryOutput{Body: InventoryListResponse{Items: toInventoryResponses(items)}}, nil
-	})
+	}
+}
 
-	huma.Get(api, "/inventory/available/{item_id}", func(ctx context.Context, input *GetByItemInput) (*ListInventoryOutput, error) {
+// listAvailableInventory lists available inventory entries for an item.
+func listAvailableInventory(svc ServiceInterface) func(context.Context, *GetByItemInput) (*ListInventoryOutput, error) {
+	return func(ctx context.Context, input *GetByItemInput) (*ListInventoryOutput, error) {
 		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
 		if err != nil {
 			return nil, huma.Error401Unauthorized(err.Error())
@@ -148,9 +208,12 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 		}
 
 		return &ListInventoryOutput{Body: InventoryListResponse{Items: toInventoryResponses(items)}}, nil
-	})
+	}
+}
 
-	huma.Get(api, "/inventory/total-quantity/{item_id}", func(ctx context.Context, input *GetByItemInput) (*GetTotalQuantityOutput, error) {
+// getTotalQuantity returns the total quantity for an item across inventory entries.
+func getTotalQuantity(svc ServiceInterface) func(context.Context, *GetByItemInput) (*GetTotalQuantityOutput, error) {
+	return func(ctx context.Context, input *GetByItemInput) (*GetTotalQuantityOutput, error) {
 		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
 		if err != nil {
 			return nil, huma.Error401Unauthorized(err.Error())
@@ -162,9 +225,12 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 		}
 
 		return &GetTotalQuantityOutput{Body: TotalQuantityResponse{ItemID: input.ItemID, TotalQuantity: total}}, nil
-	})
+	}
+}
 
-	huma.Get(api, "/inventory/expiring", func(ctx context.Context, input *ListExpiringInput) (*ListExpiringOutput, error) {
+// listExpiringInventory returns inventory entries expiring within the window.
+func listExpiringInventory(svc ServiceInterface) func(context.Context, *ListExpiringInput) (*ListExpiringOutput, error) {
+	return func(ctx context.Context, input *ListExpiringInput) (*ListExpiringOutput, error) {
 		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
 		if err != nil {
 			return nil, huma.Error401Unauthorized(err.Error())
@@ -190,12 +256,12 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 		return &ListExpiringOutput{
 			Body: ExpiringInventoryListResponse{Items: responses, Total: len(responses)},
 		}, nil
-	})
+	}
 }
 
-// registerMutationRoutes registers create/update inventory routes.
-func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
-	huma.Post(api, "/inventory", func(ctx context.Context, input *CreateInventoryInput) (*CreateInventoryOutput, error) {
+// createInventory creates an inventory entry.
+func createInventory(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *CreateInventoryInput) (*CreateInventoryOutput, error) {
+	return func(ctx context.Context, input *CreateInventoryInput) (*CreateInventoryOutput, error) {
 		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
 		if err != nil {
 			return nil, huma.Error401Unauthorized(err.Error())
@@ -223,28 +289,19 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 			return nil, appMiddleware.MapDomainError(err)
 		}
 
-		// Publish SSE event
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "inventory.created",
-				EntityID:   inv.ID().String(),
-				EntityType: "inventory",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"id":        inv.ID(),
-					"item_id":   inv.ItemID(),
-					"status":    inv.Status(),
-					"user_name": userName,
-				},
-			})
-		}
+		publishInventoryEvent(ctx, broadcaster, workspaceID, "inventory.created", inv.ID().String(), map[string]any{
+			"id":      inv.ID(),
+			"item_id": inv.ItemID(),
+			"status":  inv.Status(),
+		})
 
 		return &CreateInventoryOutput{Body: toInventoryResponse(inv)}, nil
-	})
+	}
+}
 
-	huma.Patch(api, "/inventory/{id}", func(ctx context.Context, input *UpdateInventoryInput) (*UpdateInventoryOutput, error) {
+// updateInventory updates an inventory entry.
+func updateInventory(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *UpdateInventoryInput) (*UpdateInventoryOutput, error) {
+	return func(ctx context.Context, input *UpdateInventoryInput) (*UpdateInventoryOutput, error) {
 		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
 		if err != nil {
 			return nil, huma.Error401Unauthorized(err.Error())
@@ -269,132 +326,89 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 			return nil, appMiddleware.MapDomainError(err)
 		}
 
-		// Publish SSE event
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       eventInventoryUpdated,
-				EntityID:   inv.ID().String(),
-				EntityType: "inventory",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"id":        inv.ID(),
-					"status":    inv.Status(),
-					"user_name": userName,
-				},
-			})
-		}
+		publishInventoryEvent(ctx, broadcaster, workspaceID, eventInventoryUpdated, inv.ID().String(), map[string]any{
+			"id":     inv.ID(),
+			"status": inv.Status(),
+		})
 
 		return &UpdateInventoryOutput{Body: toInventoryResponse(inv)}, nil
-	})
-
-	huma.Patch(api, "/inventory/{id}/status", func(ctx context.Context, input *UpdateStatusInput) (*UpdateInventoryOutput, error) {
-		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
-		if err != nil {
-			return nil, huma.Error401Unauthorized(err.Error())
-		}
-
-		inv, err := svc.UpdateStatus(ctx, input.ID, workspaceID, input.Body.Status)
-		if err != nil {
-			if errors.Is(err, ErrInventoryNotFound) {
-				return nil, huma.Error404NotFound(msgInventoryNotFound)
-			}
-			return nil, appMiddleware.MapDomainError(err)
-		}
-
-		// Publish SSE event
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       eventInventoryUpdated,
-				EntityID:   inv.ID().String(),
-				EntityType: "inventory",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"id":        inv.ID(),
-					"status":    inv.Status(),
-					"user_name": userName,
-				},
-			})
-		}
-
-		return &UpdateInventoryOutput{Body: toInventoryResponse(inv)}, nil
-	})
-
-	huma.Patch(api, "/inventory/{id}/quantity", func(ctx context.Context, input *UpdateQuantityInput) (*UpdateInventoryOutput, error) {
-		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
-		if err != nil {
-			return nil, huma.Error401Unauthorized(err.Error())
-		}
-
-		inv, err := svc.UpdateQuantity(ctx, input.ID, workspaceID, input.Body.Quantity)
-		if err != nil {
-			if errors.Is(err, ErrInventoryNotFound) {
-				return nil, huma.Error404NotFound(msgInventoryNotFound)
-			}
-			return nil, appMiddleware.MapDomainError(err)
-		}
-
-		// Publish SSE event
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       eventInventoryUpdated,
-				EntityID:   inv.ID().String(),
-				EntityType: "inventory",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"id":        inv.ID(),
-					"quantity":  inv.Quantity(),
-					"user_name": userName,
-				},
-			})
-		}
-
-		return &UpdateInventoryOutput{Body: toInventoryResponse(inv)}, nil
-	})
+	}
 }
 
-// registerActionRoutes registers inventory action routes (move, archive, restore).
-func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
-	huma.Post(api, "/inventory/{id}/move", func(ctx context.Context, input *MoveInventoryInput) (*UpdateInventoryOutput, error) {
-		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
-		if err != nil {
-			return nil, huma.Error401Unauthorized(err.Error())
+// mutateInventory runs a single-entry mutation that returns the updated entry,
+// applies the standard not-found/domain error mapping, publishes the
+// "inventory.updated" SSE event with the supplied data map, and returns the
+// update output. It collapses the otherwise byte-identical bodies of the
+// status/quantity/move handlers into one place.
+func mutateInventory(
+	ctx context.Context,
+	broadcaster *events.Broadcaster,
+	mutate func(ctx context.Context, workspaceID uuid.UUID) (*Inventory, error),
+	data func(inv *Inventory) map[string]any,
+) (*UpdateInventoryOutput, error) {
+	workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+	if err != nil {
+		return nil, huma.Error401Unauthorized(err.Error())
+	}
+
+	inv, err := mutate(ctx, workspaceID)
+	if err != nil {
+		if errors.Is(err, ErrInventoryNotFound) {
+			return nil, huma.Error404NotFound(msgInventoryNotFound)
 		}
+		return nil, appMiddleware.MapDomainError(err)
+	}
 
-		inv, err := svc.Move(ctx, input.ID, workspaceID, input.Body.LocationID, input.Body.ContainerID)
-		if err != nil {
-			if errors.Is(err, ErrInventoryNotFound) {
-				return nil, huma.Error404NotFound(msgInventoryNotFound)
-			}
-			return nil, appMiddleware.MapDomainError(err)
-		}
+	publishInventoryEvent(ctx, broadcaster, workspaceID, eventInventoryUpdated, inv.ID().String(), data(inv))
 
-		// Publish SSE event
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       eventInventoryUpdated,
-				EntityID:   inv.ID().String(),
-				EntityType: "inventory",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"id":          inv.ID(),
-					"location_id": inv.LocationID(),
-					"user_name":   userName,
-				},
-			})
-		}
+	return &UpdateInventoryOutput{Body: toInventoryResponse(inv)}, nil
+}
 
-		return &UpdateInventoryOutput{Body: toInventoryResponse(inv)}, nil
-	})
+// updateInventoryStatus updates an inventory entry's status.
+func updateInventoryStatus(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *UpdateStatusInput) (*UpdateInventoryOutput, error) {
+	return func(ctx context.Context, input *UpdateStatusInput) (*UpdateInventoryOutput, error) {
+		return mutateInventory(ctx, broadcaster,
+			func(ctx context.Context, workspaceID uuid.UUID) (*Inventory, error) {
+				return svc.UpdateStatus(ctx, input.ID, workspaceID, input.Body.Status)
+			},
+			func(inv *Inventory) map[string]any {
+				return map[string]any{"id": inv.ID(), "status": inv.Status()}
+			},
+		)
+	}
+}
 
-	huma.Post(api, "/inventory/{id}/archive", func(ctx context.Context, input *GetInventoryInput) (*struct{}, error) {
+// updateInventoryQuantity updates an inventory entry's quantity.
+func updateInventoryQuantity(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *UpdateQuantityInput) (*UpdateInventoryOutput, error) {
+	return func(ctx context.Context, input *UpdateQuantityInput) (*UpdateInventoryOutput, error) {
+		return mutateInventory(ctx, broadcaster,
+			func(ctx context.Context, workspaceID uuid.UUID) (*Inventory, error) {
+				return svc.UpdateQuantity(ctx, input.ID, workspaceID, input.Body.Quantity)
+			},
+			func(inv *Inventory) map[string]any {
+				return map[string]any{"id": inv.ID(), "quantity": inv.Quantity()}
+			},
+		)
+	}
+}
+
+// moveInventory moves an inventory entry to a new location/container.
+func moveInventory(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *MoveInventoryInput) (*UpdateInventoryOutput, error) {
+	return func(ctx context.Context, input *MoveInventoryInput) (*UpdateInventoryOutput, error) {
+		return mutateInventory(ctx, broadcaster,
+			func(ctx context.Context, workspaceID uuid.UUID) (*Inventory, error) {
+				return svc.Move(ctx, input.ID, workspaceID, input.Body.LocationID, input.Body.ContainerID)
+			},
+			func(inv *Inventory) map[string]any {
+				return map[string]any{"id": inv.ID(), "location_id": inv.LocationID()}
+			},
+		)
+	}
+}
+
+// archiveInventory archives an inventory entry.
+func archiveInventory(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetInventoryInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetInventoryInput) (*struct{}, error) {
 		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
 		if err != nil {
 			return nil, huma.Error401Unauthorized(err.Error())
@@ -407,25 +421,15 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 			return nil, appMiddleware.MapDomainError(err)
 		}
 
-		// Publish SSE event
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "inventory.deleted",
-				EntityID:   input.ID.String(),
-				EntityType: "inventory",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishInventoryEvent(ctx, broadcaster, workspaceID, "inventory.deleted", input.ID.String(), map[string]any{})
 
 		return nil, nil
-	})
+	}
+}
 
-	huma.Post(api, "/inventory/{id}/restore", func(ctx context.Context, input *GetInventoryInput) (*struct{}, error) {
+// restoreInventory restores an archived inventory entry.
+func restoreInventory(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetInventoryInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetInventoryInput) (*struct{}, error) {
 		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
 		if err != nil {
 			return nil, huma.Error401Unauthorized(err.Error())
@@ -438,23 +442,10 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 			return nil, appMiddleware.MapDomainError(err)
 		}
 
-		// Publish SSE event
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "inventory.created",
-				EntityID:   input.ID.String(),
-				EntityType: "inventory",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishInventoryEvent(ctx, broadcaster, workspaceID, "inventory.created", input.ID.String(), map[string]any{})
 
 		return nil, nil
-	})
+	}
 }
 
 // toInventoryResponses converts a slice of Inventory to InventoryResponse.

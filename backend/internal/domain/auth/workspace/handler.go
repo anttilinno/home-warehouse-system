@@ -18,9 +18,25 @@ const (
 )
 
 // RegisterRoutes registers workspace routes at user-level (list, create, get by slug).
+// Each handler is a package factory func (see below) so this stays a flat list
+// of registrations rather than a single god-function of inline closures.
 func RegisterRoutes(api huma.API, svc ServiceInterface) {
-	// List user's workspaces
-	huma.Get(api, "/workspaces", func(ctx context.Context, input *struct{}) (*ListWorkspacesOutput, error) {
+	huma.Get(api, "/workspaces", listWorkspaces(svc))
+	huma.Get(api, "/workspaces/by-slug/{slug}", getWorkspaceBySlug(svc))
+	huma.Post(api, "/workspaces", createWorkspace(svc))
+}
+
+// RegisterWorkspaceScopedRoutes registers routes for single workspace operations
+// (get, update, delete). These are registered on the workspace-scoped API.
+func RegisterWorkspaceScopedRoutes(api huma.API, svc ServiceInterface) {
+	huma.Get(api, "/", getWorkspace(svc))
+	huma.Patch(api, "/", updateWorkspace(svc))
+	huma.Delete(api, "/", deleteWorkspace(svc))
+}
+
+// listWorkspaces lists the authenticated user's workspaces.
+func listWorkspaces(svc ServiceInterface) func(context.Context, *struct{}) (*ListWorkspacesOutput, error) {
+	return func(ctx context.Context, input *struct{}) (*ListWorkspacesOutput, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
@@ -39,10 +55,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		return &ListWorkspacesOutput{
 			Body: WorkspaceListResponse{Items: items},
 		}, nil
-	})
+	}
+}
 
-	// Get workspace by slug
-	huma.Get(api, "/workspaces/by-slug/{slug}", func(ctx context.Context, input *GetWorkspaceBySlugInput) (*GetWorkspaceOutput, error) {
+// getWorkspaceBySlug returns a workspace by its slug.
+func getWorkspaceBySlug(svc ServiceInterface) func(context.Context, *GetWorkspaceBySlugInput) (*GetWorkspaceOutput, error) {
+	return func(ctx context.Context, input *GetWorkspaceBySlugInput) (*GetWorkspaceOutput, error) {
 		_, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
@@ -56,10 +74,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		return &GetWorkspaceOutput{
 			Body: toWorkspaceResponse(workspace),
 		}, nil
-	})
+	}
+}
 
-	// Create workspace
-	huma.Post(api, "/workspaces", func(ctx context.Context, input *CreateWorkspaceRequest) (*CreateWorkspaceOutput, error) {
+// createWorkspace creates a workspace owned by the authenticated user.
+func createWorkspace(svc ServiceInterface) func(context.Context, *CreateWorkspaceRequest) (*CreateWorkspaceOutput, error) {
+	return func(ctx context.Context, input *CreateWorkspaceRequest) (*CreateWorkspaceOutput, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
@@ -82,14 +102,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		return &CreateWorkspaceOutput{
 			Body: toWorkspaceResponse(workspace),
 		}, nil
-	})
+	}
 }
 
-// RegisterWorkspaceScopedRoutes registers routes for single workspace operations
-// (get, update, delete). These are registered on the workspace-scoped API.
-func RegisterWorkspaceScopedRoutes(api huma.API, svc ServiceInterface) {
-	// Get workspace (handles /workspaces/{workspace_id} as root "/" on subrouter)
-	huma.Get(api, "/", func(ctx context.Context, input *struct{}) (*GetWorkspaceOutput, error) {
+// getWorkspace returns the current workspace-scoped workspace.
+func getWorkspace(svc ServiceInterface) func(context.Context, *struct{}) (*GetWorkspaceOutput, error) {
+	return func(ctx context.Context, input *struct{}) (*GetWorkspaceOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -103,10 +121,12 @@ func RegisterWorkspaceScopedRoutes(api huma.API, svc ServiceInterface) {
 		return &GetWorkspaceOutput{
 			Body: toWorkspaceResponse(workspace),
 		}, nil
-	})
+	}
+}
 
-	// Update workspace
-	huma.Patch(api, "/", func(ctx context.Context, input *UpdateWorkspaceBodyInput) (*UpdateWorkspaceOutput, error) {
+// updateWorkspace updates the current workspace-scoped workspace.
+func updateWorkspace(svc ServiceInterface) func(context.Context, *UpdateWorkspaceBodyInput) (*UpdateWorkspaceOutput, error) {
+	return func(ctx context.Context, input *UpdateWorkspaceBodyInput) (*UpdateWorkspaceOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -130,10 +150,12 @@ func RegisterWorkspaceScopedRoutes(api huma.API, svc ServiceInterface) {
 		return &UpdateWorkspaceOutput{
 			Body: toWorkspaceResponse(workspace),
 		}, nil
-	})
+	}
+}
 
-	// Delete workspace
-	huma.Delete(api, "/", func(ctx context.Context, input *struct{}) (*struct{}, error) {
+// deleteWorkspace deletes the current workspace-scoped workspace.
+func deleteWorkspace(svc ServiceInterface) func(context.Context, *struct{}) (*struct{}, error) {
+	return func(ctx context.Context, input *struct{}) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -151,7 +173,7 @@ func RegisterWorkspaceScopedRoutes(api huma.API, svc ServiceInterface) {
 		}
 
 		return nil, nil
-	})
+	}
 }
 
 func toWorkspaceResponse(w *Workspace) WorkspaceResponse {
