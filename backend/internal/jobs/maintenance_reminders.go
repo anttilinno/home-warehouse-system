@@ -100,46 +100,7 @@ func (p *MaintenanceReminderProcessor) ProcessTask(ctx context.Context, t *asynq
 		"is_overdue":   payload.IsOverdue,
 	})
 
-	var pushUserIDs []uuid.UUID
-	for _, m := range members {
-		enabled, err := userPrefEnabled(ctx, q, m.UserID, maintenancePrefKey)
-		if err != nil {
-			log.Printf("Failed to load notification preferences for user %s: %v", m.UserID, err)
-			continue
-		}
-		if !enabled {
-			continue
-		}
-
-		// Dedupe: one notification per schedule occurrence per user.
-		count, err := q.CountNotificationsByDedupeKey(ctx, queries.CountNotificationsByDedupeKeyParams{
-			UserID:           m.UserID,
-			NotificationType: queries.AuthNotificationTypeEnumMAINTENANCEDUE,
-			DedupeKey:        payload.DedupeKey(),
-		})
-		if err != nil {
-			log.Printf("Failed dedupe check for user %s: %v", m.UserID, err)
-			continue
-		}
-		if count > 0 {
-			continue
-		}
-
-		wsID := pgtype.UUID{Bytes: payload.WorkspaceID, Valid: true}
-		if _, err := q.CreateNotification(ctx, queries.CreateNotificationParams{
-			ID:               uuid.New(),
-			UserID:           m.UserID,
-			WorkspaceID:      wsID,
-			NotificationType: queries.AuthNotificationTypeEnum(notification.TypeMaintenanceDue),
-			Title:            title,
-			Message:          body,
-			Metadata:         metadata,
-		}); err != nil {
-			log.Printf("Failed to create maintenance notification for user %s: %v", m.UserID, err)
-			continue
-		}
-		pushUserIDs = append(pushUserIDs, m.UserID)
-	}
+	pushUserIDs := p.createMemberNotifications(ctx, q, members, payload, title, body, metadata)
 
 	if len(pushUserIDs) > 0 && p.pushSender != nil && p.pushSender.IsEnabled() {
 		tag := "maintenance-due"
@@ -168,6 +129,54 @@ func (p *MaintenanceReminderProcessor) ProcessTask(ctx context.Context, t *asynq
 
 	log.Printf("Maintenance reminder processed for schedule %s", payload.ScheduleID)
 	return nil
+}
+
+// createMemberNotifications creates an in-app maintenance notification for each
+// eligible workspace member — notifications enabled for the user and not already
+// sent for this schedule occurrence (dedupe) — and returns the users that should
+// also receive a push. Per-user failures are logged and skipped.
+func (p *MaintenanceReminderProcessor) createMemberNotifications(ctx context.Context, q *queries.Queries, members []queries.ListWorkspaceMembersByRoleRow, payload MaintenanceReminderPayload, title, body string, metadata []byte) []uuid.UUID {
+	var pushUserIDs []uuid.UUID
+	for _, m := range members {
+		enabled, err := userPrefEnabled(ctx, q, m.UserID, maintenancePrefKey)
+		if err != nil {
+			log.Printf("Failed to load notification preferences for user %s: %v", m.UserID, err) //nolint:gosec // G706: logs a UUID + internal error, not user-controlled text
+			continue
+		}
+		if !enabled {
+			continue
+		}
+
+		// Dedupe: one notification per schedule occurrence per user.
+		count, err := q.CountNotificationsByDedupeKey(ctx, queries.CountNotificationsByDedupeKeyParams{
+			UserID:           m.UserID,
+			NotificationType: queries.AuthNotificationTypeEnumMAINTENANCEDUE,
+			DedupeKey:        payload.DedupeKey(),
+		})
+		if err != nil {
+			log.Printf("Failed dedupe check for user %s: %v", m.UserID, err) //nolint:gosec // G706: logs a UUID + internal error, not user-controlled text
+			continue
+		}
+		if count > 0 {
+			continue
+		}
+
+		wsID := pgtype.UUID{Bytes: payload.WorkspaceID, Valid: true}
+		if _, err := q.CreateNotification(ctx, queries.CreateNotificationParams{
+			ID:               uuid.New(),
+			UserID:           m.UserID,
+			WorkspaceID:      wsID,
+			NotificationType: queries.AuthNotificationTypeEnum(notification.TypeMaintenanceDue),
+			Title:            title,
+			Message:          body,
+			Metadata:         metadata,
+		}); err != nil {
+			log.Printf("Failed to create maintenance notification for user %s: %v", m.UserID, err) //nolint:gosec // G706: logs a UUID + internal error, not user-controlled text
+			continue
+		}
+		pushUserIDs = append(pushUserIDs, m.UserID)
+	}
+	return pushUserIDs
 }
 
 // maintenanceMessage builds the notification title/body for a payload.
