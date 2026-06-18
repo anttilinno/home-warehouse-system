@@ -17,10 +17,22 @@ const (
 	routeLabelByID              = "/labels/{id}"
 )
 
-// RegisterRoutes registers label routes.
+// RegisterRoutes registers label routes. Each handler is a package factory func
+// (see below) so this stays a flat list of registrations rather than a single
+// god-function of inline closures.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
-	// List labels
-	huma.Get(api, "/labels", func(ctx context.Context, input *struct{}) (*ListLabelsOutput, error) {
+	huma.Get(api, "/labels", listLabels(svc))
+	huma.Get(api, routeLabelByID, getLabel(svc))
+	huma.Post(api, "/labels", createLabel(svc, broadcaster))
+	huma.Patch(api, routeLabelByID, updateLabel(svc, broadcaster))
+	huma.Post(api, "/labels/{id}/archive", archiveLabel(svc, broadcaster))
+	huma.Post(api, "/labels/{id}/restore", restoreLabel(svc, broadcaster))
+	huma.Delete(api, routeLabelByID, deleteLabel(svc, broadcaster))
+}
+
+// listLabels lists labels in the workspace.
+func listLabels(svc ServiceInterface) func(context.Context, *struct{}) (*ListLabelsOutput, error) {
+	return func(ctx context.Context, input *struct{}) (*ListLabelsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -39,10 +51,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &ListLabelsOutput{
 			Body: LabelListResponse{Items: items},
 		}, nil
-	})
+	}
+}
 
-	// Get label by ID
-	huma.Get(api, routeLabelByID, func(ctx context.Context, input *GetLabelInput) (*GetLabelOutput, error) {
+// getLabel returns a single label by ID.
+func getLabel(svc ServiceInterface) func(context.Context, *GetLabelInput) (*GetLabelOutput, error) {
+	return func(ctx context.Context, input *GetLabelInput) (*GetLabelOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -56,10 +70,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &GetLabelOutput{
 			Body: toLabelResponse(label),
 		}, nil
-	})
+	}
+}
 
-	// Create label
-	huma.Post(api, "/labels", func(ctx context.Context, input *CreateLabelInput) (*CreateLabelOutput, error) {
+// createLabel creates a label.
+func createLabel(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *CreateLabelInput) (*CreateLabelOutput, error) {
+	return func(ctx context.Context, input *CreateLabelInput) (*CreateLabelOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -99,10 +115,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &CreateLabelOutput{
 			Body: toLabelResponse(label),
 		}, nil
-	})
+	}
+}
 
-	// Update label
-	huma.Patch(api, routeLabelByID, func(ctx context.Context, input *UpdateLabelInput) (*UpdateLabelOutput, error) {
+// updateLabel updates a label.
+func updateLabel(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *UpdateLabelInput) (*UpdateLabelOutput, error) {
+	return func(ctx context.Context, input *UpdateLabelInput) (*UpdateLabelOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -152,10 +170,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &UpdateLabelOutput{
 			Body: toLabelResponse(label),
 		}, nil
-	})
+	}
+}
 
-	// Archive label
-	huma.Post(api, "/labels/{id}/archive", func(ctx context.Context, input *GetLabelInput) (*struct{}, error) {
+// archiveLabel archives a label (treated as a delete event).
+func archiveLabel(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetLabelInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetLabelInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -169,24 +189,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		// Publish event (treat archive as delete event)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "label.deleted",
-				EntityID:   input.ID.String(),
-				EntityType: "label",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishLifecycleEvent(ctx, broadcaster, workspaceID, authUser, "label.deleted", input.ID)
 
 		return nil, nil
-	})
+	}
+}
 
-	// Restore label
-	huma.Post(api, "/labels/{id}/restore", func(ctx context.Context, input *GetLabelInput) (*struct{}, error) {
+// restoreLabel restores an archived label (treated as a create event).
+func restoreLabel(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetLabelInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetLabelInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -200,24 +211,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		// Publish event (treat restore as create event)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "label.created",
-				EntityID:   input.ID.String(),
-				EntityType: "label",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishLifecycleEvent(ctx, broadcaster, workspaceID, authUser, "label.created", input.ID)
 
 		return nil, nil
-	})
+	}
+}
 
-	// Delete label
-	huma.Delete(api, routeLabelByID, func(ctx context.Context, input *GetLabelInput) (*struct{}, error) {
+// deleteLabel deletes a label.
+func deleteLabel(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetLabelInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetLabelInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -231,20 +233,27 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		// Publish event
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "label.deleted",
-				EntityID:   input.ID.String(),
-				EntityType: "label",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishLifecycleEvent(ctx, broadcaster, workspaceID, authUser, "label.deleted", input.ID)
 
 		return nil, nil
+	}
+}
+
+// publishLifecycleEvent publishes an archive/restore/delete lifecycle event for a
+// label, carrying only the label ID and acting user's display name.
+func publishLifecycleEvent(ctx context.Context, broadcaster *events.Broadcaster, workspaceID uuid.UUID, authUser *appMiddleware.AuthUser, eventType string, labelID uuid.UUID) {
+	if broadcaster == nil || authUser == nil {
+		return
+	}
+	userName := appMiddleware.GetUserDisplayName(ctx)
+	broadcaster.Publish(workspaceID, events.Event{
+		Type:       eventType,
+		EntityID:   labelID.String(),
+		EntityType: "label",
+		UserID:     authUser.ID,
+		Data: map[string]any{
+			"user_name": userName,
+		},
 	})
 }
 

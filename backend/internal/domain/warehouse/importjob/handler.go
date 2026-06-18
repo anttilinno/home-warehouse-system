@@ -126,9 +126,21 @@ type ImportJobErrorListResponse struct {
 }
 
 // RegisterRoutes registers import job routes.
+// Each handler is a package factory func (see below) so this stays a flat list
+// of registrations rather than a single god-function of inline closures.
 func RegisterRoutes(api huma.API, repo Repository, importQueue *queue.Queue, broadcaster *events.Broadcaster) {
-	// List import jobs
-	huma.Get(api, "/imports/jobs", func(ctx context.Context, input *ListImportJobsInput) (*ListImportJobsOutput, error) {
+	huma.Get(api, "/imports/jobs", listImportJobs(repo))
+	huma.Get(api, "/imports/jobs/{id}", getImportJob(repo))
+	huma.Get(api, "/imports/jobs/{id}/errors", getImportJobErrors(repo))
+	huma.Delete(api, "/imports/jobs/{id}", deleteImportJob(repo))
+
+	// Note: SSE streaming for import progress is handled via the global /sse endpoint
+	// Clients should connect to /sse and filter for events with type "import.progress"
+}
+
+// listImportJobs lists import jobs in the workspace.
+func listImportJobs(repo Repository) func(context.Context, *ListImportJobsInput) (*ListImportJobsOutput, error) {
+	return func(ctx context.Context, input *ListImportJobsInput) (*ListImportJobsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -153,10 +165,12 @@ func RegisterRoutes(api huma.API, repo Repository, importQueue *queue.Queue, bro
 				TotalPages: (total + input.Limit - 1) / input.Limit,
 			},
 		}, nil
-	})
+	}
+}
 
-	// Get single import job
-	huma.Get(api, "/imports/jobs/{id}", func(ctx context.Context, input *GetImportJobInput) (*GetImportJobOutput, error) {
+// getImportJob returns a single import job by ID.
+func getImportJob(repo Repository) func(context.Context, *GetImportJobInput) (*GetImportJobOutput, error) {
+	return func(ctx context.Context, input *GetImportJobInput) (*GetImportJobOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -173,10 +187,12 @@ func RegisterRoutes(api huma.API, repo Repository, importQueue *queue.Queue, bro
 		return &GetImportJobOutput{
 			Body: toImportJobResponse(job),
 		}, nil
-	})
+	}
+}
 
-	// Get import job errors
-	huma.Get(api, "/imports/jobs/{id}/errors", func(ctx context.Context, input *GetImportJobErrorsInput) (*GetImportJobErrorsOutput, error) {
+// getImportJobErrors returns the row-level errors for an import job.
+func getImportJobErrors(repo Repository) func(context.Context, *GetImportJobErrorsInput) (*GetImportJobErrorsOutput, error) {
+	return func(ctx context.Context, input *GetImportJobErrorsInput) (*GetImportJobErrorsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -207,10 +223,12 @@ func RegisterRoutes(api huma.API, repo Repository, importQueue *queue.Queue, bro
 				Total:  len(responses),
 			},
 		}, nil
-	})
+	}
+}
 
-	// Delete import job
-	huma.Delete(api, "/imports/jobs/{id}", func(ctx context.Context, input *DeleteImportJobInput) (*DeleteImportJobOutput, error) {
+// deleteImportJob deletes an import job, its errors, and its uploaded file.
+func deleteImportJob(repo Repository) func(context.Context, *DeleteImportJobInput) (*DeleteImportJobOutput, error) {
+	return func(ctx context.Context, input *DeleteImportJobInput) (*DeleteImportJobOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -243,10 +261,7 @@ func RegisterRoutes(api huma.API, repo Repository, importQueue *queue.Queue, bro
 		return &DeleteImportJobOutput{
 			Status: 204,
 		}, nil
-	})
-
-	// Note: SSE streaming for import progress is handled via the global /sse endpoint
-	// Clients should connect to /sse and filter for events with type "import.progress"
+	}
 }
 
 // Helper functions

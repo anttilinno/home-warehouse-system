@@ -18,9 +18,20 @@ const (
 )
 
 // RegisterRoutes registers member routes.
+//
+// Each handler is a package factory func (see below) so this stays a flat list
+// of registrations rather than a single god-function of inline closures.
 func RegisterRoutes(api huma.API, svc ServiceInterface) {
-	// List workspace members
-	huma.Get(api, "/members", func(ctx context.Context, input *struct{}) (*ListMembersOutput, error) {
+	huma.Get(api, "/members", listMembers(svc))
+	huma.Get(api, routeMemberByUserID, getMember(svc))
+	huma.Post(api, "/members", addMember(svc))
+	huma.Patch(api, routeMemberByUserID, updateMemberRole(svc))
+	huma.Delete(api, routeMemberByUserID, removeMember(svc))
+}
+
+// listMembers lists the workspace members.
+func listMembers(svc ServiceInterface) func(context.Context, *struct{}) (*ListMembersOutput, error) {
+	return func(ctx context.Context, input *struct{}) (*ListMembersOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -39,10 +50,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		return &ListMembersOutput{
 			Body: MemberListResponse{Items: items},
 		}, nil
-	})
+	}
+}
 
-	// Get member (workspace + user ID)
-	huma.Get(api, routeMemberByUserID, func(ctx context.Context, input *GetMemberInput) (*GetMemberOutput, error) {
+// getMember returns a single member by workspace + user ID.
+func getMember(svc ServiceInterface) func(context.Context, *GetMemberInput) (*GetMemberOutput, error) {
+	return func(ctx context.Context, input *GetMemberInput) (*GetMemberOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -56,10 +69,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		return &GetMemberOutput{
 			Body: toMemberResponse(member),
 		}, nil
-	})
+	}
+}
 
-	// Add member to workspace
-	huma.Post(api, "/members", func(ctx context.Context, input *AddMemberRequest) (*AddMemberOutput, error) {
+// addMember adds a member to the workspace.
+func addMember(svc ServiceInterface) func(context.Context, *AddMemberRequest) (*AddMemberOutput, error) {
+	return func(ctx context.Context, input *AddMemberRequest) (*AddMemberOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -90,10 +105,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		return &AddMemberOutput{
 			Body: toMemberResponse(member),
 		}, nil
-	})
+	}
+}
 
-	// Update member role
-	huma.Patch(api, routeMemberByUserID, func(ctx context.Context, input *UpdateMemberRoleRequest) (*UpdateMemberRoleOutput, error) {
+// updateMemberRole updates a member's role.
+func updateMemberRole(svc ServiceInterface) func(context.Context, *UpdateMemberRoleRequest) (*UpdateMemberRoleOutput, error) {
+	return func(ctx context.Context, input *UpdateMemberRoleRequest) (*UpdateMemberRoleOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -123,10 +140,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		return &UpdateMemberRoleOutput{
 			Body: toMemberResponse(member),
 		}, nil
-	})
+	}
+}
 
-	// Remove member from workspace
-	huma.Delete(api, routeMemberByUserID, func(ctx context.Context, input *GetMemberInput) (*struct{}, error) {
+// removeMember removes a member from the workspace.
+func removeMember(svc ServiceInterface) func(context.Context, *GetMemberInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetMemberInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -147,7 +166,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		}
 
 		return nil, nil
-	})
+	}
 }
 
 func toMemberResponse(m *Member) MemberResponse {
