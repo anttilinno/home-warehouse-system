@@ -40,6 +40,36 @@ services:
     networks:
       - warehouse
 
+  # ──────────────────────────────────────────────
+  # Code-graph store (profile: codegraph — opt-in, dev tooling only)
+  # ──────────────────────────────────────────────
+
+  # Postgres + pgvector backing the AI-assisted Go refactoring tool: holds the
+  # symbol/edge graph (go/packages + go/types) and per-symbol embeddings for
+  # semantic search over the backend. Kept separate from the app DBs. Start with
+  # `docker compose --profile codegraph up -d postgres-codegraph`.
+  postgres-codegraph:
+    image: pgvector/pgvector:pg18
+    container_name: warehouse-postgres-codegraph
+    profiles: ["codegraph"]
+    environment:
+      POSTGRES_USER: wh
+      POSTGRES_PASSWORD: wh
+      POSTGRES_DB: codegraph
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./.data/codegraph:/var/lib/postgresql/data
+      - ./docker/codegraph:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wh -d codegraph"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - warehouse
+
   # Document management is provided by Paperless-ngx, which runs externally in
   # the homelab (k3s, behind Authelia) — not orchestrated here. The app talks to
   # it per-workspace via the REST API; see auth.workspace_paperless_settings and
