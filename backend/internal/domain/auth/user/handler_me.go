@@ -23,20 +23,7 @@ func (h *Handler) getMe(ctx context.Context, input *struct{}) (*GetMeOutput, err
 	}
 
 	return &GetMeOutput{
-		Body: UserResponse{
-			ID:                      user.ID(),
-			Email:                   user.Email(),
-			FullName:                user.FullName(),
-			HasPassword:             user.HasPassword(),
-			DateFormat:              user.DateFormat(),
-			TimeFormat:              user.TimeFormat(),
-			ThousandSeparator:       user.ThousandSeparator(),
-			DecimalSeparator:        user.DecimalSeparator(),
-			Language:                user.Language(),
-			Theme:                   user.Theme(),
-			NotificationPreferences: user.NotificationPreferences(),
-			AvatarURL:               generateAvatarURL(user.AvatarPath()),
-		},
+		Body: newUserResponse(user),
 	}, nil
 }
 
@@ -107,20 +94,7 @@ func (h *Handler) updateMe(ctx context.Context, input *UpdateMeInput) (*UpdateMe
 	}
 
 	return &UpdateMeOutput{
-		Body: UserResponse{
-			ID:                      user.ID(),
-			Email:                   user.Email(),
-			FullName:                user.FullName(),
-			HasPassword:             user.HasPassword(),
-			DateFormat:              user.DateFormat(),
-			TimeFormat:              user.TimeFormat(),
-			ThousandSeparator:       user.ThousandSeparator(),
-			DecimalSeparator:        user.DecimalSeparator(),
-			Language:                user.Language(),
-			Theme:                   user.Theme(),
-			NotificationPreferences: user.NotificationPreferences(),
-			AvatarURL:               generateAvatarURL(user.AvatarPath()),
-		},
+		Body: newUserResponse(user),
 	}, nil
 }
 
@@ -161,20 +135,7 @@ func (h *Handler) updatePreferences(ctx context.Context, input *UpdatePrefsReque
 	}
 
 	return &UpdatePrefsResponse{
-		Body: UserResponse{
-			ID:                      user.ID(),
-			Email:                   user.Email(),
-			FullName:                user.FullName(),
-			HasPassword:             user.HasPassword(),
-			DateFormat:              user.DateFormat(),
-			TimeFormat:              user.TimeFormat(),
-			ThousandSeparator:       user.ThousandSeparator(),
-			DecimalSeparator:        user.DecimalSeparator(),
-			Language:                user.Language(),
-			Theme:                   user.Theme(),
-			NotificationPreferences: user.NotificationPreferences(),
-			AvatarURL:               generateAvatarURL(user.AvatarPath()),
-		},
+		Body: newUserResponse(user),
 	}, nil
 }
 

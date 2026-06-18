@@ -39,23 +39,7 @@ func (h *Handler) listUsers(ctx context.Context, input *ListUsersInput) (*ListUs
 
 	users := make([]UserAdminResponse, len(result.Items))
 	for i, u := range result.Items {
-		users[i] = UserAdminResponse{
-			ID:                      u.ID(),
-			Email:                   u.Email(),
-			FullName:                u.FullName(),
-			HasPassword:             u.HasPassword(),
-			IsActive:                u.IsActive(),
-			IsSuperuser:             u.IsSuperuser(),
-			DateFormat:              u.DateFormat(),
-			TimeFormat:              u.TimeFormat(),
-			ThousandSeparator:       u.ThousandSeparator(),
-			DecimalSeparator:        u.DecimalSeparator(),
-			Language:                u.Language(),
-			Theme:                   u.Theme(),
-			NotificationPreferences: u.NotificationPreferences(),
-			CreatedAt:               u.CreatedAt(),
-			UpdatedAt:               u.UpdatedAt(),
-		}
+		users[i] = newUserAdminResponse(u)
 	}
 
 	return &ListUsersOutput{
@@ -87,23 +71,7 @@ func (h *Handler) getUserByID(ctx context.Context, input *GetUserByIDInput) (*Ge
 	}
 
 	return &GetUserByIDOutput{
-		Body: UserAdminResponse{
-			ID:                      user.ID(),
-			Email:                   user.Email(),
-			FullName:                user.FullName(),
-			HasPassword:             user.HasPassword(),
-			IsActive:                user.IsActive(),
-			IsSuperuser:             user.IsSuperuser(),
-			DateFormat:              user.DateFormat(),
-			TimeFormat:              user.TimeFormat(),
-			ThousandSeparator:       user.ThousandSeparator(),
-			DecimalSeparator:        user.DecimalSeparator(),
-			Language:                user.Language(),
-			Theme:                   user.Theme(),
-			NotificationPreferences: user.NotificationPreferences(),
-			CreatedAt:               user.CreatedAt(),
-			UpdatedAt:               user.UpdatedAt(),
-		},
+		Body: newUserAdminResponse(user),
 	}, nil
 }
 

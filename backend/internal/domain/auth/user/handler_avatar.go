@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -77,8 +78,10 @@ func (h *Handler) uploadAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse multipart form (2MB max)
-	if err := r.ParseMultipartForm(MaxAvatarSize); err != nil {
+	// Parse multipart form (2MB max). The request body is already bounded by the
+	// global MaxBodySize middleware (see api/router.go), so this is not an
+	// unbounded read despite gosec's G120 heuristic.
+	if err := r.ParseMultipartForm(MaxAvatarSize); err != nil { //nolint:gosec // G120: body capped by MaxBodySize middleware
 		http.Error(w, "file too large or invalid form data", http.StatusBadRequest)
 		return
 	}
@@ -89,7 +92,7 @@ func (h *Handler) uploadAvatar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "avatar file is required", http.StatusBadRequest)
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	// Validate file size
 	if header.Size > MaxAvatarSize {
@@ -115,15 +118,15 @@ func (h *Handler) uploadAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tempPath := tempFile.Name()
-	defer os.Remove(tempPath)
+	defer func() { _ = os.Remove(tempPath) }() //nolint:gosec // G703: path from os.CreateTemp, not attacker-controlled
 
 	// Copy uploaded data to temp file
 	if _, err := io.Copy(tempFile, file); err != nil {
-		tempFile.Close()
+		_ = tempFile.Close()
 		http.Error(w, "failed to process file", http.StatusInternalServerError)
 		return
 	}
-	tempFile.Close()
+	_ = tempFile.Close()
 
 	// Validate image
 	if err := h.imageProcessor.Validate(ctx, tempPath); err != nil {
@@ -145,20 +148,21 @@ func (h *Handler) uploadAvatar(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	thumbnailPath := tempPath + "_thumb" + ext
-	defer os.Remove(thumbnailPath)
+	defer func() { _ = os.Remove(thumbnailPath) }() //nolint:gosec // G703: path derived from os.CreateTemp, not attacker-controlled
 
 	if err := h.imageProcessor.GenerateThumbnail(ctx, tempPath, thumbnailPath, AvatarThumbnailSize, AvatarThumbnailSize); err != nil {
 		http.Error(w, "failed to process image", http.StatusInternalServerError)
 		return
 	}
 
-	// Save thumbnail to storage
-	thumbReader, err := os.Open(thumbnailPath)
+	// Save thumbnail to storage. thumbnailPath is server-derived from
+	// os.CreateTemp plus a validated extension, not user-controlled.
+	thumbReader, err := os.Open(thumbnailPath) //nolint:gosec // G304: server-constructed path, not user input
 	if err != nil {
 		http.Error(w, "failed to process image", http.StatusInternalServerError)
 		return
 	}
-	defer thumbReader.Close()
+	defer func() { _ = thumbReader.Close() }()
 
 	filename := fmt.Sprintf("avatar%s", ext)
 	storagePath, err := h.avatarStorage.SaveAvatar(ctx, authUser.ID.String(), filename, thumbReader)
@@ -182,12 +186,13 @@ func (h *Handler) uploadAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Return updated user
-	notifPrefsJSON, _ := json.Marshal(user.NotificationPreferences())
+	// Return the updated user using the shared DTO + encoder. The previous
+	// hand-rolled fmt.Fprintf interpolated user-controlled fields (full_name,
+	// email) straight into a JSON string literal, which a value containing a
+	// quote could break or inject; json.Encode escapes correctly.
 	w.Header().Set(headerContentType, "application/json")
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"id":"%s","email":"%s","full_name":"%s","has_password":%t,"date_format":"%s","time_format":"%s","thousand_separator":"%s","decimal_separator":"%s","language":"%s","theme":"%s","notification_preferences":%s,"avatar_url":"/api/users/me/avatar"}`,
-		user.ID(), user.Email(), user.FullName(), user.HasPassword(), user.DateFormat(), user.TimeFormat(), user.ThousandSeparator(), user.DecimalSeparator(), user.Language(), user.Theme(), notifPrefsJSON)
+	_ = json.NewEncoder(w).Encode(newUserResponse(user))
 }
 
 // serveAvatar handles GET /users/me/avatar
@@ -225,7 +230,7 @@ func (h *Handler) serveAvatar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "avatar not found", http.StatusNotFound)
 		return
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	// Determine content type from path extension
 	ext := strings.ToLower(filepath.Ext(*avatarPath))
@@ -246,7 +251,7 @@ func (h *Handler) serveAvatar(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'")
 
 	// Serve file
-	io.Copy(w, reader)
+	_, _ = io.Copy(w, reader)
 }
 
 // deleteAvatar handles DELETE /users/me/avatar
@@ -273,9 +278,11 @@ func (h *Handler) deleteAvatar(ctx context.Context, input *struct{}) (*struct{},
 		return nil, nil
 	}
 
-	// Delete from storage
+	// Delete from storage. Don't fail the request if the file is already gone;
+	// the DB update below is the source of truth for whether an avatar exists.
 	if err := h.avatarStorage.DeleteAvatar(ctx, *avatarPath); err != nil {
-		// Log but don't fail - file might already be gone
+		slog.WarnContext(ctx, "deleteAvatar: failed to remove avatar file",
+			"user_id", authUser.ID, "path", *avatarPath, "error", err)
 	}
 
 	// Update user to remove avatar path

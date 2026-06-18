@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -41,8 +42,10 @@ func (h *Handler) register(ctx context.Context, input *RegisterInput) (*Register
 		CreatedBy:   user.ID(),
 	})
 	if err != nil {
-		// Log error but don't fail registration
-		// In production, this should be handled in a transaction or retry mechanism
+		// Don't fail registration if the personal workspace can't be created.
+		// In production this should be a transaction or retry; for now, log it.
+		slog.ErrorContext(ctx, "register: failed to create personal workspace",
+			"user_id", user.ID(), "error", err)
 	}
 
 	// Generate token for the new user

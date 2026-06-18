@@ -214,3 +214,44 @@ type DeleteAccountInput struct {
 type DeleteAccountOutput struct {
 	SetCookie []http.Cookie `header:"Set-Cookie"`
 }
+
+// newUserResponse maps a User to the public profile DTO returned by the
+// /users/me endpoints.
+func newUserResponse(u *User) UserResponse {
+	return UserResponse{
+		ID:                      u.ID(),
+		Email:                   u.Email(),
+		FullName:                u.FullName(),
+		HasPassword:             u.HasPassword(),
+		DateFormat:              u.DateFormat(),
+		TimeFormat:              u.TimeFormat(),
+		ThousandSeparator:       u.ThousandSeparator(),
+		DecimalSeparator:        u.DecimalSeparator(),
+		Language:                u.Language(),
+		Theme:                   u.Theme(),
+		NotificationPreferences: u.NotificationPreferences(),
+		AvatarURL:               generateAvatarURL(u.AvatarPath()),
+	}
+}
+
+// newUserAdminResponse maps a User to the admin DTO, which additionally exposes
+// active/superuser status and timestamps.
+func newUserAdminResponse(u *User) UserAdminResponse {
+	return UserAdminResponse{
+		ID:                      u.ID(),
+		Email:                   u.Email(),
+		FullName:                u.FullName(),
+		HasPassword:             u.HasPassword(),
+		IsActive:                u.IsActive(),
+		IsSuperuser:             u.IsSuperuser(),
+		DateFormat:              u.DateFormat(),
+		TimeFormat:              u.TimeFormat(),
+		ThousandSeparator:       u.ThousandSeparator(),
+		DecimalSeparator:        u.DecimalSeparator(),
+		Language:                u.Language(),
+		Theme:                   u.Theme(),
+		NotificationPreferences: u.NotificationPreferences(),
+		CreatedAt:               u.CreatedAt(),
+		UpdatedAt:               u.UpdatedAt(),
+	}
+}
