@@ -22,9 +22,17 @@ const (
 // it rides the existing attachment endpoints (POST /items/{item_id}/attachments
 // with external_doc_id, DELETE /attachments/{id}).
 func RegisterRoutes(api huma.API, svc ServiceInterface) {
-	// Get workspace Paperless settings. Always 200; configured=false when the
-	// workspace has no settings row yet.
-	huma.Get(api, pathPaperlessSettings, func(ctx context.Context, _ *struct{}) (*GetSettingsOutput, error) {
+	huma.Get(api, pathPaperlessSettings, getSettings(svc))
+	huma.Put(api, pathPaperlessSettings, saveSettings(svc))
+	huma.Delete(api, pathPaperlessSettings, deleteSettings(svc))
+	huma.Get(api, "/paperless/search", searchDocuments(svc))
+	huma.Get(api, "/paperless/documents/{id}", resolveDocument(svc))
+}
+
+// getSettings returns workspace Paperless settings. Always 200; configured=false
+// when the workspace has no settings row yet.
+func getSettings(svc ServiceInterface) func(context.Context, *struct{}) (*GetSettingsOutput, error) {
+	return func(ctx context.Context, _ *struct{}) (*GetSettingsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -39,11 +47,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		}
 
 		return &GetSettingsOutput{Body: toSettingsResponse(settings)}, nil
-	})
+	}
+}
 
-	// Create or update workspace Paperless settings. The token is write-only:
-	// omit api_token to keep the stored one; the response never includes it.
-	huma.Put(api, pathPaperlessSettings, func(ctx context.Context, input *SaveSettingsInputBody) (*GetSettingsOutput, error) {
+// saveSettings creates or updates workspace Paperless settings. The token is
+// write-only: omit api_token to keep the stored one; the response never includes it.
+func saveSettings(svc ServiceInterface) func(context.Context, *SaveSettingsInputBody) (*GetSettingsOutput, error) {
+	return func(ctx context.Context, input *SaveSettingsInputBody) (*GetSettingsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -66,10 +76,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		}
 
 		return &GetSettingsOutput{Body: toSettingsResponse(settings)}, nil
-	})
+	}
+}
 
-	// Remove the workspace's Paperless configuration entirely.
-	huma.Delete(api, pathPaperlessSettings, func(ctx context.Context, _ *struct{}) (*struct{}, error) {
+// deleteSettings removes the workspace's Paperless configuration entirely.
+func deleteSettings(svc ServiceInterface) func(context.Context, *struct{}) (*struct{}, error) {
+	return func(ctx context.Context, _ *struct{}) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -79,10 +91,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error500InternalServerError("failed to delete paperless settings")
 		}
 		return nil, nil
-	})
+	}
+}
 
-	// Fulltext search proxy to GET {base_url}/api/documents/?query=.
-	huma.Get(api, "/paperless/search", func(ctx context.Context, input *SearchInput) (*SearchOutput, error) {
+// searchDocuments proxies a fulltext search to GET {base_url}/api/documents/?query=.
+func searchDocuments(svc ServiceInterface) func(context.Context, *SearchInput) (*SearchOutput, error) {
+	return func(ctx context.Context, input *SearchInput) (*SearchOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -104,10 +118,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		}
 
 		return &SearchOutput{Body: SearchResponse{Count: result.Count, Results: docs}}, nil
-	})
+	}
+}
 
-	// Resolve a Paperless document id for display (title + download/preview/web URLs).
-	huma.Get(api, "/paperless/documents/{id}", func(ctx context.Context, input *ResolveDocumentInput) (*ResolveDocumentOutput, error) {
+// resolveDocument resolves a Paperless document id for display
+// (title + download/preview/web URLs).
+func resolveDocument(svc ServiceInterface) func(context.Context, *ResolveDocumentInput) (*ResolveDocumentOutput, error) {
+	return func(ctx context.Context, input *ResolveDocumentInput) (*ResolveDocumentOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -127,7 +144,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			PreviewURL:       details.PreviewURL,
 			WebURL:           details.WebURL,
 		}}, nil
-	})
+	}
 }
 
 // mapIntegrationError translates service/client errors into HTTP errors.

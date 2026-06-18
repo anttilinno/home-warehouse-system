@@ -19,9 +19,23 @@ const (
 )
 
 // RegisterRoutes registers borrower routes.
+//
+// Each handler is a package factory func (see below) so this stays a flat list
+// of registrations rather than a single god-function of inline closures.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
-	// List borrowers
-	huma.Get(api, "/borrowers", func(ctx context.Context, input *ListBorrowersInput) (*ListBorrowersOutput, error) {
+	huma.Get(api, "/borrowers", listBorrowers(svc))
+	huma.Get(api, routeBorrowerByID, getBorrower(svc))
+	huma.Post(api, "/borrowers", createBorrower(svc, broadcaster))
+	huma.Patch(api, routeBorrowerByID, updateBorrower(svc, broadcaster))
+	huma.Delete(api, routeBorrowerByID, deleteBorrower(svc, broadcaster))
+	huma.Post(api, "/borrowers/{id}/archive", archiveBorrower(svc, broadcaster))
+	huma.Post(api, "/borrowers/{id}/restore", restoreBorrower(svc, broadcaster))
+	huma.Get(api, "/borrowers/search", searchBorrowers(svc))
+}
+
+// listBorrowers lists borrowers in the workspace (optionally including archived).
+func listBorrowers(svc ServiceInterface) func(context.Context, *ListBorrowersInput) (*ListBorrowersOutput, error) {
+	return func(ctx context.Context, input *ListBorrowersInput) (*ListBorrowersOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -41,10 +55,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &ListBorrowersOutput{
 			Body: BorrowerListResponse{Items: items},
 		}, nil
-	})
+	}
+}
 
-	// Get borrower by ID
-	huma.Get(api, routeBorrowerByID, func(ctx context.Context, input *GetBorrowerInput) (*GetBorrowerOutput, error) {
+// getBorrower returns a single borrower by ID.
+func getBorrower(svc ServiceInterface) func(context.Context, *GetBorrowerInput) (*GetBorrowerOutput, error) {
+	return func(ctx context.Context, input *GetBorrowerInput) (*GetBorrowerOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -58,10 +74,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &GetBorrowerOutput{
 			Body: toBorrowerResponse(borrower),
 		}, nil
-	})
+	}
+}
 
-	// Create borrower
-	huma.Post(api, "/borrowers", func(ctx context.Context, input *CreateBorrowerInput) (*CreateBorrowerOutput, error) {
+// createBorrower creates a borrower.
+func createBorrower(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *CreateBorrowerInput) (*CreateBorrowerOutput, error) {
+	return func(ctx context.Context, input *CreateBorrowerInput) (*CreateBorrowerOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -99,10 +117,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &CreateBorrowerOutput{
 			Body: toBorrowerResponse(borrower),
 		}, nil
-	})
+	}
+}
 
-	// Update borrower
-	huma.Patch(api, routeBorrowerByID, func(ctx context.Context, input *UpdateBorrowerInput) (*UpdateBorrowerOutput, error) {
+// updateBorrower updates a borrower.
+func updateBorrower(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *UpdateBorrowerInput) (*UpdateBorrowerOutput, error) {
+	return func(ctx context.Context, input *UpdateBorrowerInput) (*UpdateBorrowerOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -143,16 +163,16 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &UpdateBorrowerOutput{
 			Body: toBorrowerResponse(borrower),
 		}, nil
-	})
+	}
+}
 
-	// Delete borrower (hard delete; archive endpoint is separate)
-	huma.Delete(api, routeBorrowerByID, func(ctx context.Context, input *DeleteBorrowerInput) (*struct{}, error) {
+// deleteBorrower hard-deletes a borrower (the archive endpoint is separate).
+func deleteBorrower(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *DeleteBorrowerInput) (*struct{}, error) {
+	return func(ctx context.Context, input *DeleteBorrowerInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
-
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		if err := svc.Delete(ctx, input.ID, workspaceID); err != nil {
 			if errors.Is(err, ErrHasActiveLoans) {
@@ -161,83 +181,52 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, appMiddleware.MapDomainError(err)
 		}
 
-		// Publish event
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "borrower.deleted",
-				EntityID:   input.ID.String(),
-				EntityType: "borrower",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishBorrowerLifecycleEvent(ctx, broadcaster, workspaceID, "borrower.deleted", input.ID)
 
 		return nil, nil
-	})
+	}
+}
 
-	// Archive borrower (soft; always succeeds regardless of active loans per D-02)
-	huma.Post(api, "/borrowers/{id}/archive", func(ctx context.Context, input *GetBorrowerInput) (*struct{}, error) {
+// archiveBorrower soft-archives a borrower (always succeeds regardless of
+// active loans per D-02).
+func archiveBorrower(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetBorrowerInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetBorrowerInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
-
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		if err := svc.Archive(ctx, input.ID, workspaceID); err != nil {
 			return nil, appMiddleware.MapDomainError(err)
 		}
 
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "borrower.archived",
-				EntityID:   input.ID.String(),
-				EntityType: "borrower",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishBorrowerLifecycleEvent(ctx, broadcaster, workspaceID, "borrower.archived", input.ID)
 
 		return nil, nil
-	})
+	}
+}
 
-	// Restore borrower (unarchive)
-	huma.Post(api, "/borrowers/{id}/restore", func(ctx context.Context, input *GetBorrowerInput) (*struct{}, error) {
+// restoreBorrower restores (unarchives) a borrower.
+func restoreBorrower(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetBorrowerInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetBorrowerInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
-
 		if err := svc.Restore(ctx, input.ID, workspaceID); err != nil {
 			return nil, appMiddleware.MapDomainError(err)
 		}
 
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "borrower.restored",
-				EntityID:   input.ID.String(),
-				EntityType: "borrower",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishBorrowerLifecycleEvent(ctx, broadcaster, workspaceID, "borrower.restored", input.ID)
 
 		return nil, nil
-	})
+	}
+}
 
-	// Search borrowers
-	huma.Get(api, "/borrowers/search", func(ctx context.Context, input *SearchBorrowersInput) (*SearchBorrowersOutput, error) {
+// searchBorrowers searches borrowers by query string.
+func searchBorrowers(svc ServiceInterface) func(context.Context, *SearchBorrowersInput) (*SearchBorrowersOutput, error) {
+	return func(ctx context.Context, input *SearchBorrowersInput) (*SearchBorrowersOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -258,6 +247,25 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				Items: responses,
 			},
 		}, nil
+	}
+}
+
+// publishBorrowerLifecycleEvent publishes a borrower lifecycle event (delete,
+// archive, restore) carrying only the acting user's display name.
+func publishBorrowerLifecycleEvent(ctx context.Context, broadcaster *events.Broadcaster, workspaceID uuid.UUID, eventType string, borrowerID uuid.UUID) {
+	authUser, _ := appMiddleware.GetAuthUser(ctx)
+	if broadcaster == nil || authUser == nil {
+		return
+	}
+	userName := appMiddleware.GetUserDisplayName(ctx)
+	broadcaster.Publish(workspaceID, events.Event{
+		Type:       eventType,
+		EntityID:   borrowerID.String(),
+		EntityType: "borrower",
+		UserID:     authUser.ID,
+		Data: map[string]any{
+			"user_name": userName,
+		},
 	})
 }
 

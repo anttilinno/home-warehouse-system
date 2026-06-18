@@ -14,9 +14,18 @@ import (
 const msgWorkspaceContextRequired = "workspace context required"
 
 // RegisterRoutes registers activity routes.
+//
+// Each handler is a package factory func (see below) so this stays a flat list
+// of registrations rather than a single god-function of inline closures.
 func RegisterRoutes(api huma.API, svc ServiceInterface) {
-	// List workspace activity (optionally filtered by user_id)
-	huma.Get(api, "/activity", func(ctx context.Context, input *ListActivityInput) (*ListActivityOutput, error) {
+	huma.Get(api, "/activity", listActivity(svc))
+	huma.Get(api, "/activity/{entity_type}/{entity_id}", listActivityByEntity(svc))
+	huma.Get(api, "/activity/recent", listRecentActivity(svc))
+}
+
+// listActivity lists workspace activity (optionally filtered by user_id).
+func listActivity(svc ServiceInterface) func(context.Context, *ListActivityInput) (*ListActivityOutput, error) {
+	return func(ctx context.Context, input *ListActivityInput) (*ListActivityOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -41,18 +50,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error500InternalServerError("failed to list activity")
 		}
 
-		items := make([]ActivityLogResponse, len(logs))
-		for i, log := range logs {
-			items[i] = toActivityLogResponse(log)
-		}
+		return activityListOutput(logs), nil
+	}
+}
 
-		return &ListActivityOutput{
-			Body: ActivityListResponse{Items: items},
-		}, nil
-	})
-
-	// List activity by entity
-	huma.Get(api, "/activity/{entity_type}/{entity_id}", func(ctx context.Context, input *ListByEntityInput) (*ListActivityOutput, error) {
+// listActivityByEntity lists activity for a single entity.
+func listActivityByEntity(svc ServiceInterface) func(context.Context, *ListByEntityInput) (*ListActivityOutput, error) {
+	return func(ctx context.Context, input *ListByEntityInput) (*ListActivityOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -69,18 +73,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error500InternalServerError("failed to list activity")
 		}
 
-		items := make([]ActivityLogResponse, len(logs))
-		for i, log := range logs {
-			items[i] = toActivityLogResponse(log)
-		}
+		return activityListOutput(logs), nil
+	}
+}
 
-		return &ListActivityOutput{
-			Body: ActivityListResponse{Items: items},
-		}, nil
-	})
-
-	// Get recent activity since timestamp
-	huma.Get(api, "/activity/recent", func(ctx context.Context, input *RecentActivityInput) (*ListActivityOutput, error) {
+// listRecentActivity returns recent activity since a timestamp.
+func listRecentActivity(svc ServiceInterface) func(context.Context, *RecentActivityInput) (*ListActivityOutput, error) {
+	return func(ctx context.Context, input *RecentActivityInput) (*ListActivityOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -100,15 +99,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error500InternalServerError("failed to get recent activity")
 		}
 
-		items := make([]ActivityLogResponse, len(logs))
-		for i, log := range logs {
-			items[i] = toActivityLogResponse(log)
-		}
+		return activityListOutput(logs), nil
+	}
+}
 
-		return &ListActivityOutput{
-			Body: ActivityListResponse{Items: items},
-		}, nil
-	})
+// activityListOutput maps activity logs into the list response output.
+func activityListOutput(logs []*ActivityLog) *ListActivityOutput {
+	items := make([]ActivityLogResponse, len(logs))
+	for i, log := range logs {
+		items[i] = toActivityLogResponse(log)
+	}
+
+	return &ListActivityOutput{
+		Body: ActivityListResponse{Items: items},
+	}
 }
 
 func toActivityLogResponse(log *ActivityLog) ActivityLogResponse {

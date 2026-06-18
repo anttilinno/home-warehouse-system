@@ -75,100 +75,67 @@ func DefaultConfig() Config {
 //   - PHOTO_MAX_HEIGHT: Maximum image height (default: 8192)
 func LoadConfigFromEnv() (Config, error) {
 	cfg := DefaultConfig()
-	var err error
 
-	if v := os.Getenv("PHOTO_THUMBNAIL_SMALL_SIZE"); v != "" {
-		cfg.SmallSize, err = strconv.Atoi(v)
-		if err != nil {
-			return cfg, fmt.Errorf("invalid PHOTO_THUMBNAIL_SMALL_SIZE: %w", err)
-		}
-		if cfg.SmallSize <= 0 {
-			return cfg, fmt.Errorf("PHOTO_THUMBNAIL_SMALL_SIZE must be positive")
+	// WebPQuality is a float32 but configured as an integer percentage; parse
+	// into an int and cast once at the end.
+	webpQuality := int(cfg.WebPQuality)
+	loaders := []func() error{
+		func() error { return envPositiveInt("PHOTO_THUMBNAIL_SMALL_SIZE", &cfg.SmallSize) },
+		func() error { return envPositiveInt("PHOTO_THUMBNAIL_MEDIUM_SIZE", &cfg.MediumSize) },
+		func() error { return envPositiveInt("PHOTO_THUMBNAIL_LARGE_SIZE", &cfg.LargeSize) },
+		func() error { return envIntInRange("PHOTO_JPEG_QUALITY", &cfg.JPEGQuality, 0, 100) },
+		func() error { return envIntInRange("PHOTO_WEBP_QUALITY", &webpQuality, 0, 100) },
+		func() error { return envPositiveInt("PHOTO_MIN_WIDTH", &cfg.MinWidth) },
+		func() error { return envPositiveInt("PHOTO_MIN_HEIGHT", &cfg.MinHeight) },
+		func() error { return envPositiveInt("PHOTO_MAX_WIDTH", &cfg.MaxWidth) },
+		func() error { return envPositiveInt("PHOTO_MAX_HEIGHT", &cfg.MaxHeight) },
+	}
+	for _, load := range loaders {
+		if err := load(); err != nil {
+			return cfg, err
 		}
 	}
-
-	if v := os.Getenv("PHOTO_THUMBNAIL_MEDIUM_SIZE"); v != "" {
-		cfg.MediumSize, err = strconv.Atoi(v)
-		if err != nil {
-			return cfg, fmt.Errorf("invalid PHOTO_THUMBNAIL_MEDIUM_SIZE: %w", err)
-		}
-		if cfg.MediumSize <= 0 {
-			return cfg, fmt.Errorf("PHOTO_THUMBNAIL_MEDIUM_SIZE must be positive")
-		}
-	}
-
-	if v := os.Getenv("PHOTO_THUMBNAIL_LARGE_SIZE"); v != "" {
-		cfg.LargeSize, err = strconv.Atoi(v)
-		if err != nil {
-			return cfg, fmt.Errorf("invalid PHOTO_THUMBNAIL_LARGE_SIZE: %w", err)
-		}
-		if cfg.LargeSize <= 0 {
-			return cfg, fmt.Errorf("PHOTO_THUMBNAIL_LARGE_SIZE must be positive")
-		}
-	}
-
-	if v := os.Getenv("PHOTO_JPEG_QUALITY"); v != "" {
-		cfg.JPEGQuality, err = strconv.Atoi(v)
-		if err != nil {
-			return cfg, fmt.Errorf("invalid PHOTO_JPEG_QUALITY: %w", err)
-		}
-		if cfg.JPEGQuality < 0 || cfg.JPEGQuality > 100 {
-			return cfg, fmt.Errorf("PHOTO_JPEG_QUALITY must be between 0 and 100")
-		}
-	}
-
-	if v := os.Getenv("PHOTO_WEBP_QUALITY"); v != "" {
-		quality, err := strconv.Atoi(v)
-		if err != nil {
-			return cfg, fmt.Errorf("invalid PHOTO_WEBP_QUALITY: %w", err)
-		}
-		if quality < 0 || quality > 100 {
-			return cfg, fmt.Errorf("PHOTO_WEBP_QUALITY must be between 0 and 100")
-		}
-		cfg.WebPQuality = float32(quality)
-	}
-
-	if v := os.Getenv("PHOTO_MIN_WIDTH"); v != "" {
-		cfg.MinWidth, err = strconv.Atoi(v)
-		if err != nil {
-			return cfg, fmt.Errorf("invalid PHOTO_MIN_WIDTH: %w", err)
-		}
-		if cfg.MinWidth <= 0 {
-			return cfg, fmt.Errorf("PHOTO_MIN_WIDTH must be positive")
-		}
-	}
-
-	if v := os.Getenv("PHOTO_MIN_HEIGHT"); v != "" {
-		cfg.MinHeight, err = strconv.Atoi(v)
-		if err != nil {
-			return cfg, fmt.Errorf("invalid PHOTO_MIN_HEIGHT: %w", err)
-		}
-		if cfg.MinHeight <= 0 {
-			return cfg, fmt.Errorf("PHOTO_MIN_HEIGHT must be positive")
-		}
-	}
-
-	if v := os.Getenv("PHOTO_MAX_WIDTH"); v != "" {
-		cfg.MaxWidth, err = strconv.Atoi(v)
-		if err != nil {
-			return cfg, fmt.Errorf("invalid PHOTO_MAX_WIDTH: %w", err)
-		}
-		if cfg.MaxWidth <= 0 {
-			return cfg, fmt.Errorf("PHOTO_MAX_WIDTH must be positive")
-		}
-	}
-
-	if v := os.Getenv("PHOTO_MAX_HEIGHT"); v != "" {
-		cfg.MaxHeight, err = strconv.Atoi(v)
-		if err != nil {
-			return cfg, fmt.Errorf("invalid PHOTO_MAX_HEIGHT: %w", err)
-		}
-		if cfg.MaxHeight <= 0 {
-			return cfg, fmt.Errorf("PHOTO_MAX_HEIGHT must be positive")
-		}
-	}
+	cfg.WebPQuality = float32(webpQuality)
 
 	return cfg, nil
+}
+
+// envPositiveInt reads an optional integer env var into *dst and requires it to
+// be positive. An unset var keeps the existing default.
+func envPositiveInt(name string, dst *int) error {
+	return envIntChecked(name, dst, func(n int) error {
+		if n <= 0 {
+			return fmt.Errorf("%s must be positive", name)
+		}
+		return nil
+	})
+}
+
+// envIntInRange reads an optional integer env var into *dst and requires it to
+// fall within [lo, hi]. An unset var keeps the existing default.
+func envIntInRange(name string, dst *int, lo, hi int) error {
+	return envIntChecked(name, dst, func(n int) error {
+		if n < lo || n > hi {
+			return fmt.Errorf("%s must be between %d and %d", name, lo, hi)
+		}
+		return nil
+	})
+}
+
+// envIntChecked parses an optional integer env var. When set it stores the
+// parsed value into *dst (matching the previous store-then-validate order) and
+// then runs validate; an unset var is a no-op so the default survives.
+func envIntChecked(name string, dst *int, validate func(int) error) error {
+	v := os.Getenv(name)
+	if v == "" {
+		return nil
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		return fmt.Errorf("invalid %s: %w", name, err)
+	}
+	*dst = n
+	return validate(n)
 }
 
 // ImageProcessor defines the interface for image processing operations

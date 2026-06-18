@@ -286,7 +286,14 @@ func (s *Service) ApproveChange(ctx context.Context, changeID, workspaceID uuid.
 		return nil
 	}
 
-	// Get requester and reviewer info for SSE event.
+	s.notifyApproval(ctx, change, reviewerID)
+	return nil
+}
+
+// notifyApproval emits the SSE event and a best-effort push notification for an
+// approved change. Requester/reviewer display fields are looked up best-effort
+// and left blank on error.
+func (s *Service) notifyApproval(ctx context.Context, change *PendingChange, reviewerID uuid.UUID) {
 	var requesterName, requesterEmail, reviewerName, reviewerEmail string
 	if requesterUser, err := s.userRepo.FindByID(ctx, change.RequesterID()); err == nil {
 		requesterName = requesterUser.FullName()
@@ -340,8 +347,6 @@ func (s *Service) ApproveChange(ctx context.Context, changeID, workspaceID uuid.
 			log.Printf("Failed to send push notification for approved change %s: %v", change.ID(), err)
 		}
 	}
-
-	return nil
 }
 
 // RejectChange rejects a pending change with a descriptive reason.
@@ -918,81 +923,96 @@ func (s *Service) applyBorrowerChange(ctx context.Context, change *PendingChange
 func (s *Service) applyLoanChange(ctx context.Context, change *PendingChange) error {
 	switch change.Action() {
 	case ActionCreate:
-		var p struct {
-			InventoryID uuid.UUID `json:"inventory_id"`
-			BorrowerID  uuid.UUID `json:"borrower_id"`
-			Quantity    int       `json:"quantity"`
-			LoanedAt    string    `json:"loaned_at"`
-			DueDate     *string   `json:"due_date"`
-			Notes       *string   `json:"notes"`
-		}
-		if err := json.Unmarshal(change.Payload(), &p); err != nil {
-			return fmt.Errorf("failed to unmarshal loan payload: %w", err)
-		}
-
-		loanedAt, err := time.Parse(time.RFC3339, p.LoanedAt)
-		if err != nil {
-			return fmt.Errorf("failed to parse loaned_at: %w", err)
-		}
-
-		var dueDate *time.Time
-		if p.DueDate != nil {
-			parsed, err := time.Parse(time.RFC3339, *p.DueDate)
-			if err != nil {
-				return fmt.Errorf("failed to parse due_date: %w", err)
-			}
-			dueDate = &parsed
-		}
-
-		if _, err := s.loanSvc.Create(ctx, loan.CreateInput{
-			WorkspaceID: change.WorkspaceID(),
-			InventoryID: p.InventoryID,
-			BorrowerID:  p.BorrowerID,
-			Quantity:    p.Quantity,
-			LoanedAt:    loanedAt,
-			DueDate:     dueDate,
-			Notes:       p.Notes,
-		}); err != nil {
-			return fmt.Errorf("failed to create loan: %w", err)
-		}
-
+		return s.applyLoanCreate(ctx, change)
 	case ActionUpdate:
-		if change.EntityID() == nil {
-			return errors.New(msgEntityIDRequiredForUpdateAction)
-		}
-		var p struct {
-			DueDate *string `json:"due_date"`
-			Notes   *string `json:"notes"`
-		}
-		if err := json.Unmarshal(change.Payload(), &p); err != nil {
-			return fmt.Errorf(msgFailedToUnmarshalUpdatePayload, err)
-		}
-
-		var dueDate *time.Time
-		if p.DueDate != nil {
-			parsed, err := time.Parse(time.RFC3339, *p.DueDate)
-			if err != nil {
-				return fmt.Errorf("failed to parse due_date: %w", err)
-			}
-			dueDate = &parsed
-		}
-
-		if _, err := s.loanSvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), dueDate, p.Notes); err != nil {
-			return fmt.Errorf("failed to update loan: %w", err)
-		}
-
+		return s.applyLoanUpdate(ctx, change)
 	case ActionDelete:
-		if change.EntityID() == nil {
-			return errors.New(msgEntityIDRequiredForDeleteAction)
-		}
-		if err := s.loanRepo.Delete(ctx, *change.EntityID()); err != nil {
-			return fmt.Errorf("failed to delete loan: %w", err)
-		}
-
+		return s.applyLoanDelete(ctx, change)
 	default:
 		return fmt.Errorf(msgUnsupportedAction, change.Action())
 	}
+}
 
+// parseOptionalDueDate parses an optional RFC3339 due-date pointer (nil in, nil
+// out); shared by the loan create/update appliers.
+func parseOptionalDueDate(due *string) (*time.Time, error) {
+	if due == nil {
+		return nil, nil
+	}
+	parsed, err := time.Parse(time.RFC3339, *due)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse due_date: %w", err)
+	}
+	return &parsed, nil
+}
+
+func (s *Service) applyLoanCreate(ctx context.Context, change *PendingChange) error {
+	var p struct {
+		InventoryID uuid.UUID `json:"inventory_id"`
+		BorrowerID  uuid.UUID `json:"borrower_id"`
+		Quantity    int       `json:"quantity"`
+		LoanedAt    string    `json:"loaned_at"`
+		DueDate     *string   `json:"due_date"`
+		Notes       *string   `json:"notes"`
+	}
+	if err := json.Unmarshal(change.Payload(), &p); err != nil {
+		return fmt.Errorf("failed to unmarshal loan payload: %w", err)
+	}
+
+	loanedAt, err := time.Parse(time.RFC3339, p.LoanedAt)
+	if err != nil {
+		return fmt.Errorf("failed to parse loaned_at: %w", err)
+	}
+
+	dueDate, err := parseOptionalDueDate(p.DueDate)
+	if err != nil {
+		return err
+	}
+
+	if _, err := s.loanSvc.Create(ctx, loan.CreateInput{
+		WorkspaceID: change.WorkspaceID(),
+		InventoryID: p.InventoryID,
+		BorrowerID:  p.BorrowerID,
+		Quantity:    p.Quantity,
+		LoanedAt:    loanedAt,
+		DueDate:     dueDate,
+		Notes:       p.Notes,
+	}); err != nil {
+		return fmt.Errorf("failed to create loan: %w", err)
+	}
+	return nil
+}
+
+func (s *Service) applyLoanUpdate(ctx context.Context, change *PendingChange) error {
+	if change.EntityID() == nil {
+		return errors.New(msgEntityIDRequiredForUpdateAction)
+	}
+	var p struct {
+		DueDate *string `json:"due_date"`
+		Notes   *string `json:"notes"`
+	}
+	if err := json.Unmarshal(change.Payload(), &p); err != nil {
+		return fmt.Errorf(msgFailedToUnmarshalUpdatePayload, err)
+	}
+
+	dueDate, err := parseOptionalDueDate(p.DueDate)
+	if err != nil {
+		return err
+	}
+
+	if _, err := s.loanSvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), dueDate, p.Notes); err != nil {
+		return fmt.Errorf("failed to update loan: %w", err)
+	}
+	return nil
+}
+
+func (s *Service) applyLoanDelete(ctx context.Context, change *PendingChange) error {
+	if change.EntityID() == nil {
+		return errors.New(msgEntityIDRequiredForDeleteAction)
+	}
+	if err := s.loanRepo.Delete(ctx, *change.EntityID()); err != nil {
+		return fmt.Errorf("failed to delete loan: %w", err)
+	}
 	return nil
 }
 

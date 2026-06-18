@@ -17,9 +17,17 @@ const (
 )
 
 // RegisterRoutes registers favorite routes.
+// Each handler is a package factory func (see below) so this stays a flat list
+// of registrations rather than a single god-function of inline closures.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
-	// List user's favorites
-	huma.Get(api, "/favorites", func(ctx context.Context, input *struct{}) (*ListFavoritesOutput, error) {
+	huma.Get(api, "/favorites", listFavorites(svc))
+	huma.Post(api, "/favorites", toggleFavorite(svc, broadcaster))
+	huma.Get(api, "/favorites/check/{favorite_type}/{target_id}", checkFavorite(svc))
+}
+
+// listFavorites lists the authenticated user's favorites.
+func listFavorites(svc ServiceInterface) func(context.Context, *struct{}) (*ListFavoritesOutput, error) {
+	return func(ctx context.Context, input *struct{}) (*ListFavoritesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -43,10 +51,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &ListFavoritesOutput{
 			Body: FavoriteListResponse{Items: items},
 		}, nil
-	})
+	}
+}
 
-	// Toggle favorite (add if not exists, remove if exists)
-	huma.Post(api, "/favorites", func(ctx context.Context, input *ToggleFavoriteInput) (*ToggleFavoriteOutput, error) {
+// toggleFavorite adds a favorite if not present, or removes it if it exists.
+func toggleFavorite(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *ToggleFavoriteInput) (*ToggleFavoriteOutput, error) {
+	return func(ctx context.Context, input *ToggleFavoriteInput) (*ToggleFavoriteOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -93,10 +103,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				Added: added,
 			},
 		}, nil
-	})
+	}
+}
 
-	// Check if item is favorited
-	huma.Get(api, "/favorites/check/{favorite_type}/{target_id}", func(ctx context.Context, input *CheckFavoriteInput) (*CheckFavoriteOutput, error) {
+// checkFavorite reports whether the target entity is favorited by the user.
+func checkFavorite(svc ServiceInterface) func(context.Context, *CheckFavoriteInput) (*CheckFavoriteOutput, error) {
+	return func(ctx context.Context, input *CheckFavoriteInput) (*CheckFavoriteOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -122,7 +134,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				IsFavorite: isFavorite,
 			},
 		}, nil
-	})
+	}
 }
 
 func toFavoriteResponse(fav *Favorite) FavoriteResponse {

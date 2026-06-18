@@ -85,44 +85,13 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*Item, error) 
 		return nil, ErrSKUTaken
 	}
 
-	shortCode := input.ShortCode
-
-	// Check short code uniqueness if provided, or auto-generate
-	if shortCode != "" {
-		exists, err := s.repo.ShortCodeExists(ctx, shortCode)
-		if err != nil {
-			return nil, err
-		}
-		if exists {
-			return nil, ErrShortCodeTaken
-		}
-	} else {
-		// Auto-generate short code if not provided
-		const maxRetries = 5
-		for i := 0; i < maxRetries; i++ {
-			code := generateShortCode()
-			exists, err := s.repo.ShortCodeExists(ctx, code)
-			if err != nil {
-				return nil, err
-			}
-			if !exists {
-				shortCode = code
-				break
-			}
-		}
-		if shortCode == "" {
-			return nil, ErrShortCodeTaken
-		}
+	shortCode, err := s.resolveShortCode(ctx, input.ShortCode)
+	if err != nil {
+		return nil, err
 	}
 
-	// Validate category belongs to the same workspace (if provided)
-	if input.CategoryID != nil {
-		if _, err := s.categoryRepo.FindByID(ctx, *input.CategoryID, input.WorkspaceID); err != nil {
-			if shared.IsNotFound(err) {
-				return nil, shared.NewFieldError(shared.ErrNotFound, "category_id", fmt.Sprintf("category %s not found in this workspace", *input.CategoryID))
-			}
-			return nil, err
-		}
+	if err := s.validateCategory(ctx, input.CategoryID, input.WorkspaceID); err != nil {
+		return nil, err
 	}
 
 	item, err := NewItem(input.WorkspaceID, input.Name, input.SKU, input.MinStockLevel)
@@ -155,6 +124,49 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*Item, error) 
 	}
 
 	return item, nil
+}
+
+// resolveShortCode validates a caller-supplied short code for uniqueness, or
+// generates a unique one (bounded retries) when none was provided.
+func (s *Service) resolveShortCode(ctx context.Context, shortCode string) (string, error) {
+	if shortCode != "" {
+		exists, err := s.repo.ShortCodeExists(ctx, shortCode)
+		if err != nil {
+			return "", err
+		}
+		if exists {
+			return "", ErrShortCodeTaken
+		}
+		return shortCode, nil
+	}
+
+	const maxRetries = 5
+	for i := 0; i < maxRetries; i++ {
+		code := generateShortCode()
+		exists, err := s.repo.ShortCodeExists(ctx, code)
+		if err != nil {
+			return "", err
+		}
+		if !exists {
+			return code, nil
+		}
+	}
+	return "", ErrShortCodeTaken
+}
+
+// validateCategory ensures the category (when given) exists in the workspace,
+// mapping a not-found to a category_id field error.
+func (s *Service) validateCategory(ctx context.Context, categoryID *uuid.UUID, workspaceID uuid.UUID) error {
+	if categoryID == nil {
+		return nil
+	}
+	if _, err := s.categoryRepo.FindByID(ctx, *categoryID, workspaceID); err != nil {
+		if shared.IsNotFound(err) {
+			return shared.NewFieldError(shared.ErrNotFound, "category_id", fmt.Sprintf("category %s not found in this workspace", *categoryID))
+		}
+		return err
+	}
+	return nil
 }
 
 func (s *Service) GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*Item, error) {

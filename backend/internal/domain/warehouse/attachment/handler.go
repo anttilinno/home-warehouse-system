@@ -35,9 +35,41 @@ const (
 )
 
 // RegisterRoutes registers attachment routes.
+// Each handler is a package factory func (see below) so this stays a flat list
+// of registrations rather than a single god-function of inline closures.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
-	// List attachments for an item
-	huma.Get(api, "/items/{item_id}/attachments", func(ctx context.Context, input *ListAttachmentsInput) (*ListAttachmentsOutput, error) {
+	huma.Get(api, "/items/{item_id}/attachments", listAttachments(svc))
+	huma.Get(api, "/attachments/{id}", getAttachment(svc))
+	huma.Post(api, "/items/{item_id}/attachments/upload", uploadAttachment(svc, broadcaster))
+	huma.Post(api, "/items/{item_id}/attachments", createAttachment(svc, broadcaster))
+	huma.Post(api, "/items/{item_id}/attachments/{id}/set-primary", setPrimaryAttachment(svc, broadcaster))
+	huma.Delete(api, "/attachments/{id}", deleteAttachment(svc, broadcaster))
+}
+
+// publishAttachmentCreated publishes the attachment.created event shared by the
+// upload (JSON metadata) and create (external link) routes.
+func publishAttachmentCreated(ctx context.Context, broadcaster *events.Broadcaster, workspaceID uuid.UUID, authUser *appMiddleware.AuthUser, attachment *Attachment) {
+	if broadcaster == nil || authUser == nil {
+		return
+	}
+	userName := appMiddleware.GetUserDisplayName(ctx)
+	broadcaster.Publish(workspaceID, events.Event{
+		Type:       eventAttachmentCreated,
+		EntityID:   attachment.ID().String(),
+		EntityType: "attachment",
+		UserID:     authUser.ID,
+		Data: map[string]any{
+			"id":              attachment.ID(),
+			"item_id":         attachment.ItemID(),
+			"attachment_type": string(attachment.AttachmentType()),
+			"user_name":       userName,
+		},
+	})
+}
+
+// listAttachments lists attachments for an item.
+func listAttachments(svc ServiceInterface) func(context.Context, *ListAttachmentsInput) (*ListAttachmentsOutput, error) {
+	return func(ctx context.Context, input *ListAttachmentsInput) (*ListAttachmentsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -56,10 +88,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &ListAttachmentsOutput{
 			Body: AttachmentListResponse{Items: items},
 		}, nil
-	})
+	}
+}
 
-	// Get attachment by ID
-	huma.Get(api, "/attachments/{id}", func(ctx context.Context, input *GetAttachmentInput) (*GetAttachmentOutput, error) {
+// getAttachment returns an attachment by ID.
+func getAttachment(svc ServiceInterface) func(context.Context, *GetAttachmentInput) (*GetAttachmentOutput, error) {
+	return func(ctx context.Context, input *GetAttachmentInput) (*GetAttachmentOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -73,11 +107,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &GetAttachmentOutput{
 			Body: toAttachmentResponse(attachment),
 		}, nil
-	})
+	}
+}
 
-	// Upload file and create attachment
-	// Note: This is a simplified version. In production, you'd handle multipart file upload
-	huma.Post(api, "/items/{item_id}/attachments/upload", func(ctx context.Context, input *UploadAttachmentInput) (*UploadAttachmentOutput, error) {
+// uploadAttachment uploads a file and creates an attachment.
+// Note: This is a simplified version. In production, you'd handle multipart file upload
+func uploadAttachment(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *UploadAttachmentInput) (*UploadAttachmentOutput, error) {
+	return func(ctx context.Context, input *UploadAttachmentInput) (*UploadAttachmentOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -132,29 +168,17 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		// Publish event
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       eventAttachmentCreated,
-				EntityID:   attachment.ID().String(),
-				EntityType: "attachment",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"id":              attachment.ID(),
-					"item_id":         attachment.ItemID(),
-					"attachment_type": string(attachment.AttachmentType()),
-					"user_name":       userName,
-				},
-			})
-		}
+		publishAttachmentCreated(ctx, broadcaster, workspaceID, authUser, attachment)
 
 		return &UploadAttachmentOutput{
 			Body: toAttachmentResponse(attachment),
 		}, nil
-	})
+	}
+}
 
-	// Create attachment without file (e.g., external link)
-	huma.Post(api, "/items/{item_id}/attachments", func(ctx context.Context, input *CreateAttachmentRequest) (*CreateAttachmentOutput, error) {
+// createAttachment creates an attachment without file (e.g., external link).
+func createAttachment(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *CreateAttachmentRequest) (*CreateAttachmentOutput, error) {
+	return func(ctx context.Context, input *CreateAttachmentRequest) (*CreateAttachmentOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -182,29 +206,17 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		// Publish event
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       eventAttachmentCreated,
-				EntityID:   attachment.ID().String(),
-				EntityType: "attachment",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"id":              attachment.ID(),
-					"item_id":         attachment.ItemID(),
-					"attachment_type": string(attachment.AttachmentType()),
-					"user_name":       userName,
-				},
-			})
-		}
+		publishAttachmentCreated(ctx, broadcaster, workspaceID, authUser, attachment)
 
 		return &CreateAttachmentOutput{
 			Body: toAttachmentResponse(attachment),
 		}, nil
-	})
+	}
+}
 
-	// Set attachment as primary
-	huma.Post(api, "/items/{item_id}/attachments/{id}/set-primary", func(ctx context.Context, input *SetPrimaryInput) (*struct{}, error) {
+// setPrimaryAttachment marks an attachment as primary.
+func setPrimaryAttachment(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *SetPrimaryInput) (*struct{}, error) {
+	return func(ctx context.Context, input *SetPrimaryInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -238,10 +250,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return nil, nil
-	})
+	}
+}
 
-	// Delete attachment
-	huma.Delete(api, "/attachments/{id}", func(ctx context.Context, input *GetAttachmentInput) (*struct{}, error) {
+// deleteAttachment deletes an attachment.
+func deleteAttachment(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetAttachmentInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetAttachmentInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -272,7 +286,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return nil, nil
-	})
+	}
 }
 
 // RegisterUploadHandler registers the Chi multipart upload route that persists

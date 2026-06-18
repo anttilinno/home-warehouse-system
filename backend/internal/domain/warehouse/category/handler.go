@@ -18,9 +18,24 @@ const (
 )
 
 // RegisterRoutes registers category routes.
+// Each handler is a package factory func (see below) so this stays a flat list
+// of registrations rather than a single god-function of inline closures.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
-	// List all categories
-	huma.Get(api, "/categories", func(ctx context.Context, input *struct{}) (*ListCategoriesOutput, error) {
+	huma.Get(api, "/categories", listCategories(svc))
+	huma.Get(api, "/categories/root", listRootCategories(svc))
+	huma.Get(api, routeCategoryByID, getCategory(svc))
+	huma.Get(api, "/categories/{id}/children", listChildCategories(svc))
+	huma.Post(api, "/categories", createCategory(svc, broadcaster))
+	huma.Patch(api, routeCategoryByID, updateCategory(svc, broadcaster))
+	huma.Post(api, "/categories/{id}/archive", archiveCategory(svc, broadcaster))
+	huma.Post(api, "/categories/{id}/restore", restoreCategory(svc, broadcaster))
+	huma.Delete(api, routeCategoryByID, deleteCategory(svc, broadcaster))
+	huma.Get(api, "/categories/{id}/breadcrumb", getCategoryBreadcrumb(svc))
+}
+
+// listCategories lists all categories in the workspace.
+func listCategories(svc ServiceInterface) func(context.Context, *struct{}) (*ListCategoriesOutput, error) {
+	return func(ctx context.Context, input *struct{}) (*ListCategoriesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -39,10 +54,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &ListCategoriesOutput{
 			Body: CategoryListResponse{Items: items},
 		}, nil
-	})
+	}
+}
 
-	// List root categories
-	huma.Get(api, "/categories/root", func(ctx context.Context, input *struct{}) (*ListCategoriesOutput, error) {
+// listRootCategories lists root categories in the workspace.
+func listRootCategories(svc ServiceInterface) func(context.Context, *struct{}) (*ListCategoriesOutput, error) {
+	return func(ctx context.Context, input *struct{}) (*ListCategoriesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -61,10 +78,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &ListCategoriesOutput{
 			Body: CategoryListResponse{Items: items},
 		}, nil
-	})
+	}
+}
 
-	// Get category by ID
-	huma.Get(api, routeCategoryByID, func(ctx context.Context, input *GetCategoryInput) (*GetCategoryOutput, error) {
+// getCategory returns a single category by ID.
+func getCategory(svc ServiceInterface) func(context.Context, *GetCategoryInput) (*GetCategoryOutput, error) {
+	return func(ctx context.Context, input *GetCategoryInput) (*GetCategoryOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -78,10 +97,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &GetCategoryOutput{
 			Body: toCategoryResponse(category),
 		}, nil
-	})
+	}
+}
 
-	// List category children
-	huma.Get(api, "/categories/{id}/children", func(ctx context.Context, input *GetCategoryInput) (*ListCategoriesOutput, error) {
+// listChildCategories lists the children of a category.
+func listChildCategories(svc ServiceInterface) func(context.Context, *GetCategoryInput) (*ListCategoriesOutput, error) {
+	return func(ctx context.Context, input *GetCategoryInput) (*ListCategoriesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -100,10 +121,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &ListCategoriesOutput{
 			Body: CategoryListResponse{Items: items},
 		}, nil
-	})
+	}
+}
 
-	// Create category
-	huma.Post(api, "/categories", func(ctx context.Context, input *CreateCategoryInput) (*CreateCategoryOutput, error) {
+// createCategory creates a category.
+func createCategory(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *CreateCategoryInput) (*CreateCategoryOutput, error) {
+	return func(ctx context.Context, input *CreateCategoryInput) (*CreateCategoryOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -141,10 +164,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			Status: 201,
 			Body:   toCategoryResponse(category),
 		}, nil
-	})
+	}
+}
 
-	// Update category
-	huma.Patch(api, routeCategoryByID, func(ctx context.Context, input *UpdateCategoryInput) (*UpdateCategoryOutput, error) {
+// updateCategory updates a category.
+func updateCategory(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *UpdateCategoryInput) (*UpdateCategoryOutput, error) {
+	return func(ctx context.Context, input *UpdateCategoryInput) (*UpdateCategoryOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -187,10 +212,29 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &UpdateCategoryOutput{
 			Body: toCategoryResponse(category),
 		}, nil
-	})
+	}
+}
 
-	// Archive category
-	huma.Post(api, "/categories/{id}/archive", func(ctx context.Context, input *GetCategoryInput) (*struct{}, error) {
+// archiveCategory archives a category.
+func archiveCategory(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetCategoryInput) (*struct{}, error) {
+	// Publish event (treat archive as delete event)
+	return categoryLifecycleHandler(broadcaster, svc.Archive, "category.deleted")
+}
+
+// restoreCategory restores an archived category.
+func restoreCategory(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetCategoryInput) (*struct{}, error) {
+	// Publish event (treat restore as create event)
+	return categoryLifecycleHandler(broadcaster, svc.Restore, "category.created")
+}
+
+// categoryLifecycleHandler builds a handler that runs a workspace-scoped action
+// (archive/restore) on a category and publishes the given lifecycle event.
+func categoryLifecycleHandler(
+	broadcaster *events.Broadcaster,
+	action func(ctx context.Context, id, workspaceID uuid.UUID) error,
+	eventType string,
+) func(context.Context, *GetCategoryInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetCategoryInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -198,16 +242,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
-		err := svc.Archive(ctx, input.ID, workspaceID)
+		err := action(ctx, input.ID, workspaceID)
 		if err != nil {
 			return nil, appMiddleware.MapDomainError(err)
 		}
 
-		// Publish event (treat archive as delete event)
 		if broadcaster != nil && authUser != nil {
 			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "category.deleted",
+				Type:       eventType,
 				EntityID:   input.ID.String(),
 				EntityType: "category",
 				UserID:     authUser.ID,
@@ -218,41 +261,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return nil, nil
-	})
+	}
+}
 
-	// Restore category
-	huma.Post(api, "/categories/{id}/restore", func(ctx context.Context, input *GetCategoryInput) (*struct{}, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
-		}
-
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
-
-		err := svc.Restore(ctx, input.ID, workspaceID)
-		if err != nil {
-			return nil, appMiddleware.MapDomainError(err)
-		}
-
-		// Publish event (treat restore as create event)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "category.created",
-				EntityID:   input.ID.String(),
-				EntityType: "category",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
-
-		return nil, nil
-	})
-
-	// Delete category
-	huma.Delete(api, routeCategoryByID, func(ctx context.Context, input *GetCategoryInput) (*struct{}, error) {
+// deleteCategory deletes a category.
+func deleteCategory(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetCategoryInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetCategoryInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -283,10 +297,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return nil, nil
-	})
+	}
+}
 
-	// Get breadcrumb trail for a category
-	huma.Get(api, "/categories/{id}/breadcrumb", func(ctx context.Context, input *GetCategoryInput) (*BreadcrumbOutput, error) {
+// getCategoryBreadcrumb returns the breadcrumb trail for a category.
+func getCategoryBreadcrumb(svc ServiceInterface) func(context.Context, *GetCategoryInput) (*BreadcrumbOutput, error) {
+	return func(ctx context.Context, input *GetCategoryInput) (*BreadcrumbOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -300,7 +316,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &BreadcrumbOutput{
 			Body: breadcrumb,
 		}, nil
-	})
+	}
 }
 
 func toCategoryResponse(c *Category) CategoryResponse {

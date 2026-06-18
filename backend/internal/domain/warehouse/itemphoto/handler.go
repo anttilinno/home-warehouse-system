@@ -38,11 +38,21 @@ type StorageGetter interface {
 	GetStorage() Storage
 }
 
-// RegisterRoutes registers item photo routes (Huma routes only)
+// RegisterRoutes registers item photo routes (Huma routes only).
+// Each handler is a package factory func (see below) so this stays a flat list
+// of registrations rather than a single god-function of inline closures.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster, urlGenerator PhotoURLGenerator) {
+	huma.Get(api, "/items/{item_id}/photos/list", listPhotos(svc, urlGenerator))
+	huma.Get(api, "/photos/{id}", getPhoto(svc, urlGenerator))
+	huma.Put(api, "/photos/{id}/primary", setPrimaryPhoto(svc, broadcaster))
+	huma.Put(api, "/photos/{id}/caption", updateCaption(svc, broadcaster, urlGenerator))
+	huma.Put(api, "/items/{item_id}/photos/order", reorderPhotos(svc, broadcaster))
+	huma.Delete(api, "/photos/{id}", deletePhoto(svc, broadcaster))
+}
 
-	// List photos for an item
-	huma.Get(api, "/items/{item_id}/photos/list", func(ctx context.Context, input *ListPhotosInput) (*ListPhotosOutput, error) {
+// listPhotos lists photos for an item.
+func listPhotos(svc ServiceInterface, urlGenerator PhotoURLGenerator) func(context.Context, *ListPhotosInput) (*ListPhotosOutput, error) {
+	return func(ctx context.Context, input *ListPhotosInput) (*ListPhotosOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -61,10 +71,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &ListPhotosOutput{
 			Body: PhotoListResponse{Items: items},
 		}, nil
-	})
+	}
+}
 
-	// Get single photo metadata
-	huma.Get(api, "/photos/{id}", func(ctx context.Context, input *GetPhotoInput) (*GetPhotoOutput, error) {
+// getPhoto returns single photo metadata.
+func getPhoto(svc ServiceInterface, urlGenerator PhotoURLGenerator) func(context.Context, *GetPhotoInput) (*GetPhotoOutput, error) {
+	return func(ctx context.Context, input *GetPhotoInput) (*GetPhotoOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -86,10 +98,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &GetPhotoOutput{
 			Body: toPhotoResponse(photo, urlGenerator),
 		}, nil
-	})
+	}
+}
 
-	// Set photo as primary
-	huma.Put(api, "/photos/{id}/primary", func(ctx context.Context, input *SetPrimaryInput) (*struct{}, error) {
+// setPrimaryPhoto sets a photo as primary.
+func setPrimaryPhoto(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *SetPrimaryInput) (*struct{}, error) {
+	return func(ctx context.Context, input *SetPrimaryInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -125,10 +139,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return nil, nil
-	})
+	}
+}
 
-	// Update photo caption
-	huma.Put(api, "/photos/{id}/caption", func(ctx context.Context, input *UpdateCaptionInput) (*UpdateCaptionOutput, error) {
+// updateCaption updates a photo caption.
+func updateCaption(svc ServiceInterface, broadcaster *events.Broadcaster, urlGenerator PhotoURLGenerator) func(context.Context, *UpdateCaptionInput) (*UpdateCaptionOutput, error) {
+	return func(ctx context.Context, input *UpdateCaptionInput) (*UpdateCaptionOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -172,10 +188,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &UpdateCaptionOutput{
 			Body: toPhotoResponse(photo, urlGenerator),
 		}, nil
-	})
+	}
+}
 
-	// Reorder photos
-	huma.Put(api, "/items/{item_id}/photos/order", func(ctx context.Context, input *ReorderPhotosInput) (*struct{}, error) {
+// reorderPhotos reorders an item's photos.
+func reorderPhotos(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *ReorderPhotosInput) (*struct{}, error) {
+	return func(ctx context.Context, input *ReorderPhotosInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -207,10 +225,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return nil, nil
-	})
+	}
+}
 
-	// Delete photo
-	huma.Delete(api, "/photos/{id}", func(ctx context.Context, input *GetPhotoInput) (*struct{}, error) {
+// deletePhoto deletes a photo.
+func deletePhoto(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetPhotoInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetPhotoInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -249,7 +269,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return nil, nil
-	})
+	}
 }
 
 // RegisterUploadHandler registers the multipart upload handler on a Chi router
@@ -435,20 +455,10 @@ func (h *BulkPhotoHandler) HandleDownload(w http.ResponseWriter, r *http.Request
 	var photos []*ItemPhoto
 	idsParam := r.URL.Query().Get("ids")
 	if idsParam != "" {
-		// Parse comma-separated UUIDs
-		idStrings := strings.Split(idsParam, ",")
-		photoIDs := make([]uuid.UUID, 0, len(idStrings))
-		for _, idStr := range idStrings {
-			idStr = strings.TrimSpace(idStr)
-			if idStr == "" {
-				continue
-			}
-			photoID, err := uuid.Parse(idStr)
-			if err != nil {
-				http.Error(w, "invalid photo ID in ids parameter", http.StatusBadRequest)
-				return
-			}
-			photoIDs = append(photoIDs, photoID)
+		photoIDs, err := parsePhotoIDs(idsParam)
+		if err != nil {
+			http.Error(w, "invalid photo ID in ids parameter", http.StatusBadRequest)
+			return
 		}
 		if len(photoIDs) > 0 {
 			photos, err = h.svc.GetPhotosByIDs(ctx, photoIDs, workspaceID)
@@ -473,9 +483,6 @@ func (h *BulkPhotoHandler) HandleDownload(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Get storage
-	storage := h.storageGetter.GetStorage()
-
 	// Set headers for zip download
 	w.Header().Set(headerContentType, "application/zip")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"photos-%s.zip\"", itemID.String()[:8]))
@@ -484,9 +491,34 @@ func (h *BulkPhotoHandler) HandleDownload(w http.ResponseWriter, r *http.Request
 	zipWriter := zip.NewWriter(w)
 	defer zipWriter.Close()
 
-	// Add each photo to the zip
+	h.writePhotosToZip(ctx, zipWriter, photos)
+}
+
+// parsePhotoIDs parses the comma-separated ?ids= query value into UUIDs,
+// skipping blank entries and failing on the first malformed ID.
+func parsePhotoIDs(idsParam string) ([]uuid.UUID, error) {
+	idStrings := strings.Split(idsParam, ",")
+	photoIDs := make([]uuid.UUID, 0, len(idStrings))
+	for _, idStr := range idStrings {
+		idStr = strings.TrimSpace(idStr)
+		if idStr == "" {
+			continue
+		}
+		photoID, err := uuid.Parse(idStr)
+		if err != nil {
+			return nil, err
+		}
+		photoIDs = append(photoIDs, photoID)
+	}
+	return photoIDs, nil
+}
+
+// writePhotosToZip streams each photo into the archive. Photos missing from
+// storage or failing mid-copy are skipped; duplicate filenames get an index
+// suffix; stored names are sanitized to prevent zip-slip.
+func (h *BulkPhotoHandler) writePhotosToZip(ctx context.Context, zipWriter *zip.Writer, photos []*ItemPhoto) {
+	storage := h.storageGetter.GetStorage()
 	for i, photo := range photos {
-		// Get file from storage
 		reader, err := storage.Get(ctx, photo.StoragePath)
 		if err != nil {
 			// Skip files that don't exist
@@ -503,16 +535,14 @@ func (h *BulkPhotoHandler) HandleDownload(w http.ResponseWriter, r *http.Request
 			filename = fmt.Sprintf("%s_%d%s", base, i, ext)
 		}
 
-		// Create file in zip
 		fileWriter, err := zipWriter.Create(filename)
 		if err != nil {
-			reader.Close()
+			_ = reader.Close()
 			continue
 		}
 
-		// Copy file content
 		_, err = io.Copy(fileWriter, reader)
-		reader.Close()
+		_ = reader.Close()
 		if err != nil {
 			continue
 		}

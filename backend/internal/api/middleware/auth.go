@@ -15,10 +15,10 @@ import (
 type contextKey string
 
 const (
-	UserContextKey           contextKey = "user"
-	WorkspaceContextKey      contextKey = "workspace"
-	RoleContextKey           contextKey = "role"
-	CurrentSessionIDKey      contextKey = "current_session_id"
+	UserContextKey      contextKey = "user"
+	WorkspaceContextKey contextKey = "workspace"
+	RoleContextKey      contextKey = "role"
+	CurrentSessionIDKey contextKey = "current_session_id"
 )
 
 // AuthUser represents the authenticated user in context.
@@ -37,30 +37,11 @@ type AuthUser struct {
 func JWTAuth(jwtService *jwt.Service) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			var token string
-
-			// First try Authorization header
-			authHeader := r.Header.Get("Authorization")
-			if authHeader != "" {
-				token = strings.TrimPrefix(authHeader, "Bearer ")
-				if token == authHeader {
-					http.Error(w, `{"error":"unauthorized","message":"invalid authorization format"}`, http.StatusUnauthorized)
-					return
-				}
+			token, ok := extractToken(r)
+			if !ok {
+				http.Error(w, `{"error":"unauthorized","message":"invalid authorization format"}`, http.StatusUnauthorized)
+				return
 			}
-
-			// Fall back to cookie
-			if token == "" {
-				if cookie, err := r.Cookie("access_token"); err == nil {
-					token = cookie.Value
-				}
-			}
-
-			// Fall back to query parameter (for SSE connections as last resort)
-			if token == "" {
-				token = r.URL.Query().Get("token")
-			}
-
 			if token == "" {
 				http.Error(w, `{"error":"unauthorized","message":"missing authorization"}`, http.StatusUnauthorized)
 				return
@@ -87,6 +68,29 @@ func JWTAuth(jwtService *jwt.Service) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+// extractToken pulls the access token from, in order: the Authorization header
+// (Bearer scheme), the access_token cookie, then the ?token= query param (SSE
+// last resort). ok is false only when an Authorization header is present but is
+// not in "Bearer <token>" form; an empty-but-well-formed header value still
+// falls through to the cookie/query sources, matching the original cascade.
+func extractToken(r *http.Request) (token string, ok bool) {
+	if authHeader := r.Header.Get("Authorization"); authHeader != "" {
+		token = strings.TrimPrefix(authHeader, "Bearer ")
+		if token == authHeader {
+			return "", false // present but no Bearer prefix
+		}
+	}
+	if token == "" {
+		if cookie, err := r.Cookie("access_token"); err == nil {
+			token = cookie.Value
+		}
+	}
+	if token == "" {
+		token = r.URL.Query().Get("token")
+	}
+	return token, true
 }
 
 // SessionResolver is the minimal session-lookup surface CurrentSession needs.

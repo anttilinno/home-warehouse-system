@@ -27,8 +27,17 @@ const (
 // pipeline as a regular update (a bespoke POST sub-action would be
 // misclassified as a create by the approval middleware).
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
-	// List wishlist items (optionally filtered by status), sorted by priority
-	huma.Get(api, "/wishlist", func(ctx context.Context, input *ListWishlistInput) (*ListWishlistOutput, error) {
+	huma.Get(api, "/wishlist", listWishlistItems(svc))
+	huma.Get(api, routeWishlistByID, getWishlistItem(svc))
+	huma.Post(api, "/wishlist", createWishlistItem(svc, broadcaster))
+	huma.Patch(api, routeWishlistByID, updateWishlistItem(svc, broadcaster))
+	huma.Delete(api, routeWishlistByID, deleteWishlistItem(svc, broadcaster))
+}
+
+// listWishlistItems lists wishlist items (optionally filtered by status),
+// sorted by priority.
+func listWishlistItems(svc ServiceInterface) func(context.Context, *ListWishlistInput) (*ListWishlistOutput, error) {
+	return func(ctx context.Context, input *ListWishlistInput) (*ListWishlistOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -54,10 +63,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &ListWishlistOutput{
 			Body: WishlistListResponse{Items: responses, Total: total},
 		}, nil
-	})
+	}
+}
 
-	// Get wishlist item by ID
-	huma.Get(api, routeWishlistByID, func(ctx context.Context, input *GetWishlistItemInput) (*GetWishlistItemOutput, error) {
+// getWishlistItem returns a single wishlist item by ID.
+func getWishlistItem(svc ServiceInterface) func(context.Context, *GetWishlistItemInput) (*GetWishlistItemOutput, error) {
+	return func(ctx context.Context, input *GetWishlistItemInput) (*GetWishlistItemOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -72,10 +83,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return &GetWishlistItemOutput{Body: toItemResponse(item)}, nil
-	})
+	}
+}
 
-	// Create wishlist item
-	huma.Post(api, "/wishlist", func(ctx context.Context, input *CreateWishlistItemInput) (*CreateWishlistItemOutput, error) {
+// createWishlistItem creates a wishlist item.
+func createWishlistItem(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *CreateWishlistItemInput) (*CreateWishlistItemOutput, error) {
+	return func(ctx context.Context, input *CreateWishlistItemInput) (*CreateWishlistItemOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -115,11 +128,14 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		publishEvent(ctx, broadcaster, workspaceID, "wishlist.created", item)
 
 		return &CreateWishlistItemOutput{Body: toItemResponse(item)}, nil
-	})
+	}
+}
 
-	// Update wishlist item (details and/or lifecycle transition; setting
-	// status=acquired with acquired_item_id is the "mark acquired" path)
-	huma.Patch(api, routeWishlistByID, func(ctx context.Context, input *UpdateWishlistItemInput) (*UpdateWishlistItemOutput, error) {
+// updateWishlistItem updates a wishlist item (details and/or lifecycle
+// transition; setting status=acquired with acquired_item_id is the "mark
+// acquired" path).
+func updateWishlistItem(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *UpdateWishlistItemInput) (*UpdateWishlistItemOutput, error) {
+	return func(ctx context.Context, input *UpdateWishlistItemInput) (*UpdateWishlistItemOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -158,10 +174,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		publishEvent(ctx, broadcaster, workspaceID, "wishlist.updated", item)
 
 		return &UpdateWishlistItemOutput{Body: toItemResponse(item)}, nil
-	})
+	}
+}
 
-	// Delete wishlist item
-	huma.Delete(api, routeWishlistByID, func(ctx context.Context, input *GetWishlistItemInput) (*struct{}, error) {
+// deleteWishlistItem deletes a wishlist item.
+func deleteWishlistItem(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetWishlistItemInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetWishlistItemInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -191,7 +209,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return nil, nil
-	})
+	}
 }
 
 // isValidationError reports whether err is one of the wishlist domain

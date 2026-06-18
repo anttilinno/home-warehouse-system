@@ -34,10 +34,36 @@ type StorageGetter interface {
 	GetStorage() Storage
 }
 
-// RegisterRoutes registers repair photo routes (Huma routes only)
+// RegisterRoutes registers repair photo routes (Huma routes only).
+// Each handler is a package factory func (see below) so this stays a flat list
+// of registrations rather than a single god-function of inline closures.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster, urlGenerator PhotoURLGenerator) {
-	// List photos for a repair log
-	huma.Get(api, "/repairs/{repair_log_id}/photos/list", func(ctx context.Context, input *ListPhotosInput) (*ListPhotosOutput, error) {
+	huma.Get(api, "/repairs/{repair_log_id}/photos/list", listPhotos(svc, urlGenerator))
+	huma.Get(api, "/repairs/{repair_log_id}/photos/{id}", getPhoto(svc, urlGenerator))
+	huma.Put(api, "/repairs/{repair_log_id}/photos/{id}/caption", updateCaption(svc, broadcaster, urlGenerator))
+	huma.Delete(api, "/repairs/{repair_log_id}/photos/{id}", deletePhoto(svc, broadcaster))
+}
+
+// verifyPhotoInRepairLog fetches a photo and confirms it belongs to the given
+// repair log, returning the huma-mapped error for the not-found / lookup-failed
+// cases. On success it returns the photo and a nil error.
+func verifyPhotoInRepairLog(ctx context.Context, svc ServiceInterface, photoID, repairLogID, workspaceID uuid.UUID) (*RepairPhoto, error) {
+	photo, err := svc.GetPhoto(ctx, photoID, workspaceID)
+	if err != nil {
+		if errors.Is(err, ErrPhotoNotFound) {
+			return nil, huma.Error404NotFound(msgPhotoNotFound)
+		}
+		return nil, huma.Error500InternalServerError(msgFailedGetPhoto)
+	}
+	if photo.RepairLogID != repairLogID {
+		return nil, huma.Error404NotFound(msgPhotoNotFound)
+	}
+	return photo, nil
+}
+
+// listPhotos lists photos for a repair log.
+func listPhotos(svc ServiceInterface, urlGenerator PhotoURLGenerator) func(context.Context, *ListPhotosInput) (*ListPhotosOutput, error) {
+	return func(ctx context.Context, input *ListPhotosInput) (*ListPhotosOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -56,35 +82,31 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &ListPhotosOutput{
 			Body: RepairPhotoListResponse{Items: items},
 		}, nil
-	})
+	}
+}
 
-	// Get single photo metadata
-	huma.Get(api, "/repairs/{repair_log_id}/photos/{id}", func(ctx context.Context, input *GetPhotoInput) (*GetPhotoOutput, error) {
+// getPhoto returns single photo metadata.
+func getPhoto(svc ServiceInterface, urlGenerator PhotoURLGenerator) func(context.Context, *GetPhotoInput) (*GetPhotoOutput, error) {
+	return func(ctx context.Context, input *GetPhotoInput) (*GetPhotoOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
-		photo, err := svc.GetPhoto(ctx, input.ID, workspaceID)
+		photo, err := verifyPhotoInRepairLog(ctx, svc, input.ID, input.RepairLogID, workspaceID)
 		if err != nil {
-			if errors.Is(err, ErrPhotoNotFound) {
-				return nil, huma.Error404NotFound(msgPhotoNotFound)
-			}
-			return nil, huma.Error500InternalServerError(msgFailedGetPhoto)
-		}
-
-		// Verify photo belongs to the repair log
-		if photo.RepairLogID != input.RepairLogID {
-			return nil, huma.Error404NotFound(msgPhotoNotFound)
+			return nil, err
 		}
 
 		return &GetPhotoOutput{
 			Body: toRepairPhotoResponse(photo, urlGenerator),
 		}, nil
-	})
+	}
+}
 
-	// Update photo caption
-	huma.Put(api, "/repairs/{repair_log_id}/photos/{id}/caption", func(ctx context.Context, input *UpdateCaptionInput) (*UpdateCaptionOutput, error) {
+// updateCaption updates a photo caption.
+func updateCaption(svc ServiceInterface, broadcaster *events.Broadcaster, urlGenerator PhotoURLGenerator) func(context.Context, *UpdateCaptionInput) (*UpdateCaptionOutput, error) {
+	return func(ctx context.Context, input *UpdateCaptionInput) (*UpdateCaptionOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -93,15 +115,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		// Verify photo exists and belongs to this repair log
-		existingPhoto, err := svc.GetPhoto(ctx, input.ID, workspaceID)
-		if err != nil {
-			if errors.Is(err, ErrPhotoNotFound) {
-				return nil, huma.Error404NotFound(msgPhotoNotFound)
-			}
-			return nil, huma.Error500InternalServerError(msgFailedGetPhoto)
-		}
-		if existingPhoto.RepairLogID != input.RepairLogID {
-			return nil, huma.Error404NotFound(msgPhotoNotFound)
+		if _, err := verifyPhotoInRepairLog(ctx, svc, input.ID, input.RepairLogID, workspaceID); err != nil {
+			return nil, err
 		}
 
 		photo, err := svc.UpdateCaption(ctx, input.ID, workspaceID, input.Body.Caption)
@@ -132,10 +147,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &UpdateCaptionOutput{
 			Body: toRepairPhotoResponse(photo, urlGenerator),
 		}, nil
-	})
+	}
+}
 
-	// Delete photo
-	huma.Delete(api, "/repairs/{repair_log_id}/photos/{id}", func(ctx context.Context, input *DeletePhotoInput) (*struct{}, error) {
+// deletePhoto deletes a photo.
+func deletePhoto(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *DeletePhotoInput) (*struct{}, error) {
+	return func(ctx context.Context, input *DeletePhotoInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -144,18 +161,11 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		// Verify photo exists and belongs to this repair log
-		existingPhoto, err := svc.GetPhoto(ctx, input.ID, workspaceID)
-		if err != nil {
-			if errors.Is(err, ErrPhotoNotFound) {
-				return nil, huma.Error404NotFound(msgPhotoNotFound)
-			}
-			return nil, huma.Error500InternalServerError(msgFailedGetPhoto)
-		}
-		if existingPhoto.RepairLogID != input.RepairLogID {
-			return nil, huma.Error404NotFound(msgPhotoNotFound)
+		if _, err := verifyPhotoInRepairLog(ctx, svc, input.ID, input.RepairLogID, workspaceID); err != nil {
+			return nil, err
 		}
 
-		err = svc.DeletePhoto(ctx, input.ID, workspaceID)
+		err := svc.DeletePhoto(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrPhotoNotFound) {
 				return nil, huma.Error404NotFound(msgPhotoNotFound)
@@ -180,7 +190,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return nil, nil
-	})
+	}
 }
 
 // RegisterUploadHandler registers the multipart upload handler on a Chi router

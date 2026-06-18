@@ -100,6 +100,42 @@ func (p *MaintenanceReminderProcessor) ProcessTask(ctx context.Context, t *asynq
 		"is_overdue":   payload.IsOverdue,
 	})
 
+	pushUserIDs := p.createMemberNotifications(ctx, q, members, payload, title, body, metadata)
+
+	if len(pushUserIDs) > 0 && p.pushSender != nil && p.pushSender.IsEnabled() {
+		tag := "maintenance-due"
+		if payload.IsOverdue {
+			tag = "maintenance-overdue"
+		}
+		message := webpush.PushMessage{
+			Title: title,
+			Body:  body,
+			Icon:  "/icon-192.png",
+			Badge: "/favicon-32x32.png",
+			Tag:   tag,
+			URL:   fmt.Sprintf("/dashboard/items/%s", payload.ItemID),
+			Data: map[string]interface{}{
+				"type":         "maintenance_reminder",
+				"schedule_id":  payload.ScheduleID.String(),
+				"workspace_id": payload.WorkspaceID.String(),
+				"inventory_id": payload.InventoryID.String(),
+				"is_overdue":   payload.IsOverdue,
+			},
+		}
+		if err := p.pushSender.SendToUsers(ctx, pushUserIDs, message); err != nil {
+			log.Printf("Failed to send push notification for schedule %s: %v", payload.ScheduleID, err)
+		}
+	}
+
+	log.Printf("Maintenance reminder processed for schedule %s", payload.ScheduleID)
+	return nil
+}
+
+// createMemberNotifications creates an in-app maintenance notification for each
+// eligible workspace member — notifications enabled for the user and not already
+// sent for this schedule occurrence (dedupe) — and returns the users that should
+// also receive a push. Per-user failures are logged and skipped.
+func (p *MaintenanceReminderProcessor) createMemberNotifications(ctx context.Context, q *queries.Queries, members []queries.ListWorkspaceMembersByRoleRow, payload MaintenanceReminderPayload, title, body string, metadata []byte) []uuid.UUID {
 	var pushUserIDs []uuid.UUID
 	for _, m := range members {
 		enabled, err := userPrefEnabled(ctx, q, m.UserID, maintenancePrefKey)
@@ -140,34 +176,7 @@ func (p *MaintenanceReminderProcessor) ProcessTask(ctx context.Context, t *asynq
 		}
 		pushUserIDs = append(pushUserIDs, m.UserID)
 	}
-
-	if len(pushUserIDs) > 0 && p.pushSender != nil && p.pushSender.IsEnabled() {
-		tag := "maintenance-due"
-		if payload.IsOverdue {
-			tag = "maintenance-overdue"
-		}
-		message := webpush.PushMessage{
-			Title: title,
-			Body:  body,
-			Icon:  "/icon-192.png",
-			Badge: "/favicon-32x32.png",
-			Tag:   tag,
-			URL:   fmt.Sprintf("/dashboard/items/%s", payload.ItemID),
-			Data: map[string]interface{}{
-				"type":         "maintenance_reminder",
-				"schedule_id":  payload.ScheduleID.String(),
-				"workspace_id": payload.WorkspaceID.String(),
-				"inventory_id": payload.InventoryID.String(),
-				"is_overdue":   payload.IsOverdue,
-			},
-		}
-		if err := p.pushSender.SendToUsers(ctx, pushUserIDs, message); err != nil {
-			log.Printf("Failed to send push notification for schedule %s: %v", payload.ScheduleID, err)
-		}
-	}
-
-	log.Printf("Maintenance reminder processed for schedule %s", payload.ScheduleID)
-	return nil
+	return pushUserIDs
 }
 
 // maintenanceMessage builds the notification title/body for a payload.

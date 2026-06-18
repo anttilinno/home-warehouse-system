@@ -20,9 +20,22 @@ const (
 )
 
 // RegisterRoutes registers maintenance schedule routes on the workspace tree.
+// Each handler is a package factory func (see below) so this stays a flat list
+// of registrations rather than a single god-function of inline closures.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
-	// List schedules in workspace (optionally only those due soon)
-	huma.Get(api, "/maintenance", func(ctx context.Context, input *ListSchedulesInput) (*ListSchedulesOutput, error) {
+	huma.Get(api, "/maintenance", listSchedules(svc))
+	huma.Get(api, "/maintenance/due", listDueSchedules(svc))
+	huma.Get(api, routeMaintenanceByID, getSchedule(svc))
+	huma.Post(api, "/maintenance", createSchedule(svc, broadcaster))
+	huma.Patch(api, routeMaintenanceByID, updateSchedule(svc, broadcaster))
+	huma.Post(api, "/maintenance/{id}/complete", completeSchedule(svc, broadcaster))
+	huma.Delete(api, routeMaintenanceByID, deleteSchedule(svc, broadcaster))
+	huma.Get(api, "/inventory/{inventory_id}/maintenance", listInventorySchedules(svc))
+}
+
+// listSchedules lists schedules in the workspace (optionally only those due soon).
+func listSchedules(svc ServiceInterface) func(context.Context, *ListSchedulesInput) (*ListSchedulesOutput, error) {
+	return func(ctx context.Context, input *ListSchedulesInput) (*ListSchedulesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -42,10 +55,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &ListSchedulesOutput{
 			Body: ScheduleListResponse{Items: items, Total: total},
 		}, nil
-	})
+	}
+}
 
-	// Due/overdue schedules for the dashboard widget
-	huma.Get(api, "/maintenance/due", func(ctx context.Context, input *ListDueInput) (*ListDueOutput, error) {
+// listDueSchedules returns due/overdue schedules for the dashboard widget.
+func listDueSchedules(svc ServiceInterface) func(context.Context, *ListDueInput) (*ListDueOutput, error) {
+	return func(ctx context.Context, input *ListDueInput) (*ListDueOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -70,10 +85,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &ListDueOutput{
 			Body: DueScheduleListResponse{Items: items, Total: len(items)},
 		}, nil
-	})
+	}
+}
 
-	// Get schedule by ID
-	huma.Get(api, routeMaintenanceByID, func(ctx context.Context, input *GetScheduleInput) (*GetScheduleOutput, error) {
+// getSchedule returns a single schedule by ID.
+func getSchedule(svc ServiceInterface) func(context.Context, *GetScheduleInput) (*GetScheduleOutput, error) {
+	return func(ctx context.Context, input *GetScheduleInput) (*GetScheduleOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -88,10 +105,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return &GetScheduleOutput{Body: toScheduleResponse(schedule)}, nil
-	})
+	}
+}
 
-	// Create schedule
-	huma.Post(api, "/maintenance", func(ctx context.Context, input *CreateScheduleInput) (*CreateScheduleOutput, error) {
+// createSchedule creates a maintenance schedule.
+func createSchedule(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *CreateScheduleInput) (*CreateScheduleOutput, error) {
+	return func(ctx context.Context, input *CreateScheduleInput) (*CreateScheduleOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -118,10 +137,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		publishEvent(ctx, broadcaster, workspaceID, "maintenance.created", schedule)
 
 		return &CreateScheduleOutput{Body: toScheduleResponse(schedule)}, nil
-	})
+	}
+}
 
-	// Update schedule
-	huma.Patch(api, routeMaintenanceByID, func(ctx context.Context, input *UpdateScheduleInput) (*UpdateScheduleOutput, error) {
+// updateSchedule updates a maintenance schedule.
+func updateSchedule(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *UpdateScheduleInput) (*UpdateScheduleOutput, error) {
+	return func(ctx context.Context, input *UpdateScheduleInput) (*UpdateScheduleOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -147,11 +168,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		publishEvent(ctx, broadcaster, workspaceID, "maintenance.updated", schedule)
 
 		return &UpdateScheduleOutput{Body: toScheduleResponse(schedule)}, nil
-	})
+	}
+}
 
-	// Complete schedule: repair log + last_completed_at + next_due advance,
-	// in one transaction.
-	huma.Post(api, "/maintenance/{id}/complete", func(ctx context.Context, input *CompleteScheduleInput) (*CompleteScheduleOutput, error) {
+// completeSchedule records a completion: repair log + last_completed_at +
+// next_due advance, in one transaction.
+func completeSchedule(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *CompleteScheduleInput) (*CompleteScheduleOutput, error) {
+	return func(ctx context.Context, input *CompleteScheduleInput) (*CompleteScheduleOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -171,10 +194,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		publishEvent(ctx, broadcaster, workspaceID, "maintenance.completed", schedule)
 
 		return &CompleteScheduleOutput{Body: toScheduleResponse(schedule)}, nil
-	})
+	}
+}
 
-	// Delete schedule
-	huma.Delete(api, routeMaintenanceByID, func(ctx context.Context, input *GetScheduleInput) (*struct{}, error) {
+// deleteSchedule deletes a maintenance schedule.
+func deleteSchedule(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetScheduleInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetScheduleInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -204,10 +229,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return nil, nil
-	})
+	}
+}
 
-	// List schedules for an inventory entry (item detail page)
-	huma.Get(api, "/inventory/{inventory_id}/maintenance", func(ctx context.Context, input *ListInventorySchedulesInput) (*ListSchedulesOutput, error) {
+// listInventorySchedules lists schedules for an inventory entry (item detail page).
+func listInventorySchedules(svc ServiceInterface) func(context.Context, *ListInventorySchedulesInput) (*ListSchedulesOutput, error) {
+	return func(ctx context.Context, input *ListInventorySchedulesInput) (*ListSchedulesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -226,7 +253,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &ListSchedulesOutput{
 			Body: ScheduleListResponse{Items: items, Total: len(items)},
 		}, nil
-	})
+	}
 }
 
 func publishEvent(ctx context.Context, broadcaster *events.Broadcaster, workspaceID uuid.UUID, eventType string, schedule *Schedule) {

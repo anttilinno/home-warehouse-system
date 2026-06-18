@@ -151,37 +151,41 @@ func (s *Service) Update(ctx context.Context, id, workspaceID uuid.UUID, input U
 		return nil, err
 	}
 
-	if input.Status != nil {
-		if *input.Status == StatusAcquired {
-			// Closing the row: validate and link the created item (if given).
-			if input.AcquiredItemID != nil {
-				if _, err := s.itemRepo.FindByID(ctx, *input.AcquiredItemID, workspaceID); err != nil {
-					return nil, err
-				}
-			}
-			if err := wish.MarkAcquired(input.AcquiredItemID); err != nil {
-				return nil, err
-			}
-		} else {
-			if err := wish.TransitionStatus(*input.Status); err != nil {
-				return nil, err
-			}
-		}
-	} else if input.AcquiredItemID != nil {
-		// Linking after the fact (item created first, then PATCHed back).
-		// Only meaningful together with — or after — the acquired transition.
-		if _, err := s.itemRepo.FindByID(ctx, *input.AcquiredItemID, workspaceID); err != nil {
-			return nil, err
-		}
-		if err := wish.MarkAcquired(input.AcquiredItemID); err != nil {
-			return nil, err
-		}
+	if err := s.applyStatusTransition(ctx, wish, workspaceID, input); err != nil {
+		return nil, err
 	}
 
 	if err := s.repo.Save(ctx, wish); err != nil {
 		return nil, err
 	}
 	return wish, nil
+}
+
+// applyStatusTransition applies the optional status/acquired-item part of an
+// update: an explicit acquired status (optionally linking the created item), any
+// other explicit status transition, or — when no status is given — a late link
+// of the acquired item (item created first, then PATCHed back).
+func (s *Service) applyStatusTransition(ctx context.Context, wish *Item, workspaceID uuid.UUID, input UpdateInput) error {
+	switch {
+	case input.Status != nil && *input.Status == StatusAcquired:
+		return s.linkAcquiredItem(ctx, wish, workspaceID, input.AcquiredItemID)
+	case input.Status != nil:
+		return wish.TransitionStatus(*input.Status)
+	case input.AcquiredItemID != nil:
+		return s.linkAcquiredItem(ctx, wish, workspaceID, input.AcquiredItemID)
+	}
+	return nil
+}
+
+// linkAcquiredItem validates the acquired item belongs to the workspace (when
+// one is given) and marks the wishlist row acquired.
+func (s *Service) linkAcquiredItem(ctx context.Context, wish *Item, workspaceID uuid.UUID, acquiredItemID *uuid.UUID) error {
+	if acquiredItemID != nil {
+		if _, err := s.itemRepo.FindByID(ctx, *acquiredItemID, workspaceID); err != nil {
+			return err
+		}
+	}
+	return wish.MarkAcquired(acquiredItemID)
 }
 
 // Delete removes a wishlist item.
