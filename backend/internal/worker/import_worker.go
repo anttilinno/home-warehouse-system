@@ -74,46 +74,57 @@ func (w *ImportWorker) Start(ctx context.Context) error {
 			return nil
 
 		default:
-			// Dequeue job with timeout
-			job, err := w.queue.Dequeue(ctx, 5*time.Second)
-			if err != nil {
-				if ctx.Err() != nil {
-					// Shutdown raced the blocking dequeue — not an error.
-					log.Println("Context cancelled, stopping worker...")
-					return nil
-				}
-				log.Printf("Error dequeuing job: %v", err)
-				time.Sleep(1 * time.Second)
-				continue
-			}
-
-			if job == nil {
-				// No job available, continue
-				continue
-			}
-
-			// Process with a context that survives shutdown cancellation so
-			// an in-flight import drains instead of being killed mid-write.
-			procCtx := context.WithoutCancel(ctx)
-
-			if err := w.processJob(procCtx, job); err != nil {
-				log.Printf("Error processing job %s: %v", job.ID, err)
-				dead, failErr := w.queue.Fail(procCtx, job.ID, err.Error())
-				if failErr != nil {
-					log.Printf("Error marking job as failed: %v", failErr)
-				}
-				if dead {
-					// Retries exhausted: the queue job is dead-lettered; make
-					// sure the import job row reflects the terminal failure.
-					w.markImportJobFailed(procCtx, job, err.Error())
-				}
-			} else {
-				if err := w.queue.Complete(procCtx, job.ID); err != nil {
-					log.Printf("Error completing job: %v", err)
-				}
+			if stop := w.dequeueAndProcess(ctx); stop {
+				return nil
 			}
 		}
 	}
+}
+
+// dequeueAndProcess runs one worker iteration: dequeue a job (blocking up to
+// 5s), process it, and settle its queue state. It returns stop=true only when
+// shutdown raced the blocking dequeue, signalling Start to return; transient
+// dequeue/process errors are logged and swallowed so the loop keeps running.
+func (w *ImportWorker) dequeueAndProcess(ctx context.Context) (stop bool) {
+	job, err := w.queue.Dequeue(ctx, 5*time.Second)
+	if err != nil {
+		if ctx.Err() != nil {
+			// Shutdown raced the blocking dequeue — not an error.
+			log.Println("Context cancelled, stopping worker...")
+			return true
+		}
+		log.Printf("Error dequeuing job: %v", err)
+		time.Sleep(1 * time.Second)
+		return false
+	}
+
+	if job == nil {
+		// No job available
+		return false
+	}
+
+	// Process with a context that survives shutdown cancellation so an in-flight
+	// import drains instead of being killed mid-write.
+	procCtx := context.WithoutCancel(ctx)
+
+	if err := w.processJob(procCtx, job); err != nil {
+		log.Printf("Error processing job %s: %v", job.ID, err)
+		dead, failErr := w.queue.Fail(procCtx, job.ID, err.Error())
+		if failErr != nil {
+			log.Printf("Error marking job as failed: %v", failErr)
+		}
+		if dead {
+			// Retries exhausted: the queue job is dead-lettered; make sure the
+			// import job row reflects the terminal failure.
+			w.markImportJobFailed(procCtx, job, err.Error())
+		}
+		return false
+	}
+
+	if err := w.queue.Complete(procCtx, job.ID); err != nil {
+		log.Printf("Error completing job: %v", err)
+	}
+	return false
 }
 
 // markImportJobFailed best-effort marks the import job referenced by a
