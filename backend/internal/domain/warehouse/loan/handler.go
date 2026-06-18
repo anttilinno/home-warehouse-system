@@ -278,6 +278,20 @@ func getLoan(svc ServiceInterface, lookup DecorationLookup) func(context.Context
 }
 
 // createLoan returns the handler for POST /loans.
+// mapCreateLoanError maps loan-creation domain errors to their HTTP responses.
+func mapCreateLoanError(err error) error {
+	switch {
+	case errors.Is(err, ErrInventoryNotAvailable):
+		return huma.Error400BadRequest("inventory is not available for loan")
+	case errors.Is(err, ErrQuantityExceedsAvailable):
+		return huma.Error400BadRequest("requested quantity exceeds available quantity")
+	case errors.Is(err, ErrInventoryOnLoan):
+		return huma.Error400BadRequest("inventory already has an active loan")
+	default:
+		return appMiddleware.MapDomainError(err)
+	}
+}
+
 func createLoan(svc ServiceInterface, broadcaster *events.Broadcaster, lookup DecorationLookup) func(context.Context, *CreateLoanInput) (*CreateLoanOutput, error) {
 	return func(ctx context.Context, input *CreateLoanInput) (*CreateLoanOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
@@ -300,16 +314,7 @@ func createLoan(svc ServiceInterface, broadcaster *events.Broadcaster, lookup De
 			Notes:       input.Body.Notes,
 		})
 		if err != nil {
-			if errors.Is(err, ErrInventoryNotAvailable) {
-				return nil, huma.Error400BadRequest("inventory is not available for loan")
-			}
-			if errors.Is(err, ErrQuantityExceedsAvailable) {
-				return nil, huma.Error400BadRequest("requested quantity exceeds available quantity")
-			}
-			if errors.Is(err, ErrInventoryOnLoan) {
-				return nil, huma.Error400BadRequest("inventory already has an active loan")
-			}
-			return nil, appMiddleware.MapDomainError(err)
+			return nil, mapCreateLoanError(err)
 		}
 
 		// Publish SSE event
