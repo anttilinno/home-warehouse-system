@@ -67,98 +67,70 @@ func (s *Service) GetDelta(ctx context.Context, input DeltaSyncInput) (*SyncResu
 		modifiedSince = *input.ModifiedSince
 	}
 
-	// Fetch each requested entity type
+	// Fetch each requested entity type. Every case shares the same shape —
+	// fetch-since-cursor, map, flag HasMore on a full page — so it is funnelled
+	// through fetchDelta; the switch only binds the per-type repo call, mapper
+	// and destination field.
+	var err error
 	for _, entityType := range entityTypes {
 		switch entityType {
 		case EntityTypeItem:
-			items, err := s.repo.ListItemsModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
-			if err != nil {
-				return nil, err
-			}
-			result.Items = mapItems(items)
-			if len(items) == int(input.Limit) {
-				result.HasMore = true
-			}
-
+			err = fetchDelta(result, input.Limit,
+				func() ([]queries.WarehouseItem, error) {
+					return s.repo.ListItemsModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
+				},
+				mapItems, func(v []ItemSyncData) { result.Items = v })
 		case EntityTypeLocation:
-			locations, err := s.repo.ListLocationsModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
-			if err != nil {
-				return nil, err
-			}
-			result.Locations = mapLocations(locations)
-			if len(locations) == int(input.Limit) {
-				result.HasMore = true
-			}
-
+			err = fetchDelta(result, input.Limit,
+				func() ([]queries.WarehouseLocation, error) {
+					return s.repo.ListLocationsModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
+				},
+				mapLocations, func(v []LocationSyncData) { result.Locations = v })
 		case EntityTypeContainer:
-			containers, err := s.repo.ListContainersModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
-			if err != nil {
-				return nil, err
-			}
-			result.Containers = mapContainers(containers)
-			if len(containers) == int(input.Limit) {
-				result.HasMore = true
-			}
-
+			err = fetchDelta(result, input.Limit,
+				func() ([]queries.WarehouseContainer, error) {
+					return s.repo.ListContainersModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
+				},
+				mapContainers, func(v []ContainerSyncData) { result.Containers = v })
 		case EntityTypeInventory:
-			inventory, err := s.repo.ListInventoryModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
-			if err != nil {
-				return nil, err
-			}
-			result.Inventory = mapInventory(inventory)
-			if len(inventory) == int(input.Limit) {
-				result.HasMore = true
-			}
-
+			err = fetchDelta(result, input.Limit,
+				func() ([]queries.WarehouseInventory, error) {
+					return s.repo.ListInventoryModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
+				},
+				mapInventory, func(v []InventorySyncData) { result.Inventory = v })
 		case EntityTypeCategory:
-			categories, err := s.repo.ListCategoriesModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
-			if err != nil {
-				return nil, err
-			}
-			result.Categories = mapCategories(categories)
-			if len(categories) == int(input.Limit) {
-				result.HasMore = true
-			}
-
+			err = fetchDelta(result, input.Limit,
+				func() ([]queries.WarehouseCategory, error) {
+					return s.repo.ListCategoriesModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
+				},
+				mapCategories, func(v []CategorySyncData) { result.Categories = v })
 		case EntityTypeLabel:
-			labels, err := s.repo.ListLabelsModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
-			if err != nil {
-				return nil, err
-			}
-			result.Labels = mapLabels(labels)
-			if len(labels) == int(input.Limit) {
-				result.HasMore = true
-			}
-
+			err = fetchDelta(result, input.Limit,
+				func() ([]queries.WarehouseLabel, error) {
+					return s.repo.ListLabelsModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
+				},
+				mapLabels, func(v []LabelSyncData) { result.Labels = v })
 		case EntityTypeCompany:
-			companies, err := s.repo.ListCompaniesModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
-			if err != nil {
-				return nil, err
-			}
-			result.Companies = mapCompanies(companies)
-			if len(companies) == int(input.Limit) {
-				result.HasMore = true
-			}
-
+			err = fetchDelta(result, input.Limit,
+				func() ([]queries.WarehouseCompany, error) {
+					return s.repo.ListCompaniesModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
+				},
+				mapCompanies, func(v []CompanySyncData) { result.Companies = v })
 		case EntityTypeBorrower:
-			borrowers, err := s.repo.ListBorrowersModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
-			if err != nil {
-				return nil, err
-			}
-			result.Borrowers = mapBorrowers(borrowers)
-			if len(borrowers) == int(input.Limit) {
-				result.HasMore = true
-			}
-
+			err = fetchDelta(result, input.Limit,
+				func() ([]queries.WarehouseBorrower, error) {
+					return s.repo.ListBorrowersModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
+				},
+				mapBorrowers, func(v []BorrowerSyncData) { result.Borrowers = v })
 		case EntityTypeLoan:
-			loans, err := s.repo.ListLoansModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
-			if err != nil {
-				return nil, err
-			}
-			result.Loans = mapLoans(loans)
-			if len(loans) == int(input.Limit) {
-				result.HasMore = true
-			}
+			err = fetchDelta(result, input.Limit,
+				func() ([]queries.WarehouseLoan, error) {
+					return s.repo.ListLoansModifiedSince(ctx, input.WorkspaceID, modifiedSince, input.Limit)
+				},
+				mapLoans, func(v []LoanSyncData) { result.Loans = v })
+		}
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -170,6 +142,28 @@ func (s *Service) GetDelta(ctx context.Context, input DeltaSyncInput) (*SyncResu
 	result.Deleted = mapDeletedRecords(deleted)
 
 	return result, nil
+}
+
+// fetchDelta fetches one entity type's rows modified since the cursor, maps them
+// onto result via assign, and flags HasMore when a full page came back (so the
+// client knows to page again). It exists to keep GetDelta's per-type switch a
+// flat one-liner per case instead of repeating the fetch/err/map/HasMore block.
+func fetchDelta[E, R any](
+	result *SyncResult,
+	limit int32,
+	fetch func() ([]E, error),
+	mapFn func([]E) []R,
+	assign func([]R),
+) error {
+	rows, err := fetch()
+	if err != nil {
+		return err
+	}
+	assign(mapFn(rows))
+	if len(rows) == int(limit) {
+		result.HasMore = true
+	}
+	return nil
 }
 
 // ParseEntityTypes parses a comma-separated string of entity types
