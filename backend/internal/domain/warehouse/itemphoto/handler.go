@@ -435,20 +435,10 @@ func (h *BulkPhotoHandler) HandleDownload(w http.ResponseWriter, r *http.Request
 	var photos []*ItemPhoto
 	idsParam := r.URL.Query().Get("ids")
 	if idsParam != "" {
-		// Parse comma-separated UUIDs
-		idStrings := strings.Split(idsParam, ",")
-		photoIDs := make([]uuid.UUID, 0, len(idStrings))
-		for _, idStr := range idStrings {
-			idStr = strings.TrimSpace(idStr)
-			if idStr == "" {
-				continue
-			}
-			photoID, err := uuid.Parse(idStr)
-			if err != nil {
-				http.Error(w, "invalid photo ID in ids parameter", http.StatusBadRequest)
-				return
-			}
-			photoIDs = append(photoIDs, photoID)
+		photoIDs, err := parsePhotoIDs(idsParam)
+		if err != nil {
+			http.Error(w, "invalid photo ID in ids parameter", http.StatusBadRequest)
+			return
 		}
 		if len(photoIDs) > 0 {
 			photos, err = h.svc.GetPhotosByIDs(ctx, photoIDs, workspaceID)
@@ -473,9 +463,6 @@ func (h *BulkPhotoHandler) HandleDownload(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Get storage
-	storage := h.storageGetter.GetStorage()
-
 	// Set headers for zip download
 	w.Header().Set(headerContentType, "application/zip")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"photos-%s.zip\"", itemID.String()[:8]))
@@ -484,9 +471,34 @@ func (h *BulkPhotoHandler) HandleDownload(w http.ResponseWriter, r *http.Request
 	zipWriter := zip.NewWriter(w)
 	defer zipWriter.Close()
 
-	// Add each photo to the zip
+	h.writePhotosToZip(ctx, zipWriter, photos)
+}
+
+// parsePhotoIDs parses the comma-separated ?ids= query value into UUIDs,
+// skipping blank entries and failing on the first malformed ID.
+func parsePhotoIDs(idsParam string) ([]uuid.UUID, error) {
+	idStrings := strings.Split(idsParam, ",")
+	photoIDs := make([]uuid.UUID, 0, len(idStrings))
+	for _, idStr := range idStrings {
+		idStr = strings.TrimSpace(idStr)
+		if idStr == "" {
+			continue
+		}
+		photoID, err := uuid.Parse(idStr)
+		if err != nil {
+			return nil, err
+		}
+		photoIDs = append(photoIDs, photoID)
+	}
+	return photoIDs, nil
+}
+
+// writePhotosToZip streams each photo into the archive. Photos missing from
+// storage or failing mid-copy are skipped; duplicate filenames get an index
+// suffix; stored names are sanitized to prevent zip-slip.
+func (h *BulkPhotoHandler) writePhotosToZip(ctx context.Context, zipWriter *zip.Writer, photos []*ItemPhoto) {
+	storage := h.storageGetter.GetStorage()
 	for i, photo := range photos {
-		// Get file from storage
 		reader, err := storage.Get(ctx, photo.StoragePath)
 		if err != nil {
 			// Skip files that don't exist
@@ -503,16 +515,14 @@ func (h *BulkPhotoHandler) HandleDownload(w http.ResponseWriter, r *http.Request
 			filename = fmt.Sprintf("%s_%d%s", base, i, ext)
 		}
 
-		// Create file in zip
 		fileWriter, err := zipWriter.Create(filename)
 		if err != nil {
-			reader.Close()
+			_ = reader.Close()
 			continue
 		}
 
-		// Copy file content
 		_, err = io.Copy(fileWriter, reader)
-		reader.Close()
+		_ = reader.Close()
 		if err != nil {
 			continue
 		}
