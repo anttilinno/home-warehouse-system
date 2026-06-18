@@ -26,6 +26,14 @@ linters:
       min-len: 3
     dupl:
       threshold: 150
+    gosec:
+      # G706 (log-injection via taint analysis) is too noisy here: it fires on
+      # any log call whose arguments trace back to function input, flagging
+      # internal UUIDs and error values that are not user-controlled text. Real
+      # log injection (logging raw request bodies/headers) is not a pattern in
+      # this codebase, so exclude the rule rather than scatter nolints.
+      excludes:
+        - G706
   exclusions:
     generated: lax
     rules:

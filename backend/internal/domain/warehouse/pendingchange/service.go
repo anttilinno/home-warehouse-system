@@ -344,7 +344,7 @@ func (s *Service) notifyApproval(ctx context.Context, change *PendingChange, rev
 			},
 		}
 		if err := s.pushSender.SendToUser(ctx, change.RequesterID(), message); err != nil {
-			log.Printf("Failed to send push notification for approved change %s: %v", change.ID(), err) //nolint:gosec // G706: logs a generated UUID + internal error, not user-controlled text
+			log.Printf("Failed to send push notification for approved change %s: %v", change.ID(), err)
 		}
 	}
 }

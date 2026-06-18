@@ -140,7 +140,7 @@ func (p *MaintenanceReminderProcessor) createMemberNotifications(ctx context.Con
 	for _, m := range members {
 		enabled, err := userPrefEnabled(ctx, q, m.UserID, maintenancePrefKey)
 		if err != nil {
-			log.Printf("Failed to load notification preferences for user %s: %v", m.UserID, err) //nolint:gosec // G706: logs a UUID + internal error, not user-controlled text
+			log.Printf("Failed to load notification preferences for user %s: %v", m.UserID, err)
 			continue
 		}
 		if !enabled {
@@ -154,7 +154,7 @@ func (p *MaintenanceReminderProcessor) createMemberNotifications(ctx context.Con
 			DedupeKey:        payload.DedupeKey(),
 		})
 		if err != nil {
-			log.Printf("Failed dedupe check for user %s: %v", m.UserID, err) //nolint:gosec // G706: logs a UUID + internal error, not user-controlled text
+			log.Printf("Failed dedupe check for user %s: %v", m.UserID, err)
 			continue
 		}
 		if count > 0 {
@@ -171,7 +171,7 @@ func (p *MaintenanceReminderProcessor) createMemberNotifications(ctx context.Con
 			Message:          body,
 			Metadata:         metadata,
 		}); err != nil {
-			log.Printf("Failed to create maintenance notification for user %s: %v", m.UserID, err) //nolint:gosec // G706: logs a UUID + internal error, not user-controlled text
+			log.Printf("Failed to create maintenance notification for user %s: %v", m.UserID, err)
 			continue
 		}
 		pushUserIDs = append(pushUserIDs, m.UserID)

@@ -282,11 +282,11 @@ func (s *Service) generatePerceptualHash(ctx context.Context, photo *ItemPhoto, 
 	}
 	hash, err := s.hasher.GenerateHash(ctx, tempPath)
 	if err != nil {
-		log.Printf("Failed to generate perceptual hash for photo %s: %v", photo.ID, err) //nolint:gosec // G706: logs a generated UUID + internal error, not user-controlled text
+		log.Printf("Failed to generate perceptual hash for photo %s: %v", photo.ID, err)
 		return
 	}
 	if err := s.repo.UpdatePerceptualHash(ctx, photo.ID, hash); err != nil {
-		log.Printf("Failed to save perceptual hash for photo %s: %v", photo.ID, err) //nolint:gosec // G706: logs a generated UUID + internal error, not user-controlled text
+		log.Printf("Failed to save perceptual hash for photo %s: %v", photo.ID, err)
 		return
 	}
 	photo.PerceptualHash = &hash
@@ -300,7 +300,7 @@ func (s *Service) enqueueThumbnailJob(photo *ItemPhoto, workspaceID, itemID uuid
 	}
 	task := jobs.NewThumbnailGenerationTask(photo.ID, workspaceID, itemID, storagePath)
 	if _, err := s.asynqClient.Enqueue(task); err != nil {
-		log.Printf("Failed to enqueue thumbnail job for photo %s: %v", photo.ID, err) //nolint:gosec // G706: logs a generated UUID + internal error, not user-controlled text
+		log.Printf("Failed to enqueue thumbnail job for photo %s: %v", photo.ID, err)
 	}
 }
 
