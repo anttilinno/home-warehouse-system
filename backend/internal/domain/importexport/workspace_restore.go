@@ -144,77 +144,62 @@ func (s *WorkspaceBackupService) parseExcel(data []byte) (*WorkspaceData, error)
 
 	workspaceData := &WorkspaceData{}
 
-	// Parse Categories sheet
-	if rows, err := getSheetRows(f, "Categories"); err != nil {
-		return nil, err
-	} else if len(rows) > 1 {
-		workspaceData.Categories = s.parseCategoriesFromRows(rows[1:]) // Skip header
+	// Each sheet shares the same read-skip-header-parse shape; parseSheet binds
+	// the sheet name, its row parser and the destination field. A read error on
+	// any sheet aborts the restore.
+	sheets := []func() error{
+		func() error {
+			return parseSheet(f, "Categories", s.parseCategoriesFromRows, func(v []queries.WarehouseCategory) { workspaceData.Categories = v })
+		},
+		func() error {
+			return parseSheet(f, "Labels", s.parseLabelsFromRows, func(v []queries.WarehouseLabel) { workspaceData.Labels = v })
+		},
+		func() error {
+			return parseSheet(f, "Companies", s.parseCompaniesFromRows, func(v []queries.WarehouseCompany) { workspaceData.Companies = v })
+		},
+		func() error {
+			return parseSheet(f, "Locations", s.parseLocationsFromRows, func(v []queries.WarehouseLocation) { workspaceData.Locations = v })
+		},
+		func() error {
+			return parseSheet(f, "Borrowers", s.parseBorrowersFromRows, func(v []queries.WarehouseBorrower) { workspaceData.Borrowers = v })
+		},
+		func() error {
+			return parseSheet(f, "Items", s.parseItemsFromRows, func(v []queries.WarehouseItem) { workspaceData.Items = v })
+		},
+		func() error {
+			return parseSheet(f, "Containers", s.parseContainersFromRows, func(v []queries.WarehouseContainer) { workspaceData.Containers = v })
+		},
+		func() error {
+			return parseSheet(f, "Inventory", s.parseInventoryFromRows, func(v []queries.WarehouseInventory) { workspaceData.Inventory = v })
+		},
+		func() error {
+			return parseSheet(f, "Loans", s.parseLoansFromRows, func(v []queries.WarehouseLoan) { workspaceData.Loans = v })
+		},
+		func() error {
+			return parseSheet(f, "Attachments", s.parseAttachmentsFromRows, func(v []queries.WarehouseAttachment) { workspaceData.Attachments = v })
+		},
 	}
-
-	// Parse Labels sheet
-	if rows, err := getSheetRows(f, "Labels"); err != nil {
-		return nil, err
-	} else if len(rows) > 1 {
-		workspaceData.Labels = s.parseLabelsFromRows(rows[1:])
-	}
-
-	// Parse Companies sheet
-	if rows, err := getSheetRows(f, "Companies"); err != nil {
-		return nil, err
-	} else if len(rows) > 1 {
-		workspaceData.Companies = s.parseCompaniesFromRows(rows[1:])
-	}
-
-	// Parse Locations sheet
-	if rows, err := getSheetRows(f, "Locations"); err != nil {
-		return nil, err
-	} else if len(rows) > 1 {
-		workspaceData.Locations = s.parseLocationsFromRows(rows[1:])
-	}
-
-	// Parse Borrowers sheet
-	if rows, err := getSheetRows(f, "Borrowers"); err != nil {
-		return nil, err
-	} else if len(rows) > 1 {
-		workspaceData.Borrowers = s.parseBorrowersFromRows(rows[1:])
-	}
-
-	// Parse Items sheet
-	if rows, err := getSheetRows(f, "Items"); err != nil {
-		return nil, err
-	} else if len(rows) > 1 {
-		workspaceData.Items = s.parseItemsFromRows(rows[1:])
-	}
-
-	// Parse Containers sheet
-	if rows, err := getSheetRows(f, "Containers"); err != nil {
-		return nil, err
-	} else if len(rows) > 1 {
-		workspaceData.Containers = s.parseContainersFromRows(rows[1:])
-	}
-
-	// Parse Inventory sheet
-	if rows, err := getSheetRows(f, "Inventory"); err != nil {
-		return nil, err
-	} else if len(rows) > 1 {
-		workspaceData.Inventory = s.parseInventoryFromRows(rows[1:])
-	}
-
-	// Parse Loans sheet
-	if rows, err := getSheetRows(f, "Loans"); err != nil {
-		return nil, err
-	} else if len(rows) > 1 {
-		workspaceData.Loans = s.parseLoansFromRows(rows[1:])
-	}
-
-	// Parse Attachments sheet
-	if rows, err := getSheetRows(f, "Attachments"); err != nil {
-		return nil, err
-	} else if len(rows) > 1 {
-		workspaceData.Attachments = s.parseAttachmentsFromRows(rows[1:])
+	for _, parse := range sheets {
+		if err := parse(); err != nil {
+			return nil, err
+		}
 	}
 
 	return workspaceData, nil
+}
+
+// parseSheet reads a named sheet and, when it holds more than just the header
+// row, assigns its parsed data rows (header skipped) via assign. A sheet read
+// error aborts the restore.
+func parseSheet[T any](f *excelize.File, name string, parse func([][]string) []T, assign func([]T)) error {
+	rows, err := getSheetRows(f, name)
+	if err != nil {
+		return err
+	}
+	if len(rows) > 1 {
+		assign(parse(rows[1:]))
+	}
+	return nil
 }
 
 // Parse functions for each entity type
