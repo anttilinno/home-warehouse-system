@@ -417,111 +417,95 @@ func (s *Service) toCSV(data interface{}, entityType EntityType) ([]byte, error)
 	var buf bytes.Buffer
 	writer := csv.NewWriter(&buf)
 
+	// Each case binds the header + a per-row field projection; the shared
+	// header/row/err writing lives in writeCSV.
+	var err error
 	switch entityType {
 	case EntityTypeItem:
-		items := data.([]ItemExport)
-		// Write header
-		if err := writer.Write([]string{"id", "sku", "name", "description", "category_name", "brand", "model", "manufacturer", "barcode", "short_code", "min_stock_level", "is_archived", "created_at", "updated_at"}); err != nil {
-			return nil, err
-		}
-		for _, item := range items {
-			if err := writer.Write(sanitizeCSVRow([]string{
-				item.ID, item.SKU, item.Name, item.Description, item.CategoryName,
-				item.Brand, item.Model, item.Manufacturer, item.Barcode, item.ShortCode,
-				fmt.Sprintf("%d", item.MinStockLevel), fmt.Sprintf("%t", item.IsArchived),
-				item.CreatedAt, item.UpdatedAt,
-			})); err != nil {
-				return nil, err
-			}
-		}
+		err = writeCSV(writer,
+			[]string{"id", "sku", "name", "description", "category_name", "brand", "model", "manufacturer", "barcode", "short_code", "min_stock_level", "is_archived", "created_at", "updated_at"},
+			data.([]ItemExport),
+			func(item ItemExport) []string {
+				return []string{
+					item.ID, item.SKU, item.Name, item.Description, item.CategoryName,
+					item.Brand, item.Model, item.Manufacturer, item.Barcode, item.ShortCode,
+					fmt.Sprintf("%d", item.MinStockLevel), fmt.Sprintf("%t", item.IsArchived),
+					item.CreatedAt, item.UpdatedAt,
+				}
+			})
 
 	case EntityTypeLocation:
-		locations := data.([]LocationExport)
-		if err := writer.Write([]string{"id", "name", "parent_location", "description", "short_code", "is_archived", "created_at", "updated_at"}); err != nil {
-			return nil, err
-		}
-		for _, loc := range locations {
-			if err := writer.Write(sanitizeCSVRow([]string{
-				loc.ID, loc.Name, loc.ParentLocation,
-				loc.Description, loc.ShortCode, fmt.Sprintf("%t", loc.IsArchived),
-				loc.CreatedAt, loc.UpdatedAt,
-			})); err != nil {
-				return nil, err
-			}
-		}
+		err = writeCSV(writer,
+			[]string{"id", "name", "parent_location", "description", "short_code", "is_archived", "created_at", "updated_at"},
+			data.([]LocationExport),
+			func(loc LocationExport) []string {
+				return []string{
+					loc.ID, loc.Name, loc.ParentLocation,
+					loc.Description, loc.ShortCode, fmt.Sprintf("%t", loc.IsArchived),
+					loc.CreatedAt, loc.UpdatedAt,
+				}
+			})
 
 	case EntityTypeCategory:
-		categories := data.([]CategoryExport)
-		if err := writer.Write([]string{"id", "name", "parent_category", "description", "is_archived", "created_at", "updated_at"}); err != nil {
-			return nil, err
-		}
-		for _, cat := range categories {
-			if err := writer.Write(sanitizeCSVRow([]string{
-				cat.ID, cat.Name, cat.ParentCategory, cat.Description,
-				fmt.Sprintf("%t", cat.IsArchived), cat.CreatedAt, cat.UpdatedAt,
-			})); err != nil {
-				return nil, err
-			}
-		}
+		err = writeCSV(writer,
+			[]string{"id", "name", "parent_category", "description", "is_archived", "created_at", "updated_at"},
+			data.([]CategoryExport),
+			func(cat CategoryExport) []string {
+				return []string{
+					cat.ID, cat.Name, cat.ParentCategory, cat.Description,
+					fmt.Sprintf("%t", cat.IsArchived), cat.CreatedAt, cat.UpdatedAt,
+				}
+			})
 
 	case EntityTypeContainer:
-		containers := data.([]ContainerExport)
-		if err := writer.Write([]string{"id", "name", "location_name", "description", "capacity", "short_code", "is_archived", "created_at", "updated_at"}); err != nil {
-			return nil, err
-		}
-		for _, c := range containers {
-			if err := writer.Write(sanitizeCSVRow([]string{
-				c.ID, c.Name, c.LocationName, c.Description, c.Capacity, c.ShortCode,
-				fmt.Sprintf("%t", c.IsArchived), c.CreatedAt, c.UpdatedAt,
-			})); err != nil {
-				return nil, err
-			}
-		}
+		err = writeCSV(writer,
+			[]string{"id", "name", "location_name", "description", "capacity", "short_code", "is_archived", "created_at", "updated_at"},
+			data.([]ContainerExport),
+			func(c ContainerExport) []string {
+				return []string{
+					c.ID, c.Name, c.LocationName, c.Description, c.Capacity, c.ShortCode,
+					fmt.Sprintf("%t", c.IsArchived), c.CreatedAt, c.UpdatedAt,
+				}
+			})
 
 	case EntityTypeLabel:
-		labels := data.([]LabelExport)
-		if err := writer.Write([]string{"id", "name", "color", "description", "is_archived", "created_at", "updated_at"}); err != nil {
-			return nil, err
-		}
-		for _, l := range labels {
-			if err := writer.Write(sanitizeCSVRow([]string{
-				l.ID, l.Name, l.Color, l.Description,
-				fmt.Sprintf("%t", l.IsArchived), l.CreatedAt, l.UpdatedAt,
-			})); err != nil {
-				return nil, err
-			}
-		}
+		err = writeCSV(writer,
+			[]string{"id", "name", "color", "description", "is_archived", "created_at", "updated_at"},
+			data.([]LabelExport),
+			func(l LabelExport) []string {
+				return []string{
+					l.ID, l.Name, l.Color, l.Description,
+					fmt.Sprintf("%t", l.IsArchived), l.CreatedAt, l.UpdatedAt,
+				}
+			})
 
 	case EntityTypeCompany:
-		companies := data.([]CompanyExport)
-		if err := writer.Write([]string{"id", "name", "website", "notes", "is_archived", "created_at", "updated_at"}); err != nil {
-			return nil, err
-		}
-		for _, c := range companies {
-			if err := writer.Write(sanitizeCSVRow([]string{
-				c.ID, c.Name, c.Website, c.Notes,
-				fmt.Sprintf("%t", c.IsArchived), c.CreatedAt, c.UpdatedAt,
-			})); err != nil {
-				return nil, err
-			}
-		}
+		err = writeCSV(writer,
+			[]string{"id", "name", "website", "notes", "is_archived", "created_at", "updated_at"},
+			data.([]CompanyExport),
+			func(c CompanyExport) []string {
+				return []string{
+					c.ID, c.Name, c.Website, c.Notes,
+					fmt.Sprintf("%t", c.IsArchived), c.CreatedAt, c.UpdatedAt,
+				}
+			})
 
 	case EntityTypeBorrower:
-		borrowers := data.([]BorrowerExport)
-		if err := writer.Write([]string{"id", "name", "email", "phone", "notes", "is_archived", "created_at", "updated_at"}); err != nil {
-			return nil, err
-		}
-		for _, b := range borrowers {
-			if err := writer.Write(sanitizeCSVRow([]string{
-				b.ID, b.Name, b.Email, b.Phone, b.Notes,
-				fmt.Sprintf("%t", b.IsArchived), b.CreatedAt, b.UpdatedAt,
-			})); err != nil {
-				return nil, err
-			}
-		}
+		err = writeCSV(writer,
+			[]string{"id", "name", "email", "phone", "notes", "is_archived", "created_at", "updated_at"},
+			data.([]BorrowerExport),
+			func(b BorrowerExport) []string {
+				return []string{
+					b.ID, b.Name, b.Email, b.Phone, b.Notes,
+					fmt.Sprintf("%t", b.IsArchived), b.CreatedAt, b.UpdatedAt,
+				}
+			})
 
 	default:
 		return nil, fmt.Errorf("unsupported entity type for CSV: %s", entityType)
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	writer.Flush()
@@ -530,6 +514,22 @@ func (s *Service) toCSV(data interface{}, entityType EntityType) ([]byte, error)
 	}
 
 	return buf.Bytes(), nil
+}
+
+// writeCSV writes a header row followed by one sanitized row per element, where
+// toRow projects each element to its CSV columns. Extracted so toCSV's per-type
+// switch only declares the header and field mapping, not the repeated
+// write-and-check plumbing.
+func writeCSV[T any](w *csv.Writer, header []string, rows []T, toRow func(T) []string) error {
+	if err := w.Write(header); err != nil {
+		return err
+	}
+	for _, r := range rows {
+		if err := w.Write(sanitizeCSVRow(toRow(r))); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Import row handler
