@@ -266,36 +266,42 @@ func (s *Service) UploadPhoto(ctx context.Context, itemID, workspaceID, userID u
 		return nil, fmt.Errorf("failed to save photo to database: %w", err)
 	}
 
-	// Generate perceptual hash for duplicate detection (sync, before temp file cleanup)
-	// This is fast (~10-50ms) and ensures we have the hash for duplicate detection
-	if s.hasher != nil {
-		hash, err := s.hasher.GenerateHash(ctx, tempPath)
-		if err != nil {
-			log.Printf("Failed to generate perceptual hash for photo %s: %v", createdPhoto.ID, err)
-		} else {
-			if err := s.repo.UpdatePerceptualHash(ctx, createdPhoto.ID, hash); err != nil {
-				log.Printf("Failed to save perceptual hash for photo %s: %v", createdPhoto.ID, err)
-			} else {
-				createdPhoto.PerceptualHash = &hash
-			}
-		}
-	}
-
-	// Enqueue thumbnail generation job (async, non-blocking)
-	if s.asynqClient != nil {
-		task := jobs.NewThumbnailGenerationTask(
-			createdPhoto.ID,
-			workspaceID,
-			itemID,
-			storagePath,
-		)
-		if _, err := s.asynqClient.Enqueue(task); err != nil {
-			log.Printf("Failed to enqueue thumbnail job for photo %s: %v", createdPhoto.ID, err)
-			// Don't fail upload - photo is usable, thumbnails will be missing
-		}
-	}
+	// Compute the perceptual hash (sync, before temp cleanup) and enqueue async
+	// thumbnail generation; both are best-effort and never fail the upload.
+	s.generatePerceptualHash(ctx, createdPhoto, tempPath)
+	s.enqueueThumbnailJob(createdPhoto, workspaceID, itemID, storagePath)
 
 	return createdPhoto, nil
+}
+
+// generatePerceptualHash computes and stores the photo's perceptual hash for
+// duplicate detection. Best-effort: failures are logged, not fatal.
+func (s *Service) generatePerceptualHash(ctx context.Context, photo *ItemPhoto, tempPath string) {
+	if s.hasher == nil {
+		return
+	}
+	hash, err := s.hasher.GenerateHash(ctx, tempPath)
+	if err != nil {
+		log.Printf("Failed to generate perceptual hash for photo %s: %v", photo.ID, err) //nolint:gosec // G706: logs a generated UUID + internal error, not user-controlled text
+		return
+	}
+	if err := s.repo.UpdatePerceptualHash(ctx, photo.ID, hash); err != nil {
+		log.Printf("Failed to save perceptual hash for photo %s: %v", photo.ID, err) //nolint:gosec // G706: logs a generated UUID + internal error, not user-controlled text
+		return
+	}
+	photo.PerceptualHash = &hash
+}
+
+// enqueueThumbnailJob schedules async thumbnail generation. Best-effort: a
+// failure is logged but the photo is still usable, so the upload succeeds.
+func (s *Service) enqueueThumbnailJob(photo *ItemPhoto, workspaceID, itemID uuid.UUID, storagePath string) {
+	if s.asynqClient == nil {
+		return
+	}
+	task := jobs.NewThumbnailGenerationTask(photo.ID, workspaceID, itemID, storagePath)
+	if _, err := s.asynqClient.Enqueue(task); err != nil {
+		log.Printf("Failed to enqueue thumbnail job for photo %s: %v", photo.ID, err) //nolint:gosec // G706: logs a generated UUID + internal error, not user-controlled text
+	}
 }
 
 // ListPhotos returns all photos for an item
