@@ -511,37 +511,42 @@ func (s *Service) BulkDeletePhotos(ctx context.Context, itemID, workspaceID uuid
 
 	// Delete files from storage (best effort - don't fail if files are already gone)
 	for _, photo := range photos {
-		_ = s.storage.Delete(ctx, photo.StoragePath)
-		if photo.ThumbnailPath != "" {
-			_ = s.storage.Delete(ctx, photo.ThumbnailPath)
-		}
-		if photo.ThumbnailSmallPath != nil && *photo.ThumbnailSmallPath != "" {
-			_ = s.storage.Delete(ctx, *photo.ThumbnailSmallPath)
-		}
-		if photo.ThumbnailMediumPath != nil && *photo.ThumbnailMediumPath != "" {
-			_ = s.storage.Delete(ctx, *photo.ThumbnailMediumPath)
-		}
-		if photo.ThumbnailLargePath != nil && *photo.ThumbnailLargePath != "" {
-			_ = s.storage.Delete(ctx, *photo.ThumbnailLargePath)
-		}
+		s.deletePhotoFiles(ctx, photo)
 	}
 
-	// If a primary photo was deleted, set a new one
-	remainingPhotos, err := s.repo.GetByItem(ctx, itemID, workspaceID)
-	if err == nil && len(remainingPhotos) > 0 {
-		hasPrimary := false
-		for _, p := range remainingPhotos {
-			if p.IsPrimary {
-				hasPrimary = true
-				break
-			}
-		}
-		if !hasPrimary {
-			_ = s.repo.SetPrimary(ctx, remainingPhotos[0].ID)
-		}
-	}
+	// If a primary photo was deleted, promote a remaining one.
+	s.reassignPrimaryIfNeeded(ctx, itemID, workspaceID)
 
 	return nil
+}
+
+// deletePhotoFiles best-effort removes a photo's original and every thumbnail
+// variant from storage; missing files are ignored.
+func (s *Service) deletePhotoFiles(ctx context.Context, photo *ItemPhoto) {
+	_ = s.storage.Delete(ctx, photo.StoragePath)
+	if photo.ThumbnailPath != "" {
+		_ = s.storage.Delete(ctx, photo.ThumbnailPath)
+	}
+	for _, p := range []*string{photo.ThumbnailSmallPath, photo.ThumbnailMediumPath, photo.ThumbnailLargePath} {
+		if p != nil && *p != "" {
+			_ = s.storage.Delete(ctx, *p)
+		}
+	}
+}
+
+// reassignPrimaryIfNeeded promotes the first remaining photo to primary when a
+// delete left the item with photos but none flagged primary. Best-effort.
+func (s *Service) reassignPrimaryIfNeeded(ctx context.Context, itemID, workspaceID uuid.UUID) {
+	remainingPhotos, err := s.repo.GetByItem(ctx, itemID, workspaceID)
+	if err != nil || len(remainingPhotos) == 0 {
+		return
+	}
+	for _, p := range remainingPhotos {
+		if p.IsPrimary {
+			return
+		}
+	}
+	_ = s.repo.SetPrimary(ctx, remainingPhotos[0].ID)
 }
 
 // BulkUpdateCaptions updates captions for multiple photos
