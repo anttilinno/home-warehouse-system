@@ -378,6 +378,19 @@ func (s *WorkspaceBackupService) parseContainersFromRows(rows [][]string) []quer
 	return containers
 }
 
+// parseOptionalUUID parses a cell into a UUID, reporting ok=false when the cell
+// is empty or not a valid UUID (so the caller leaves its field at the default).
+func parseOptionalUUID(cell string) (uuid.UUID, bool) {
+	if cell == "" {
+		return uuid.UUID{}, false
+	}
+	id, err := uuid.Parse(cell)
+	if err != nil {
+		return uuid.UUID{}, false
+	}
+	return id, true
+}
+
 func (s *WorkspaceBackupService) parseInventoryFromRows(rows [][]string) []queries.WarehouseInventory {
 	inventory := make([]queries.WarehouseInventory, 0, len(rows))
 	for _, row := range rows {
@@ -385,23 +398,17 @@ func (s *WorkspaceBackupService) parseInventoryFromRows(rows [][]string) []queri
 			continue
 		}
 		inv := queries.WarehouseInventory{}
-		if id, err := uuid.Parse(getCellValue(row, 0)); err == nil {
+		if id, ok := parseOptionalUUID(getCellValue(row, 0)); ok {
 			inv.ID = id
 		}
-		if itemID := getCellValue(row, 1); itemID != "" {
-			if id, err := uuid.Parse(itemID); err == nil {
-				inv.ItemID = id
-			}
+		if id, ok := parseOptionalUUID(getCellValue(row, 1)); ok {
+			inv.ItemID = id
 		}
-		if locationID := getCellValue(row, 2); locationID != "" {
-			if id, err := uuid.Parse(locationID); err == nil {
-				inv.LocationID = id
-			}
+		if id, ok := parseOptionalUUID(getCellValue(row, 2)); ok {
+			inv.LocationID = id
 		}
-		if containerID := getCellValue(row, 3); containerID != "" {
-			if id, err := uuid.Parse(containerID); err == nil {
-				inv.ContainerID = pgtype.UUID{Bytes: id, Valid: true}
-			}
+		if id, ok := parseOptionalUUID(getCellValue(row, 3)); ok {
+			inv.ContainerID = pgtype.UUID{Bytes: id, Valid: true}
 		}
 		if qty, err := strconv.Atoi(getCellValue(row, 4)); err == nil {
 			inv.Quantity = int32(qty)
