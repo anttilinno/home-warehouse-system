@@ -226,12 +226,40 @@ func runCleanup(dryRun bool) {
 
 	uploadDir := getUploadDir()
 
-	// Get all file paths from database
+	knownFiles, err := loadKnownPhotoPaths(ctx, pool)
+	if err != nil {
+		log.Fatalf("Failed to query photos: %v", err)
+	}
+
+	orphanedFiles, totalOrphanedSize, err := findOrphanedFiles(uploadDir, knownFiles)
+	if err != nil {
+		log.Fatalf("Error walking upload directory: %v", err)
+	}
+
+	if len(orphanedFiles) == 0 {
+		fmt.Println("No orphaned files found.")
+		return
+	}
+
+	fmt.Printf("Found %d orphaned files (%.2f MB)\n\n", len(orphanedFiles), float64(totalOrphanedSize)/(1024*1024))
+
+	deleteOrphans(orphanedFiles, dryRun)
+
+	if dryRun {
+		fmt.Println("\nRun with --execute to actually delete these files.")
+	} else {
+		fmt.Printf("\nDeleted %d orphaned files.\n", len(orphanedFiles))
+	}
+}
+
+// loadKnownPhotoPaths returns the set of storage + thumbnail paths recorded in
+// the database, used to tell live files from orphans on disk.
+func loadKnownPhotoPaths(ctx context.Context, pool *pgxpool.Pool) (map[string]bool, error) {
 	rows, err := pool.Query(ctx, `
 		SELECT storage_path, thumbnail_path FROM warehouse.item_photos
 	`)
 	if err != nil {
-		log.Fatalf("Failed to query photos: %v", err)
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -244,16 +272,19 @@ func runCleanup(dryRun bool) {
 		knownFiles[storagePath] = true
 		knownFiles[thumbnailPath] = true
 	}
+	return knownFiles, nil
+}
 
-	// Walk the uploads directory and find orphaned files
+// findOrphanedFiles walks uploadDir and returns the image files (and their total
+// size) whose path relative to uploadDir is absent from knownFiles.
+func findOrphanedFiles(uploadDir string, knownFiles map[string]bool) ([]string, int64, error) {
 	var orphanedFiles []string
 	var totalOrphanedSize int64
 
-	err = filepath.Walk(uploadDir, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(uploadDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-
 		if info.IsDir() {
 			return nil
 		}
@@ -264,48 +295,33 @@ func runCleanup(dryRun bool) {
 			return nil
 		}
 
-		// Get relative path
 		relPath, err := filepath.Rel(uploadDir, path)
 		if err != nil {
 			return nil
 		}
 
-		// Check if file is in database
 		if !knownFiles[relPath] {
 			orphanedFiles = append(orphanedFiles, path)
 			totalOrphanedSize += info.Size()
 		}
-
 		return nil
 	})
 
-	if err != nil {
-		log.Fatalf("Error walking upload directory: %v", err)
-	}
+	return orphanedFiles, totalOrphanedSize, err
+}
 
-	if len(orphanedFiles) == 0 {
-		fmt.Println("No orphaned files found.")
-		return
-	}
-
-	fmt.Printf("Found %d orphaned files (%.2f MB)\n\n", len(orphanedFiles), float64(totalOrphanedSize)/(1024*1024))
-
+// deleteOrphans removes the orphaned files, or in dry-run mode just lists them.
+func deleteOrphans(orphanedFiles []string, dryRun bool) {
 	for _, file := range orphanedFiles {
 		if dryRun {
 			fmt.Printf("[DRY-RUN] Would delete: %s\n", file)
-		} else {
-			if err := os.Remove(file); err != nil {
-				log.Printf("Error deleting %s: %v", file, err)
-			} else {
-				fmt.Printf("Deleted: %s\n", file)
-			}
+			continue
 		}
-	}
-
-	if dryRun {
-		fmt.Println("\nRun with --execute to actually delete these files.")
-	} else {
-		fmt.Printf("\nDeleted %d orphaned files.\n", len(orphanedFiles))
+		if err := os.Remove(file); err != nil {
+			log.Printf("Error deleting %s: %v", file, err)
+		} else {
+			fmt.Printf("Deleted: %s\n", file)
+		}
 	}
 }
 
