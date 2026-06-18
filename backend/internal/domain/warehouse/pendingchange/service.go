@@ -286,7 +286,14 @@ func (s *Service) ApproveChange(ctx context.Context, changeID, workspaceID uuid.
 		return nil
 	}
 
-	// Get requester and reviewer info for SSE event.
+	s.notifyApproval(ctx, change, reviewerID)
+	return nil
+}
+
+// notifyApproval emits the SSE event and a best-effort push notification for an
+// approved change. Requester/reviewer display fields are looked up best-effort
+// and left blank on error.
+func (s *Service) notifyApproval(ctx context.Context, change *PendingChange, reviewerID uuid.UUID) {
 	var requesterName, requesterEmail, reviewerName, reviewerEmail string
 	if requesterUser, err := s.userRepo.FindByID(ctx, change.RequesterID()); err == nil {
 		requesterName = requesterUser.FullName()
@@ -337,11 +344,9 @@ func (s *Service) ApproveChange(ctx context.Context, changeID, workspaceID uuid.
 			},
 		}
 		if err := s.pushSender.SendToUser(ctx, change.RequesterID(), message); err != nil {
-			log.Printf("Failed to send push notification for approved change %s: %v", change.ID(), err)
+			log.Printf("Failed to send push notification for approved change %s: %v", change.ID(), err) //nolint:gosec // G706: logs a generated UUID + internal error, not user-controlled text
 		}
 	}
-
-	return nil
 }
 
 // RejectChange rejects a pending change with a descriptive reason.
