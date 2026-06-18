@@ -20,9 +20,22 @@ const (
 )
 
 // RegisterRoutes registers company routes.
+//
+// Each handler is a package factory func (see below) so this stays a flat list
+// of registrations rather than a single god-function of inline closures.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
-	// List companies
-	huma.Get(api, "/companies", func(ctx context.Context, input *ListCompaniesInput) (*ListCompaniesOutput, error) {
+	huma.Get(api, "/companies", listCompanies(svc))
+	huma.Get(api, routeCompanyByID, getCompany(svc))
+	huma.Post(api, "/companies", createCompany(svc, broadcaster))
+	huma.Patch(api, routeCompanyByID, updateCompany(svc, broadcaster))
+	huma.Post(api, "/companies/{id}/archive", archiveCompany(svc, broadcaster))
+	huma.Post(api, "/companies/{id}/restore", restoreCompany(svc, broadcaster))
+	huma.Delete(api, routeCompanyByID, deleteCompany(svc, broadcaster))
+}
+
+// listCompanies lists companies in the workspace.
+func listCompanies(svc ServiceInterface) func(context.Context, *ListCompaniesInput) (*ListCompaniesOutput, error) {
+	return func(ctx context.Context, input *ListCompaniesInput) (*ListCompaniesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -47,10 +60,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				TotalPages: result.TotalPages,
 			},
 		}, nil
-	})
+	}
+}
 
-	// Get company by ID
-	huma.Get(api, routeCompanyByID, func(ctx context.Context, input *GetCompanyInput) (*GetCompanyOutput, error) {
+// getCompany returns a single company by ID.
+func getCompany(svc ServiceInterface) func(context.Context, *GetCompanyInput) (*GetCompanyOutput, error) {
+	return func(ctx context.Context, input *GetCompanyInput) (*GetCompanyOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -67,10 +82,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &GetCompanyOutput{
 			Body: toCompanyResponse(company),
 		}, nil
-	})
+	}
+}
 
-	// Create company
-	huma.Post(api, "/companies", func(ctx context.Context, input *CreateCompanyInput) (*CreateCompanyOutput, error) {
+// createCompany creates a company.
+func createCompany(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *CreateCompanyInput) (*CreateCompanyOutput, error) {
+	return func(ctx context.Context, input *CreateCompanyInput) (*CreateCompanyOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -110,10 +127,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &CreateCompanyOutput{
 			Body: toCompanyResponse(company),
 		}, nil
-	})
+	}
+}
 
-	// Update company
-	huma.Patch(api, routeCompanyByID, func(ctx context.Context, input *UpdateCompanyInput) (*UpdateCompanyOutput, error) {
+// updateCompany updates a company.
+func updateCompany(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *UpdateCompanyInput) (*UpdateCompanyOutput, error) {
+	return func(ctx context.Context, input *UpdateCompanyInput) (*UpdateCompanyOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -162,10 +181,19 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &UpdateCompanyOutput{
 			Body: toCompanyResponse(company),
 		}, nil
-	})
+	}
+}
 
-	// Archive company
-	huma.Post(api, "/companies/{id}/archive", func(ctx context.Context, input *GetCompanyInput) (*struct{}, error) {
+// lifecycleAction builds a handler that runs a single-target lifecycle action
+// (archive/restore/delete) and publishes eventType on success. Extracted so the
+// three otherwise-identical factories don't duplicate the workspace check, error
+// mapping, and event-publish block.
+func lifecycleAction(
+	broadcaster *events.Broadcaster,
+	eventType string,
+	action func(ctx context.Context, id, workspaceID uuid.UUID) error,
+) func(context.Context, *GetCompanyInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetCompanyInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -173,75 +201,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
-		err := svc.Archive(ctx, input.ID, workspaceID)
-		if err != nil {
-			if errors.Is(err, ErrCompanyNotFound) {
-				return nil, huma.Error404NotFound(msgCompanyNotFound)
-			}
-			return nil, appMiddleware.MapDomainError(err)
-		}
-
-		// Publish event (treat archive as delete event)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "company.deleted",
-				EntityID:   input.ID.String(),
-				EntityType: "company",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
-
-		return nil, nil
-	})
-
-	// Restore company
-	huma.Post(api, "/companies/{id}/restore", func(ctx context.Context, input *GetCompanyInput) (*struct{}, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
-		}
-
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
-
-		err := svc.Restore(ctx, input.ID, workspaceID)
-		if err != nil {
-			if errors.Is(err, ErrCompanyNotFound) {
-				return nil, huma.Error404NotFound(msgCompanyNotFound)
-			}
-			return nil, appMiddleware.MapDomainError(err)
-		}
-
-		// Publish event (treat restore as create event)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "company.created",
-				EntityID:   input.ID.String(),
-				EntityType: "company",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
-
-		return nil, nil
-	})
-
-	// Delete company
-	huma.Delete(api, routeCompanyByID, func(ctx context.Context, input *GetCompanyInput) (*struct{}, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
-		}
-
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
-
-		err := svc.Delete(ctx, input.ID, workspaceID)
+		err := action(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrCompanyNotFound) {
 				return nil, huma.Error404NotFound(msgCompanyNotFound)
@@ -253,7 +213,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		if broadcaster != nil && authUser != nil {
 			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "company.deleted",
+				Type:       eventType,
 				EntityID:   input.ID.String(),
 				EntityType: "company",
 				UserID:     authUser.ID,
@@ -264,7 +224,22 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return nil, nil
-	})
+	}
+}
+
+// archiveCompany archives a company (treat archive as a delete event).
+func archiveCompany(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetCompanyInput) (*struct{}, error) {
+	return lifecycleAction(broadcaster, "company.deleted", svc.Archive)
+}
+
+// restoreCompany restores an archived company (treat restore as a create event).
+func restoreCompany(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetCompanyInput) (*struct{}, error) {
+	return lifecycleAction(broadcaster, "company.created", svc.Restore)
+}
+
+// deleteCompany deletes a company.
+func deleteCompany(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetCompanyInput) (*struct{}, error) {
+	return lifecycleAction(broadcaster, "company.deleted", svc.Delete)
 }
 
 func toCompanyResponse(c *Company) CompanyResponse {

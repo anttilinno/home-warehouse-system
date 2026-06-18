@@ -18,10 +18,24 @@ const (
 	routeLocationByID           = "/locations/{id}"
 )
 
-// RegisterRoutes registers location routes.
+// RegisterRoutes registers location routes. Each handler is a package factory
+// func (see below) so this stays a flat list of registrations rather than a
+// single god-function of inline closures.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
-	// List locations
-	huma.Get(api, "/locations", func(ctx context.Context, input *ListLocationsInput) (*ListLocationsOutput, error) {
+	huma.Get(api, "/locations", listLocations(svc))
+	huma.Get(api, routeLocationByID, getLocation(svc))
+	huma.Post(api, "/locations", createLocation(svc, broadcaster))
+	huma.Patch(api, routeLocationByID, updateLocation(svc, broadcaster))
+	huma.Post(api, "/locations/{id}/archive", archiveLocation(svc, broadcaster))
+	huma.Post(api, "/locations/{id}/restore", restoreLocation(svc, broadcaster))
+	huma.Delete(api, routeLocationByID, deleteLocation(svc, broadcaster))
+	huma.Get(api, "/locations/{id}/breadcrumb", getBreadcrumb(svc))
+	huma.Get(api, "/locations/search", searchLocations(svc))
+}
+
+// listLocations lists locations in the workspace.
+func listLocations(svc ServiceInterface) func(context.Context, *ListLocationsInput) (*ListLocationsOutput, error) {
+	return func(ctx context.Context, input *ListLocationsInput) (*ListLocationsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -46,10 +60,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				TotalPages: result.TotalPages,
 			},
 		}, nil
-	})
+	}
+}
 
-	// Get location by ID
-	huma.Get(api, routeLocationByID, func(ctx context.Context, input *GetLocationInput) (*GetLocationOutput, error) {
+// getLocation returns a single location by ID.
+func getLocation(svc ServiceInterface) func(context.Context, *GetLocationInput) (*GetLocationOutput, error) {
+	return func(ctx context.Context, input *GetLocationInput) (*GetLocationOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -63,10 +79,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &GetLocationOutput{
 			Body: toLocationResponse(location),
 		}, nil
-	})
+	}
+}
 
-	// Create location
-	huma.Post(api, "/locations", func(ctx context.Context, input *CreateLocationInput) (*CreateLocationOutput, error) {
+// createLocation creates a location.
+func createLocation(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *CreateLocationInput) (*CreateLocationOutput, error) {
+	return func(ctx context.Context, input *CreateLocationInput) (*CreateLocationOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -112,10 +130,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &CreateLocationOutput{
 			Body: toLocationResponse(location),
 		}, nil
-	})
+	}
+}
 
-	// Update location
-	huma.Patch(api, routeLocationByID, func(ctx context.Context, input *UpdateLocationInput) (*UpdateLocationOutput, error) {
+// updateLocation updates a location.
+func updateLocation(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *UpdateLocationInput) (*UpdateLocationOutput, error) {
+	return func(ctx context.Context, input *UpdateLocationInput) (*UpdateLocationOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -162,16 +182,16 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &UpdateLocationOutput{
 			Body: toLocationResponse(location),
 		}, nil
-	})
+	}
+}
 
-	// Archive location
-	huma.Post(api, "/locations/{id}/archive", func(ctx context.Context, input *GetLocationInput) (*struct{}, error) {
+// archiveLocation archives a location.
+func archiveLocation(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetLocationInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetLocationInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
-
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		err := svc.Archive(ctx, input.ID, workspaceID)
 		if err != nil {
@@ -179,30 +199,19 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		// Publish event (treat archive as delete event)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "location.deleted",
-				EntityID:   input.ID.String(),
-				EntityType: "location",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishLocationLifecycleEvent(ctx, broadcaster, workspaceID, "location.deleted", input.ID)
 
 		return nil, nil
-	})
+	}
+}
 
-	// Restore location
-	huma.Post(api, "/locations/{id}/restore", func(ctx context.Context, input *GetLocationInput) (*struct{}, error) {
+// restoreLocation restores an archived location.
+func restoreLocation(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetLocationInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetLocationInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
-
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		err := svc.Restore(ctx, input.ID, workspaceID)
 		if err != nil {
@@ -210,30 +219,19 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		// Publish event (treat restore as create event)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "location.created",
-				EntityID:   input.ID.String(),
-				EntityType: "location",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishLocationLifecycleEvent(ctx, broadcaster, workspaceID, "location.created", input.ID)
 
 		return nil, nil
-	})
+	}
+}
 
-	// Delete location
-	huma.Delete(api, routeLocationByID, func(ctx context.Context, input *GetLocationInput) (*struct{}, error) {
+// deleteLocation deletes a location.
+func deleteLocation(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetLocationInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetLocationInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
-
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		err := svc.Delete(ctx, input.ID, workspaceID)
 		if err != nil {
@@ -241,24 +239,35 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		// Publish event
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "location.deleted",
-				EntityID:   input.ID.String(),
-				EntityType: "location",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishLocationLifecycleEvent(ctx, broadcaster, workspaceID, "location.deleted", input.ID)
 
 		return nil, nil
-	})
+	}
+}
 
-	// Get location breadcrumb
-	huma.Get(api, "/locations/{id}/breadcrumb", func(ctx context.Context, input *GetLocationInput) (*GetBreadcrumbOutput, error) {
+// publishLocationLifecycleEvent publishes a lifecycle event (archive/restore/
+// delete) carrying only the acting user's display name, matching the original
+// per-handler publish blocks verbatim.
+func publishLocationLifecycleEvent(ctx context.Context, broadcaster *events.Broadcaster, workspaceID uuid.UUID, eventType string, locationID uuid.UUID) {
+	authUser, _ := appMiddleware.GetAuthUser(ctx)
+	if broadcaster == nil || authUser == nil {
+		return
+	}
+	userName := appMiddleware.GetUserDisplayName(ctx)
+	broadcaster.Publish(workspaceID, events.Event{
+		Type:       eventType,
+		EntityID:   locationID.String(),
+		EntityType: "location",
+		UserID:     authUser.ID,
+		Data: map[string]any{
+			"user_name": userName,
+		},
+	})
+}
+
+// getBreadcrumb returns the ancestor breadcrumb trail for a location.
+func getBreadcrumb(svc ServiceInterface) func(context.Context, *GetLocationInput) (*GetBreadcrumbOutput, error) {
+	return func(ctx context.Context, input *GetLocationInput) (*GetBreadcrumbOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -283,10 +292,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				Breadcrumb: items,
 			},
 		}, nil
-	})
+	}
+}
 
-	// Search locations
-	huma.Get(api, "/locations/search", func(ctx context.Context, input *SearchLocationsInput) (*SearchLocationsOutput, error) {
+// searchLocations searches locations by query within the workspace.
+func searchLocations(svc ServiceInterface) func(context.Context, *SearchLocationsInput) (*SearchLocationsOutput, error) {
+	return func(ctx context.Context, input *SearchLocationsInput) (*SearchLocationsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -307,7 +318,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				Items: responses,
 			},
 		}, nil
-	})
+	}
 }
 
 func toLocationResponse(l *Location) LocationResponse {

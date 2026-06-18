@@ -18,10 +18,23 @@ const (
 	routeContainerByID          = "/containers/{id}"
 )
 
-// RegisterRoutes registers container routes.
+// RegisterRoutes registers container routes. Each handler is a package factory
+// func (see below) so this stays a flat list of registrations rather than a
+// single god-function of inline closures.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
-	// List containers
-	huma.Get(api, "/containers", func(ctx context.Context, input *ListContainersInput) (*ListContainersOutput, error) {
+	huma.Get(api, "/containers", listContainers(svc))
+	huma.Get(api, routeContainerByID, getContainer(svc))
+	huma.Post(api, "/containers", createContainer(svc, broadcaster))
+	huma.Patch(api, routeContainerByID, updateContainer(svc, broadcaster))
+	huma.Post(api, "/containers/{id}/archive", archiveContainer(svc, broadcaster))
+	huma.Post(api, "/containers/{id}/restore", restoreContainer(svc, broadcaster))
+	huma.Delete(api, routeContainerByID, deleteContainer(svc, broadcaster))
+	huma.Get(api, "/containers/search", searchContainers(svc))
+}
+
+// listContainers lists containers in the workspace.
+func listContainers(svc ServiceInterface) func(context.Context, *ListContainersInput) (*ListContainersOutput, error) {
+	return func(ctx context.Context, input *ListContainersInput) (*ListContainersOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -46,10 +59,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				TotalPages: result.TotalPages,
 			},
 		}, nil
-	})
+	}
+}
 
-	// Get container by ID
-	huma.Get(api, routeContainerByID, func(ctx context.Context, input *GetContainerInput) (*GetContainerOutput, error) {
+// getContainer returns a single container by ID.
+func getContainer(svc ServiceInterface) func(context.Context, *GetContainerInput) (*GetContainerOutput, error) {
+	return func(ctx context.Context, input *GetContainerInput) (*GetContainerOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -63,10 +78,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &GetContainerOutput{
 			Body: toContainerResponse(container),
 		}, nil
-	})
+	}
+}
 
-	// Create container
-	huma.Post(api, "/containers", func(ctx context.Context, input *CreateContainerInput) (*CreateContainerOutput, error) {
+// createContainer creates a container.
+func createContainer(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *CreateContainerInput) (*CreateContainerOutput, error) {
+	return func(ctx context.Context, input *CreateContainerInput) (*CreateContainerOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -113,10 +130,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &CreateContainerOutput{
 			Body: toContainerResponse(container),
 		}, nil
-	})
+	}
+}
 
-	// Update container
-	huma.Patch(api, routeContainerByID, func(ctx context.Context, input *UpdateContainerInput) (*UpdateContainerOutput, error) {
+// updateContainer updates a container.
+func updateContainer(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *UpdateContainerInput) (*UpdateContainerOutput, error) {
+	return func(ctx context.Context, input *UpdateContainerInput) (*UpdateContainerOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -168,16 +187,16 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return &UpdateContainerOutput{
 			Body: toContainerResponse(container),
 		}, nil
-	})
+	}
+}
 
-	// Archive container
-	huma.Post(api, "/containers/{id}/archive", func(ctx context.Context, input *GetContainerInput) (*struct{}, error) {
+// archiveContainer archives a container.
+func archiveContainer(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetContainerInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetContainerInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
-
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		err := svc.Archive(ctx, input.ID, workspaceID)
 		if err != nil {
@@ -185,30 +204,19 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		// Publish event (treat archive as delete event)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "container.deleted",
-				EntityID:   input.ID.String(),
-				EntityType: "container",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishContainerLifecycleEvent(ctx, broadcaster, workspaceID, "container.deleted", input.ID)
 
 		return nil, nil
-	})
+	}
+}
 
-	// Restore container
-	huma.Post(api, "/containers/{id}/restore", func(ctx context.Context, input *GetContainerInput) (*struct{}, error) {
+// restoreContainer restores an archived container.
+func restoreContainer(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetContainerInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetContainerInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
-
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		err := svc.Restore(ctx, input.ID, workspaceID)
 		if err != nil {
@@ -216,30 +224,19 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		// Publish event (treat restore as create event)
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "container.created",
-				EntityID:   input.ID.String(),
-				EntityType: "container",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishContainerLifecycleEvent(ctx, broadcaster, workspaceID, "container.created", input.ID)
 
 		return nil, nil
-	})
+	}
+}
 
-	// Delete container
-	huma.Delete(api, routeContainerByID, func(ctx context.Context, input *GetContainerInput) (*struct{}, error) {
+// deleteContainer deletes a container.
+func deleteContainer(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *GetContainerInput) (*struct{}, error) {
+	return func(ctx context.Context, input *GetContainerInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
-
-		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		err := svc.Delete(ctx, input.ID, workspaceID)
 		if err != nil {
@@ -247,24 +244,34 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		// Publish event
-		if broadcaster != nil && authUser != nil {
-			userName := appMiddleware.GetUserDisplayName(ctx)
-			broadcaster.Publish(workspaceID, events.Event{
-				Type:       "container.deleted",
-				EntityID:   input.ID.String(),
-				EntityType: "container",
-				UserID:     authUser.ID,
-				Data: map[string]any{
-					"user_name": userName,
-				},
-			})
-		}
+		publishContainerLifecycleEvent(ctx, broadcaster, workspaceID, "container.deleted", input.ID)
 
 		return nil, nil
-	})
+	}
+}
 
-	// Search containers
-	huma.Get(api, "/containers/search", func(ctx context.Context, input *SearchContainersInput) (*SearchContainersOutput, error) {
+// publishContainerLifecycleEvent publishes a lifecycle event (archive/restore/
+// delete) for a container, keyed by ID with only the acting user's name.
+func publishContainerLifecycleEvent(ctx context.Context, broadcaster *events.Broadcaster, workspaceID uuid.UUID, eventType string, containerID uuid.UUID) {
+	authUser, _ := appMiddleware.GetAuthUser(ctx)
+	if broadcaster == nil || authUser == nil {
+		return
+	}
+	userName := appMiddleware.GetUserDisplayName(ctx)
+	broadcaster.Publish(workspaceID, events.Event{
+		Type:       eventType,
+		EntityID:   containerID.String(),
+		EntityType: "container",
+		UserID:     authUser.ID,
+		Data: map[string]any{
+			"user_name": userName,
+		},
+	})
+}
+
+// searchContainers searches containers in the workspace.
+func searchContainers(svc ServiceInterface) func(context.Context, *SearchContainersInput) (*SearchContainersOutput, error) {
+	return func(ctx context.Context, input *SearchContainersInput) (*SearchContainersOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
@@ -285,7 +292,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				Items: responses,
 			},
 		}, nil
-	})
+	}
 }
 
 func toContainerResponse(c *Container) ContainerResponse {
