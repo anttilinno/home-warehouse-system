@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
@@ -12,7 +12,8 @@ import type { Category } from "@/lib/api/category";
 import type { TreeNode } from "@/features/taxonomy/lib/buildTree";
 import { useCategoriesQuery } from "../hooks/useCategoriesQuery";
 import { useCategoryMutations } from "../hooks/useCategoryMutations";
-import { useUsageCount } from "../hooks/useUsageCount";
+import { useUsageCountTarget } from "../hooks/useUsageCountTarget";
+import { TaxonomyTabState } from "./TaxonomyTabState";
 
 // Phase 10 Plan 02 — the Categories tab (TAX-01 tree + CRUD, TAX-02 client
 // usage-warning archive). Consumes useCategoriesQuery (tree) +
@@ -40,12 +41,6 @@ function toTreeNodes(nodes: TreeNode<Category>[]): RetroTreeNode[] {
   }));
 }
 
-interface ArchiveTarget {
-  id: string;
-  name: string;
-  count: number | null; // null = still loading
-}
-
 export function CategoriesTab() {
   const { t } = useLingui();
   const navigate = useNavigate();
@@ -54,13 +49,16 @@ export function CategoriesTab() {
   const { archive, restore } = useCategoryMutations();
   const archiveCategory = archive.mutate;
   const restoreCategory = restore.mutate;
-  const { fetchCount } = useUsageCount();
 
   const nodes = useMemo(() => toTreeNodes(tree), [tree]);
 
-  const [archiveTarget, setArchiveTarget] = useState<ArchiveTarget | null>(
-    null,
-  );
+  // Archive opens the confirm immediately (count=null → "loading"), then the
+  // assigned-item count is fetched and patched in so the copy becomes count-aware.
+  const {
+    target: archiveTarget,
+    open: openArchiveTarget,
+    clear: clearArchive,
+  } = useUsageCountTarget("category");
 
   const openCreateRoot = () => navigate("/taxonomy/categories/new");
   const openAddChild = (node: RetroTreeNode) =>
@@ -68,124 +66,91 @@ export function CategoriesTab() {
   const openEdit = (node: RetroTreeNode) =>
     navigate(`/taxonomy/categories/${node.id}/edit`);
 
-  // Archive: open the confirm immediately (count=null → "loading"), then fetch
-  // the assigned-item count and patch the target so the copy becomes count-aware.
-  function openArchive(node: RetroTreeNode) {
-    setArchiveTarget({ id: node.id, name: node.name, count: null });
-    fetchCount("category", node.id)
-      .then((count) =>
-        setArchiveTarget((prev) =>
-          prev?.id === node.id ? { ...prev, count } : prev,
-        ),
-      )
-      .catch(() =>
-        // On a count read failure, fall back to the plain (zero) confirm — the
-        // archive is advisory either way.
-        setArchiveTarget((prev) =>
-          prev?.id === node.id ? { ...prev, count: 0 } : prev,
-        ),
-      );
-  }
+  const openArchive = (node: RetroTreeNode) =>
+    openArchiveTarget(node.id, node.name);
 
   function confirmArchive() {
     if (!archiveTarget) return;
     archiveCategory({ id: archiveTarget.id, name: archiveTarget.name });
-    setArchiveTarget(null);
+    clearArchive();
   }
 
   function onRestore(node: RetroTreeNode) {
     restoreCategory({ id: node.id, name: node.name });
   }
 
-  if (isError) {
-    return (
-      <div className="flex flex-col items-start gap-sp-3">
-        <p className="text-14 font-semibold text-danger">
-          <Trans>COULDN'T LOAD CATEGORIES</Trans>
-        </p>
-        <p className="text-13 text-fg-muted">
-          <Trans>Something went wrong. Try again.</Trans>
-        </p>
-        <BevelButton onClick={() => refetch()}>
-          <Trans>RETRY</Trans>
-        </BevelButton>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <p className="font-mono text-13 text-fg-muted">
-        <Trans>Loading…</Trans>
-      </p>
-    );
-  }
-
   const hasItems = (archiveTarget?.count ?? 0) > 0;
   const n = archiveTarget?.count ?? 0;
 
   return (
-    <div className="flex flex-col gap-sp-3">
-      <div className="flex items-center">
-        <BevelButton variant="mint" onClick={openCreateRoot}>
-          <Trans>⊕ ADD ROOT CATEGORY</Trans>
-        </BevelButton>
-      </div>
+    <TaxonomyTabState
+      isError={isError}
+      isLoading={isLoading}
+      errorTitle={<Trans>COULDN'T LOAD CATEGORIES</Trans>}
+      onRetry={() => refetch()}
+    >
+      <div className="flex flex-col gap-sp-3">
+        <div className="flex items-center">
+          <BevelButton variant="mint" onClick={openCreateRoot}>
+            <Trans>⊕ ADD ROOT CATEGORY</Trans>
+          </BevelButton>
+        </div>
 
-      <RetroTree
-        nodes={nodes}
-        storageKey="taxonomy:tree:categories"
-        onAddChild={openAddChild}
-        onEdit={openEdit}
-        onArchive={openArchive}
-        onRestore={onRestore}
-        emptyState={
-          <RetroEmptyState
-            eyebrow={<Trans>Taxonomy</Trans>}
-            glyph="◇"
-            heading={<Trans>NO CATEGORIES YET</Trans>}
-            body={
-              <Trans>
-                Group your inventory by creating a top-level category. You can
-                nest sub-categories underneath it.
-              </Trans>
-            }
-            action={{
-              label: <Trans>⊕ ADD ROOT CATEGORY</Trans>,
-              onClick: openCreateRoot,
-            }}
-          />
-        }
-      />
+        <RetroTree
+          nodes={nodes}
+          storageKey="taxonomy:tree:categories"
+          onAddChild={openAddChild}
+          onEdit={openEdit}
+          onArchive={openArchive}
+          onRestore={onRestore}
+          emptyState={
+            <RetroEmptyState
+              eyebrow={<Trans>Taxonomy</Trans>}
+              glyph="◇"
+              heading={<Trans>NO CATEGORIES YET</Trans>}
+              body={
+                <Trans>
+                  Group your inventory by creating a top-level category. You can
+                  nest sub-categories underneath it.
+                </Trans>
+              }
+              action={{
+                label: <Trans>⊕ ADD ROOT CATEGORY</Trans>,
+                onClick: openCreateRoot,
+              }}
+            />
+          }
+        />
 
-      {/* TAX-02 usage-warning archive confirm (butter, non-destructive). The
+        {/* TAX-02 usage-warning archive confirm (butter, non-destructive). The
           count is fetched on open; total>0 surfaces the count-aware copy. */}
-      <RetroConfirmDialog
-        open={archiveTarget !== null}
-        title={<Trans>ARCHIVE CATEGORY?</Trans>}
-        titlebarVariant="butter"
-        confirmVariant="neutral"
-        confirmLabel={
-          hasItems ? <Trans>Archive anyway</Trans> : <Trans>Archive</Trans>
-        }
-        cancelLabel={<Trans>Cancel</Trans>}
-        onConfirm={confirmArchive}
-        onCancel={() => setArchiveTarget(null)}
-        onClose={() => setArchiveTarget(null)}
-      >
-        {hasItems ? (
-          <span>
-            <span aria-hidden="true">⚠ </span>
-            {t`"${archiveTarget?.name ?? ""}" has ${n} item${
-              n === 1 ? "" : "s"
-            } assigned to it. Archiving keeps those items but hides this category from pickers until you restore it.`}
-          </span>
-        ) : (
-          <span>
-            {t`Archive "${archiveTarget?.name ?? ""}"? You can restore it later.`}
-          </span>
-        )}
-      </RetroConfirmDialog>
-    </div>
+        <RetroConfirmDialog
+          open={archiveTarget !== null}
+          title={<Trans>ARCHIVE CATEGORY?</Trans>}
+          titlebarVariant="butter"
+          confirmVariant="neutral"
+          confirmLabel={
+            hasItems ? <Trans>Archive anyway</Trans> : <Trans>Archive</Trans>
+          }
+          cancelLabel={<Trans>Cancel</Trans>}
+          onConfirm={confirmArchive}
+          onCancel={clearArchive}
+          onClose={clearArchive}
+        >
+          {hasItems ? (
+            <span>
+              <span aria-hidden="true">⚠ </span>
+              {t`"${archiveTarget?.name ?? ""}" has ${n} item${
+                n === 1 ? "" : "s"
+              } assigned to it. Archiving keeps those items but hides this category from pickers until you restore it.`}
+            </span>
+          ) : (
+            <span>
+              {t`Archive "${archiveTarget?.name ?? ""}"? You can restore it later.`}
+            </span>
+          )}
+        </RetroConfirmDialog>
+      </div>
+    </TaxonomyTabState>
   );
 }
