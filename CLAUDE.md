@@ -93,7 +93,18 @@ reaches master. `mise run setup` enables it; otherwise run once:
   `go build`. Only NEW regressions vs. master block; legacy findings don't. A
   bare `golangci-lint run` audits the whole tree on demand.
 - **Frontend:** `biome lint --diagnostic-level=error` (blocks correctness
-  errors; pre-existing style warnings don't) plus `tsc`.
+  errors; pre-existing style warnings don't), `tsc`, a **complexity gate**
+  (`bun run lint:complexity` — ESLint + sonarjs, cyclomatic AND cognitive
+  threshold 15; config `frontend/eslint.complexity.config.mjs`, the
+  gocognit/gocyclo analog), and a **duplication ceiling** (`jscpd` over `src`,
+  `--threshold 4`, the dupl analog). The tree is at zero functions over 15 and
+  ~3% duplication, so legacy never trips either gate; a regression does.
+  Inspect on demand with `bun run lint:complexity` / `bun run lint:dup` /
+  `bun run lint:dead` (knip — not gated; needs `ignoreDependencies` tuning
+  first, vite/CSS deps read as false positives).
+- jscpd can't gate per-file (it globs within given paths), so the dup gate is a
+  whole-tree ceiling rather than a strict new-from-base diff; complexity gates
+  the whole tree (safe — zero baseline).
 - Runs only for the changed side of the tree. Bypass: `git push --no-verify`.
 - Rationale + the full SonarQube remediation context: `docs/sonarqube/`.
 

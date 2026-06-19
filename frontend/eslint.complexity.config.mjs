@@ -18,11 +18,16 @@ export default tseslint.config(
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     plugins: { sonarjs },
     rules: {
-      // mirror golangci gocognit / gocyclo / goconst / dupl — report only
-      complexity: ["warn", 15],
-      "sonarjs/cognitive-complexity": ["warn", 15],
+      // Gating rules (mirror golangci gocognit / gocyclo): these ERROR so the
+      // pre-push hook blocks on any function over the 15 threshold.
+      complexity: ["error", 15],
+      "sonarjs/cognitive-complexity": ["error", 15],
+      // Informational only (goconst / dupl analogs) — reported, never blocking.
       "sonarjs/no-duplicate-string": ["warn", { threshold: 5 }],
       "sonarjs/no-identical-functions": "warn",
+      // Biome already gates unused vars; silence the tseslint-recommended copy
+      // so this config exits non-zero ONLY on a complexity regression.
+      "@typescript-eslint/no-unused-vars": "off",
     },
   },
 );

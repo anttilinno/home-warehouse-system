@@ -36,13 +36,26 @@ if grep -q '^backend/' <<<"$CHANGED"; then
 fi
 
 if grep -q '^frontend/' <<<"$CHANGED"; then
-  echo "pre-push: frontend changed — biome lint + tsc…"
+  echo "pre-push: frontend changed — biome lint + tsc + complexity + dup…"
   (
     cd frontend || exit 1
     # Gate on biome ERRORS (correctness) only — pre-existing style warnings
     # must not block pushes.
     bunx biome lint --diagnostic-level=error src || exit 1
     bun run lint:tsc || exit 1
+    # Complexity gate (cyclomatic + cognitive, threshold 15). The whole tree is
+    # at zero offenders, so the config ERRORS on any regression anywhere. Mirrors
+    # the backend gocognit/gocyclo gate.
+    bun run lint:complexity || exit 1
+    # Duplication ceiling (dupl analog). jscpd can't gate per-file (it globs
+    # within paths, so a file list scans nothing), so this is a whole-tree
+    # CEILING rather than a strict new-from-base diff: the current tree sits
+    # just under 4%, so legacy never trips it but a real duplication regression
+    # does. `lint:dup` (no threshold) prints the full clone report on demand.
+    ./node_modules/.bin/jscpd src --threshold 4 \
+      --min-lines 8 --min-tokens 60 --format "typescript,tsx" \
+      --ignore "**/*.test.ts,**/*.test.tsx,**/test/**" \
+      --reporters console || exit 1
   ) || fail=1
 fi
 
