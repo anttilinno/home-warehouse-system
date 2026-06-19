@@ -4,10 +4,6 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import {
   Window,
   BevelButton,
-  RetroTable,
-  RetroBadge,
-  RetroEmptyState,
-  RetroPagination,
   FilterBar,
   FilterPopover,
   retroToast,
@@ -27,23 +23,18 @@ import { inventoryToCsvBlob, triggerCsvDownload } from "./inventoryCsv";
 import { useInventoryQuery, INVENTORY_LIMIT } from "./hooks/useInventoryQuery";
 import { useInventoryMutations } from "./hooks/useInventoryMutations";
 import { usePickerOptions } from "./hooks/usePickerOptions";
-import { InlineEditCell } from "./components/InlineEditCell";
-import { MovementsDrawer } from "./components/MovementsDrawer";
-import { RepairsDrawer } from "@/features/repairs/components/RepairsDrawer";
-import { MaintenanceDrawer } from "@/features/maintenance/components/MaintenanceDrawer";
+import { useInventoryFilters } from "./hooks/useInventoryFilters";
+import { InventoryResults } from "./components/InventoryResults";
+import { InventoryDrawers } from "./components/InventoryDrawers";
 import { MoveDialog } from "./components/MoveDialog";
 
 // Phase 7b Plan 02 — the /inventory list surface (INV-01 + INV-05 + INV-07).
 // Mirrors ItemsListPage density + the URL-driven pager, with inventory's twist:
 // the list endpoint has NO server filter params (R1), so search + status +
-// condition + location facets are CLIENT-side React state applied to the loaded
-// page; only `?page` round-trips to the URL. Qty/Status/Condition cells are
-// InlineEditCell instances wired to the optimistic mutation `.mutate` fns.
-// A per-row `↧` opens the MovementsDrawer; the MOVE action opens the MoveDialog
-// for that entry (Plan 04 connected the `onMove` seam Plan 02 left).
-
-// Client-side sortable columns (the loaded page only — the endpoint can't sort).
-type SortKey = "qty" | "status" | "condition";
+// condition + archived facets are CLIENT-side state applied to the loaded page
+// (owned by useInventoryFilters); only `?page` round-trips to the URL. The
+// loading/error/empty/table switch + per-row inline-edit cells live in
+// InventoryResults; this page owns the data join, filter wiring, and drawers.
 
 export function InventoryListPage() {
   const { t } = useLingui();
@@ -91,20 +82,30 @@ export function InventoryListPage() {
   const workspaceName =
     workspaces?.find((w) => w.id === wsId)?.name ?? t`Workspace`;
 
-  // ── Client-side filter state (R1 — none of this round-trips to the URL).
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<InventoryStatus[]>([]);
-  const [conditionFilter, setConditionFilter] = useState<Condition[]>([]);
-  const [showArchived, setShowArchived] = useState(false);
-  const [sortKey, setSortKey] = useState<SortKey | null>(null);
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  // ── Client-side filter/sort machine (R1 — none of this round-trips to the URL).
+  const {
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    conditionFilter,
+    setConditionFilter,
+    showArchived,
+    setShowArchived,
+    visible,
+    onSort,
+    sortGlyph,
+    hasFilters,
+    clearAllFilters,
+    filterChips,
+    removeFilter,
+  } = useInventoryFilters(entries, itemName);
 
   // ── Movements drawer + the MOVE target (Plan 04 wires MoveDialog here).
   const [movementsId, setMovementsId] = useState<string | null>(null);
   // Repairs drawer (Plan 10b-02).
   const [repairsId, setRepairsId] = useState<string | null>(null);
-  // Maintenance drawer (Plan 10b-04 — this plan's serial single-writer edit,
-  // mounted alongside the repairs drawer; the REPAIRS trigger stays untouched).
+  // Maintenance drawer (Plan 10b-04).
   const [maintenanceId, setMaintenanceId] = useState<string | null>(null);
   const [moveTarget, setMoveTarget] = useState<Inventory | null>(null);
   const onMove = useCallback((entry: Inventory) => {
@@ -114,49 +115,6 @@ export function InventoryListPage() {
   // pickers — same workspace-scoped reads, cached under their own prefixes).
   const { locations: locationOptions, containers: containerOptions } =
     usePickerOptions();
-
-  // ── Apply client filters + sort to the loaded page.
-  const visible = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    let rows = entries.filter((e) => {
-      if (!showArchived && e.is_archived) return false;
-      if (statusFilter.length && !statusFilter.includes(e.status)) return false;
-      if (conditionFilter.length && !conditionFilter.includes(e.condition))
-        return false;
-      if (q) {
-        const name = (itemName(e.item_id) ?? "").toLowerCase();
-        if (!name.includes(q)) return false;
-      }
-      return true;
-    });
-    if (sortKey) {
-      const dir = sortDir === "asc" ? 1 : -1;
-      rows = [...rows].sort((a, b) => {
-        let av: string | number;
-        let bv: string | number;
-        if (sortKey === "qty") {
-          av = a.quantity;
-          bv = b.quantity;
-        } else {
-          av = a[sortKey];
-          bv = b[sortKey];
-        }
-        if (av < bv) return -1 * dir;
-        if (av > bv) return 1 * dir;
-        return 0;
-      });
-    }
-    return rows;
-  }, [
-    entries,
-    search,
-    statusFilter,
-    conditionFilter,
-    showArchived,
-    sortKey,
-    sortDir,
-    itemName,
-  ]);
 
   // ── Route shortcuts (N → new, / → focus search).
   const goNew = useCallback(() => navigate("/inventory/new"), [navigate]);
@@ -185,98 +143,6 @@ export function InventoryListPage() {
     }
     triggerCsvDownload(inventoryToCsvBlob(visible), "inventory.csv");
   }, [visible, nothingToExport]);
-
-  function onSort(key: SortKey) {
-    if (sortKey === key) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortKey(key);
-      setSortDir("asc");
-    }
-  }
-  function sortGlyph(key: SortKey) {
-    if (sortKey !== key) return "";
-    return sortDir === "asc" ? " ↑" : " ↓";
-  }
-
-  const hasFilters =
-    !!search ||
-    statusFilter.length > 0 ||
-    conditionFilter.length > 0 ||
-    showArchived;
-
-  function clearAllFilters() {
-    setSearch("");
-    setStatusFilter([]);
-    setConditionFilter([]);
-    setShowArchived(false);
-  }
-
-  const filterChips = useMemo(() => {
-    const chips: { key: string; label: string; displayValue: string }[] = [];
-    if (statusFilter.length)
-      chips.push({
-        key: "status",
-        label: t`Status`,
-        displayValue: statusFilter.map((s) => STATUS_LABEL[s]).join(", "),
-      });
-    if (conditionFilter.length)
-      chips.push({
-        key: "condition",
-        label: t`Condition`,
-        displayValue: conditionFilter.map((c) => CONDITION_LABEL[c]).join(", "),
-      });
-    if (showArchived)
-      chips.push({
-        key: "archived",
-        label: t`Archived`,
-        displayValue: t`shown`,
-      });
-    return chips;
-  }, [statusFilter, conditionFilter, showArchived, t]);
-
-  function removeFilter(key: string) {
-    if (key === "status") setStatusFilter([]);
-    else if (key === "condition") setConditionFilter([]);
-    else if (key === "archived") setShowArchived(false);
-  }
-
-  function renderEmpty() {
-    if (hasFilters) {
-      return (
-        <RetroEmptyState
-          eyebrow={<Trans>Inventory</Trans>}
-          glyph="◇"
-          heading={<Trans>NO MATCHES</Trans>}
-          body={
-            <Trans>
-              No entries match these filters. Clear a filter or adjust your
-              search.
-            </Trans>
-          }
-          action={{ label: <Trans>CLEAR ALL</Trans>, onClick: clearAllFilters }}
-        />
-      );
-    }
-    return (
-      <RetroEmptyState
-        eyebrow={<Trans>Inventory</Trans>}
-        glyph="◇"
-        heading={<Trans>NO STOCK ENTRIES</Trans>}
-        body={
-          <Trans>
-            Nothing is stocked yet. Add your first inventory entry to start
-            tracking quantity, location, and condition.
-          </Trans>
-        }
-        action={{ label: <Trans>⊕ ADD ENTRY</Trans>, onClick: goNew }}
-      />
-    );
-  }
-
-  // After client filtering, the page can be visibly empty even when the loaded
-  // page carried rows (a filter narrowed them all out).
-  const showEmpty = !isLoading && !isError && visible.length === 0;
 
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">
@@ -353,245 +219,57 @@ export function InventoryListPage() {
           }
         />
 
-        {isLoading && (
-          <p className="p-sp-4 font-mono text-13 text-fg-muted">
-            <Trans>Loading…</Trans>
-          </p>
-        )}
-
-        {isError && (
-          <p className="p-sp-4 text-13 font-semibold text-danger">
-            <Trans>Couldn't load inventory. Try again.</Trans>
-          </p>
-        )}
-
-        {showEmpty && <div className="p-sp-4">{renderEmpty()}</div>}
-
-        {!isLoading && !isError && visible.length > 0 && (
-          <>
-            <RetroTable>
-              <thead>
-                <tr>
-                  <th>{t`Item`}</th>
-                  <th>{t`Location`}</th>
-                  <th className="text-right">
-                    <button
-                      type="button"
-                      aria-label={t`Sort by quantity`}
-                      onClick={() => onSort("qty")}
-                      className="cursor-pointer font-bold uppercase tracking-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
-                    >
-                      {t`Qty`}
-                      <span aria-hidden="true">{sortGlyph("qty")}</span>
-                    </button>
-                  </th>
-                  <th>
-                    <button
-                      type="button"
-                      aria-label={t`Sort by status`}
-                      onClick={() => onSort("status")}
-                      className="cursor-pointer font-bold uppercase tracking-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
-                    >
-                      {t`Status`}
-                      <span aria-hidden="true">{sortGlyph("status")}</span>
-                    </button>
-                  </th>
-                  <th>
-                    <button
-                      type="button"
-                      aria-label={t`Sort by condition`}
-                      onClick={() => onSort("condition")}
-                      className="cursor-pointer font-bold uppercase tracking-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
-                    >
-                      {t`Condition`}
-                      <span aria-hidden="true">{sortGlyph("condition")}</span>
-                    </button>
-                  </th>
-                  <th>{t`Expiry`}</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {visible.map((entry) => {
-                  const archived = entry.is_archived;
-                  const name = itemName(entry.item_id);
-                  const expiry =
-                    entry.expiration_date ?? entry.warranty_expires;
-                  return (
-                    <tr
-                      key={entry.id}
-                      onClick={() => navigate(`/items/${entry.item_id}`)}
-                      className={`cursor-pointer ${archived ? "text-fg-muted" : ""}`}
-                    >
-                      <td className="font-semibold">
-                        {name ?? <span className="text-fg-muted">—</span>}
-                      </td>
-                      <td className="text-fg-muted">—</td>
-                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard to stop the row navigate; keyboard users focus the nested inline-edit control directly */}
-                      <td
-                        className="text-right"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <InlineEditCell
-                          field="quantity"
-                          value={entry.quantity}
-                          itemName={name ?? t`this entry`}
-                          disabled={archived}
-                          onCommit={(quantity) =>
-                            setQuantity({ id: entry.id, quantity })
-                          }
-                        />
-                      </td>
-                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard to stop the row navigate; keyboard users focus the nested inline-edit control directly */}
-                      <td onClick={(e) => e.stopPropagation()}>
-                        {archived && (
-                          <RetroBadge variant="neutral">
-                            <Trans>ARCHIVED</Trans>
-                          </RetroBadge>
-                        )}{" "}
-                        <InlineEditCell
-                          field="status"
-                          value={entry.status}
-                          itemName={name ?? t`this entry`}
-                          disabled={archived}
-                          onCommit={(status) =>
-                            setStatus({ id: entry.id, status })
-                          }
-                        />
-                      </td>
-                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard to stop the row navigate; keyboard users focus the nested inline-edit control directly */}
-                      <td onClick={(e) => e.stopPropagation()}>
-                        <InlineEditCell
-                          field="condition"
-                          value={entry.condition}
-                          itemName={name ?? t`this entry`}
-                          disabled={archived}
-                          onCommit={(condition) =>
-                            setCondition({
-                              id: entry.id,
-                              condition,
-                              location_id: entry.location_id,
-                              quantity: entry.quantity,
-                            })
-                          }
-                        />
-                      </td>
-                      <td className="mono text-fg-muted">
-                        {expiry ? expiry.slice(0, 10) : "—"}
-                      </td>
-                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard to stop the row navigate; keyboard users focus the nested action buttons directly */}
-                      <td
-                        className="actions text-right"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <span className="inline-flex gap-sp-1">
-                          {!archived && (
-                            <BevelButton onClick={() => onMove(entry)}>
-                              <Trans>MOVE</Trans>
-                            </BevelButton>
-                          )}
-                          {archived ? (
-                            <BevelButton
-                              variant="mint"
-                              onClick={() => restoreEntry(entry.id)}
-                            >
-                              <Trans>RESTORE</Trans>
-                            </BevelButton>
-                          ) : (
-                            <>
-                              <BevelButton
-                                onClick={() =>
-                                  navigate(`/inventory/${entry.id}/edit`)
-                                }
-                              >
-                                <Trans>EDIT</Trans>
-                              </BevelButton>
-                              <BevelButton
-                                onClick={() => archiveEntry(entry.id)}
-                              >
-                                <Trans>ARCHIVE</Trans>
-                              </BevelButton>
-                            </>
-                          )}
-                          <BevelButton
-                            aria-label={t`Movement history`}
-                            title={t`Movement history`}
-                            onClick={() => setMovementsId(entry.id)}
-                          >
-                            <Trans>↧</Trans>
-                          </BevelButton>
-                          {!archived && (
-                            <BevelButton
-                              aria-label={t`Repairs`}
-                              title={t`Repairs`}
-                              onClick={() => setRepairsId(entry.id)}
-                            >
-                              <Trans>🔧</Trans>
-                            </BevelButton>
-                          )}
-                          {!archived && (
-                            <BevelButton
-                              aria-label={t`Maintenance`}
-                              title={t`Maintenance`}
-                              onClick={() => setMaintenanceId(entry.id)}
-                            >
-                              <Trans>⟳</Trans>
-                            </BevelButton>
-                          )}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </RetroTable>
-
-            <RetroPagination
-              page={currentPage}
-              pageCount={Math.max(1, totalPages)}
-              perPage={INVENTORY_LIMIT}
-              onPageChange={(p) =>
-                setSearchParams((prev) => {
-                  const next = new URLSearchParams(prev);
-                  next.set("page", String(p));
-                  return next;
-                })
-              }
-            />
-          </>
-        )}
+        <InventoryResults
+          isLoading={isLoading}
+          isError={isError}
+          visible={visible}
+          itemName={itemName}
+          hasFilters={hasFilters}
+          onAdd={goNew}
+          onClearAll={clearAllFilters}
+          onSort={onSort}
+          sortGlyph={sortGlyph}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          perPage={INVENTORY_LIMIT}
+          onPageChange={(p) =>
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.set("page", String(p));
+              return next;
+            })
+          }
+          rowActions={{
+            onNavigateItem: (itemId) => navigate(`/items/${itemId}`),
+            onNavigateEdit: (id) => navigate(`/inventory/${id}/edit`),
+            onMove,
+            onArchive: archiveEntry,
+            onRestore: restoreEntry,
+            onSetQuantity: (id, quantity) => setQuantity({ id, quantity }),
+            onSetStatus: (id, status) => setStatus({ id, status }),
+            onSetCondition: (e, condition) =>
+              setCondition({
+                id: e.id,
+                condition,
+                location_id: e.location_id,
+                quantity: e.quantity,
+              }),
+            onMovements: setMovementsId,
+            onRepairs: setRepairsId,
+            onMaintenance: setMaintenanceId,
+          }}
+        />
       </Window>
 
-      <MovementsDrawer
-        invId={movementsId}
-        itemName={
-          movementsId
-            ? itemName(entries.find((e) => e.id === movementsId)?.item_id ?? "")
-            : undefined
-        }
-        onClose={() => setMovementsId(null)}
-      />
-
-      <RepairsDrawer
-        invId={repairsId}
-        itemName={
-          repairsId
-            ? itemName(entries.find((e) => e.id === repairsId)?.item_id ?? "")
-            : undefined
-        }
-        onClose={() => setRepairsId(null)}
-      />
-
-      <MaintenanceDrawer
-        invId={maintenanceId}
-        itemName={
-          maintenanceId
-            ? itemName(
-                entries.find((e) => e.id === maintenanceId)?.item_id ?? "",
-              )
-            : undefined
-        }
-        onClose={() => setMaintenanceId(null)}
+      <InventoryDrawers
+        entries={entries}
+        itemName={itemName}
+        movementsId={movementsId}
+        repairsId={repairsId}
+        maintenanceId={maintenanceId}
+        onCloseMovements={() => setMovementsId(null)}
+        onCloseRepairs={() => setRepairsId(null)}
+        onCloseMaintenance={() => setMaintenanceId(null)}
       />
 
       {/* MoveDialog seeds its target state from the entry on mount, so mount it
