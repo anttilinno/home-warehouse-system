@@ -37,3 +37,6 @@ Thumbs.db
 coverage*.out
 *_coverage.out
 internal/jobs/test_output.txt
+
+# depwire tool local state (per-machine health-history cache)
+.depwire/
