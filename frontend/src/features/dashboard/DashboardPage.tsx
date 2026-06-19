@@ -2,42 +2,22 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router";
-import {
-  RetroBadge,
-  type RetroBadgeVariant,
-  RetroTable,
-  StatCard,
-  Window,
-} from "@/components/retro";
+import { Window } from "@/components/retro";
 import { useShortcuts } from "@/components/shortcuts";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 import { get } from "@/lib/api";
 import type { DashboardStats, RecentActivity } from "@/lib/types";
 import { DashboardSideRail } from "./components/DashboardSideRail";
+import { DashboardStatTiles } from "./components/DashboardStatTiles";
+import { RecentActivityCard } from "./components/RecentActivityCard";
 import { HudRow } from "./components/HudRow";
-import { formatRelativeTime } from "./relativeTime";
 
-// Keys match warehouse.activity_action_enum verbatim (CREATE/UPDATE/DELETE/
-// MOVE/LOAN/RETURN — db/schema.sql); the backend returns action unmapped.
-const ACTION_BADGES: Record<string, RetroBadgeVariant> = {
-  CREATE: "ok",
-  UPDATE: "warn",
-  DELETE: "danger",
-  MOVE: "info",
-  LOAN: "info",
-  RETURN: "info",
-};
-
-// Activity rows can be days old. DASH-02: under 24h reads as a relative
-// interval ("Nm ago" / "Nh ago"), at/after 24h falls back to an absolute
-// date+time so older rows never read as "today". The formatter is the standalone
-// ./relativeTime util (unit-tested at the boundaries).
-
-// Retro-os dashboard (sketch 006): the stat windows + recent-activity table
-// over real DashboardStats + RecentActivity. As of Phase 3 the page lives
-// INSIDE AppShell — the shell owns the chrome (TopBar, Navigator, Bottombar,
-// PageHeader), so this component renders only the route body. Auth guard lives
-// in RequireAuth (the AppShell layout route).
+// Retro-os dashboard (sketch 006): the stat tiles (DashboardStatTiles) + the
+// recent-activity card (RecentActivityCard) over real DashboardStats +
+// RecentActivity. As of Phase 3 the page lives INSIDE AppShell — the shell owns
+// the chrome (TopBar, Navigator, Bottombar, PageHeader), so this component
+// renders only the route body. Auth guard lives in RequireAuth (the AppShell
+// layout route).
 export function DashboardPage() {
   const { t } = useLingui();
   const navigate = useNavigate();
@@ -104,59 +84,7 @@ export function DashboardPage() {
           right column on wide layouts and drops below the main column on narrow
           (lg:grid-cols-[1fr_320px] collapses to a single column). */}
       <div className="min-w-0">
-        <section className="mb-sp-5 grid grid-cols-2 gap-sp-4 lg:grid-cols-4 [&>*]:min-w-0">
-          <StatCard
-            label={<Trans>Items</Trans>}
-            value={s?.total_items ?? "—"}
-            sub={s && <Trans>{s.total_inventory} units total</Trans>}
-          />
-          <StatCard
-            label={<Trans>Loans</Trans>}
-            value={s?.active_loans ?? "—"}
-            sub={<Trans>active</Trans>}
-            titlebarVariant="mint"
-          />
-          <StatCard
-            label={<Trans>Overdue</Trans>}
-            value={s?.overdue_loans ?? "—"}
-            sub={<Trans>action needed</Trans>}
-            titlebarVariant="pink"
-            valueTone={s && s.overdue_loans > 0 ? "danger" : "ink"}
-          />
-          <StatCard
-            label={<Trans>Low stock</Trans>}
-            value={s?.low_stock_items ?? "—"}
-            sub={<Trans>below threshold</Trans>}
-            titlebarVariant="butter"
-            valueTone={s && s.low_stock_items > 0 ? "warn" : "ink"}
-          />
-        </section>
-
-        <section className="mb-sp-5 grid grid-cols-2 gap-sp-4 md:grid-cols-4 [&>*]:min-w-0">
-          {(
-            [
-              [t`Locations`, s?.total_locations],
-              [t`Containers`, s?.total_containers],
-              [t`Categories`, s?.total_categories],
-              [t`Borrowers`, s?.total_borrowers],
-            ] as const
-          ).map(([label, count]) => (
-            <div
-              key={label}
-              title={label}
-              // pr-sp-4 (not px-sp-3 both sides): the Silkscreen count is right-
-              // aligned and was clipping on the right bevel/border — give it extra
-              // right room. Label truncates (min-w-0) if the cell ever gets narrow
-              // so the count stays whole instead of the word shoving it off-edge.
-              className="flex items-baseline justify-between gap-sp-2 border-2 border-border-ink bg-bg-panel py-sp-2 pl-sp-3 pr-sp-4 text-12 font-semibold uppercase tracking-6 text-fg-muted bevel-raised-ink"
-            >
-              <span className="min-w-0 truncate">{label}</span>
-              <b className="flex-none font-display text-16 leading-none text-fg-ink">
-                {count ?? "—"}
-              </b>
-            </div>
-          ))}
-        </section>
+        <DashboardStatTiles stats={s} />
 
         {/* DASH-04: the flag-gated HUD row (self-gates on VITE_FEATURE_HUD_ROLLUPS;
           renders null by default → the dashboard is identical to today). */}
@@ -164,91 +92,7 @@ export function DashboardPage() {
           <HudRow stats={s} />
         </div>
 
-        <Window
-          title={<Trans>Recent activity</Trans>}
-          actions={<span className="font-mono text-11">limit=10</span>}
-          bodyClassName=""
-        >
-          {!activity.data && !activity.isError && (
-            <p className="p-sp-4 font-mono text-13 text-fg-muted">
-              <Trans>Loading…</Trans>
-            </p>
-          )}
-          {activity.isError && (
-            <p className="p-sp-4 text-13 font-semibold text-danger">
-              <Trans>Could not load activity.</Trans>
-            </p>
-          )}
-          {activity.data && (
-            <RetroTable>
-              <thead>
-                <tr>
-                  <th>
-                    <Trans>Time</Trans>
-                  </th>
-                  <th>
-                    <Trans>Action</Trans>
-                  </th>
-                  <th>
-                    <Trans>Entity</Trans>
-                  </th>
-                  <th>
-                    <Trans>Actor</Trans>
-                  </th>
-                  <th>
-                    <Trans>Status</Trans>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.data.map((row) => (
-                  <tr key={row.id}>
-                    {/* DASH-02: relative under 24h, absolute after (./relativeTime). */}
-                    <td className="mono">
-                      {formatRelativeTime(row.created_at)}
-                    </td>
-                    <td>{row.action}</td>
-                    {/* Entity type with the entity_name folded in as a secondary
-                      line so no data is lost when the Name column is dropped. */}
-                    <td>
-                      <span className="block">{row.entity_type}</span>
-                      {row.entity_name && (
-                        <span className="block text-12 text-fg-muted">
-                          {row.entity_name}
-                        </span>
-                      )}
-                    </td>
-                    {/* Actor: the raw user_id slug (no actor name on the wire —
-                      RecentActivity carries user_id? only). "—" when absent. */}
-                    <td className="mono">
-                      {row.user_id ? row.user_id.slice(0, 8) : "—"}
-                    </td>
-                    {/* Status: a pill DERIVED from `action` via ACTION_BADGES —
-                      RecentActivity has NO status field; this is honestly an
-                      action-derived badge (T-13-10), never a fabricated server
-                      status. */}
-                    <td>
-                      <RetroBadge
-                        variant={
-                          ACTION_BADGES[row.action.toUpperCase()] ?? "neutral"
-                        }
-                      >
-                        {row.action}
-                      </RetroBadge>
-                    </td>
-                  </tr>
-                ))}
-                {activity.data.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="text-fg-muted">
-                      <Trans>No activity yet.</Trans>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </RetroTable>
-          )}
-        </Window>
+        <RecentActivityCard data={activity.data} isError={activity.isError} />
       </div>
 
       {/* DASH-03: the right side rail (Pending Approvals above System Alerts).
