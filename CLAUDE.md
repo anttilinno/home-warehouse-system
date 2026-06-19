@@ -99,12 +99,20 @@ reaches master. `mise run setup` enables it; otherwise run once:
   gocognit/gocyclo analog), and a **duplication ceiling** (`jscpd` over `src`,
   `--threshold 4`, the dupl analog). The tree is at zero functions over 15 and
   ~3% duplication, so legacy never trips either gate; a regression does.
-  Inspect on demand with `bun run lint:complexity` / `bun run lint:dup` /
-  `bun run lint:dead` (knip — not gated; needs `ignoreDependencies` tuning
-  first, vite/CSS deps read as false positives).
+  a **dead-code gate** (`bun run lint:dead` — knip, scoped to unused FILES +
+  dependency drift; the barrel-export reporting is off, see `knip.json` rules).
+  The tree is at zero functions over 15, ~3% duplication, and clean knip, so
+  legacy never trips any gate; a regression does. Inspect on demand with
+  `bun run lint:complexity` / `bun run lint:dup`.
 - jscpd can't gate per-file (it globs within given paths), so the dup gate is a
-  whole-tree ceiling rather than a strict new-from-base diff; complexity gates
-  the whole tree (safe — zero baseline).
+  whole-tree ceiling rather than a strict new-from-base diff; complexity + knip
+  gate the whole tree (safe — clean baseline).
+- knip caveats: vite/CSS-only deps (`@fontsource/*`, `tailwindcss`,
+  `@lingui/swc-plugin`, `rollup-plugin-visualizer`) are in `ignoreDependencies`
+  (knip can't see CSS/vite usage). `src/lib/scanner/init-polyfill.ts` is in
+  `ignore` — a side-effect polyfill module that nothing imports yet; it must be
+  wired by the scanner component in the v3.0 scan rebuild (until then the
+  Barcode Detection polyfill never registers on Safari/Firefox).
 - Runs only for the changed side of the tree. Bypass: `git push --no-verify`.
 - Rationale + the full SonarQube remediation context: `docs/sonarqube/`.
 

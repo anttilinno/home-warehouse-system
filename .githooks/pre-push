@@ -47,6 +47,12 @@ if grep -q '^frontend/' <<<"$CHANGED"; then
     # at zero offenders, so the config ERRORS on any regression anywhere. Mirrors
     # the backend gocognit/gocyclo gate.
     bun run lint:complexity || exit 1
+    # Dead-code gate (knip). Scoped to high-signal categories — unused FILES +
+    # dependency drift (unused/unlisted/unresolved/binaries); the noisy
+    # barrel-export reporting is off (see knip.json rules). The tree is clean,
+    # so a newly-orphaned file or a stray dep blocks. `lint:dead` (same command)
+    # is the on-demand report.
+    bun run lint:dead || exit 1
     # Duplication ceiling (dupl analog). jscpd can't gate per-file (it globs
     # within paths, so a file list scans nothing), so this is a whole-tree
     # CEILING rather than a strict new-from-base diff: the current tree sits
