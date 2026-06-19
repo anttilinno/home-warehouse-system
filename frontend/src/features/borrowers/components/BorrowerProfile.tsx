@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Trans } from "@lingui/react/macro";
 import type { Borrower } from "@/lib/api/borrowers";
 
