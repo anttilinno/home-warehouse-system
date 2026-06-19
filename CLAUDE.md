@@ -107,12 +107,9 @@ reaches master. `mise run setup` enables it; otherwise run once:
 - jscpd can't gate per-file (it globs within given paths), so the dup gate is a
   whole-tree ceiling rather than a strict new-from-base diff; complexity + knip
   gate the whole tree (safe — clean baseline).
-- knip caveats: vite/CSS-only deps (`@fontsource/*`, `tailwindcss`,
+- knip caveat: vite/CSS-only deps (`@fontsource/*`, `tailwindcss`,
   `@lingui/swc-plugin`, `rollup-plugin-visualizer`) are in `ignoreDependencies`
-  (knip can't see CSS/vite usage). `src/lib/scanner/init-polyfill.ts` is in
-  `ignore` — a side-effect polyfill module that nothing imports yet; it must be
-  wired by the scanner component in the v3.0 scan rebuild (until then the
-  Barcode Detection polyfill never registers on Safari/Firefox).
+  (knip can't see CSS/vite usage).
 - Runs only for the changed side of the tree. Bypass: `git push --no-verify`.
 - Rationale + the full SonarQube remediation context: `docs/sonarqube/`.
 

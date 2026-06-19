@@ -8,10 +8,7 @@
     "playwright.config.ts"
   ],
   "project": ["src/**/*.{ts,tsx}"],
-  "ignore": [
-    "src/vite-env.d.ts",
-    "src/lib/scanner/init-polyfill.ts"
-  ],
+  "ignore": ["src/vite-env.d.ts"],
   "ignoreDependencies": [
     "@fontsource/ibm-plex-mono",
     "@fontsource/ibm-plex-sans",
