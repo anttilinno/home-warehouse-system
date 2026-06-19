@@ -1,6 +1,11 @@
 import { useCallback } from "react";
 import { Scanner, type IDetectedBarcode } from "@yudiel/react-qr-scanner";
 import { SUPPORTED_FORMATS } from "@/lib/scanner";
+// Side-effect import: registers the barcode-detector polyfill (idempotent,
+// no-ops when a native BarcodeDetector exists) so the Scanner below can decode
+// on Safari/Firefox. THE scanner component is the prescribed registration site
+// (see lib/scanner/index.ts) — direct path, never the barrel.
+import "@/lib/scanner/init-polyfill";
 
 export interface BarcodeScannerProps {
   /**

@@ -2,13 +2,7 @@ import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trans, useLingui } from "@lingui/react/macro";
-import {
-  RetroDialog,
-  RetroConfirmDialog,
-  RetroInput,
-  RetroTextarea,
-  BevelButton,
-} from "@/components/retro";
+import { RetroDialog, BevelButton } from "@/components/retro";
 import type { Label } from "@/lib/types";
 import type { CreateLabelBody } from "@/lib/api/labels";
 import {
@@ -21,6 +15,8 @@ import {
   type UpdateLabelArg,
 } from "../hooks/useLabelMutations";
 import { ColorSwatchPicker } from "./ColorSwatchPicker";
+import { DiscardChangesDialog, FormRootError } from "./TaxonomyDialogForm";
+import { DescriptionField, NameField } from "./TaxonomyFormFields";
 
 // Phase 10 Plan 04 — the label create/edit form. Unlike the routed
 // category/location/container forms, the label form is an INLINE RetroDialog (no
@@ -142,23 +138,9 @@ export function LabelFormDialog({
           noValidate
           className="flex flex-col gap-sp-4"
         >
-          {errors.root?.message && (
-            <div
-              role="alert"
-              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
-            >
-              <span aria-hidden="true">✕ </span>
-              {errors.root.message}
-            </div>
-          )}
+          <FormRootError message={errors.root?.message} />
 
-          <RetroInput
-            label={<Trans>Name</Trans>}
-            required
-            aria-required="true"
-            error={errors.name?.message}
-            {...register("name")}
-          />
+          <NameField register={register("name")} error={errors.name?.message} />
 
           <div className="flex flex-col gap-sp-2">
             <span className="text-11 font-bold uppercase tracking-8 text-fg-muted">
@@ -183,35 +165,21 @@ export function LabelFormDialog({
             </p>
           </div>
 
-          <div className="flex flex-col gap-sp-2">
-            <RetroTextarea
-              label={<Trans>Description</Trans>}
-              error={errors.description?.message}
-              {...register("description")}
-            />
-            <p className="text-12 text-fg-muted">
-              <Trans>Optional.</Trans>
-            </p>
-          </div>
+          <DescriptionField
+            register={register("description")}
+            error={errors.description?.message}
+          />
         </form>
       </RetroDialog>
 
-      <RetroConfirmDialog
+      <DiscardChangesDialog
         open={discardOpen}
-        title={<Trans>DISCARD CHANGES?</Trans>}
-        titlebarVariant="butter"
-        confirmVariant="neutral"
-        confirmLabel={<Trans>Discard</Trans>}
-        cancelLabel={<Trans>Keep editing</Trans>}
         onConfirm={() => {
           setDiscardOpen(false);
           onClose();
         }}
         onCancel={() => setDiscardOpen(false)}
-        onClose={() => setDiscardOpen(false)}
-      >
-        <Trans>Your edits will be lost.</Trans>
-      </RetroConfirmDialog>
+      />
     </>
   );
 }

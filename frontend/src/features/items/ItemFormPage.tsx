@@ -8,14 +8,12 @@ import {
   Window,
   BevelButton,
   RetroInput,
-  RetroBadge,
-  RetroFormField,
   RetroCombobox,
   RetroTextarea,
   RetroConfirmDialog,
   retroToast,
 } from "@/components/retro";
-import { UpcSuggestionBanner, type UpcSuggestion } from "@/components/scan";
+import type { UpcSuggestion } from "@/components/scan";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 import { itemsApi } from "@/lib/api/items";
 import type { Item } from "@/lib/types";
@@ -28,6 +26,8 @@ import {
   useItemFormMutations,
   type DirtyMap,
 } from "./hooks/useItemFormMutations";
+import { SkuField } from "./components/SkuField";
+import { BarcodeField } from "./components/BarcodeField";
 
 // Phase 7 Plan 05 — create/edit item form (ITEM-03 + ITEM-04).
 //
@@ -84,9 +84,10 @@ export function ItemFormPage() {
   // brand rides along in the create POST body (the backend item entity owns
   // `brand`; the form has no brand field by design — binding override 5, so it is
   // threaded straight to the payload rather than rendered as an input).
-  const prefillBarcode = searchParams.get("barcode") ?? "";
-  const prefillName = searchParams.get("name") ?? "";
-  const prefillBrand = searchParams.get("brand") ?? "";
+  const param = (key: string) => searchParams.get(key) ?? "";
+  const prefillBarcode = param("barcode");
+  const prefillName = param("name");
+  const prefillBrand = param("brand");
   const showFromScan = !isEdit && prefillBarcode.length > 0;
 
   // SCAN-10: the UPC suggestion banner self-fetches GET /barcode/{code} for a
@@ -244,35 +245,11 @@ export function ItemFormPage() {
             {/* SKU — required + editable on create; immutable (read-only) on
                 edit (the backend PATCH input has no `sku`). RetroFormField so the
                 edit-mode hint can sit below the disabled control. */}
-            <RetroFormField
-              label={<Trans>SKU</Trans>}
-              required={!isEdit}
-              hint={
-                isEdit ? (
-                  <Trans>SKU can't be changed after an item is created.</Trans>
-                ) : undefined
-              }
+            <SkuField
+              isEdit={isEdit}
               error={errors.sku?.message}
-            >
-              {(fieldId, describedBy) => (
-                <input
-                  id={fieldId}
-                  type="text"
-                  required={!isEdit}
-                  aria-required={isEdit ? undefined : "true"}
-                  disabled={isEdit}
-                  readOnly={isEdit}
-                  aria-invalid={errors.sku ? true : undefined}
-                  aria-describedby={describedBy}
-                  className={`w-full border-2 px-[10px] py-[7px] font-mono text-14 text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue disabled:cursor-not-allowed disabled:text-fg-muted ${
-                    errors.sku
-                      ? "border-danger bg-danger-bg"
-                      : "border-border-ink bg-bg-panel"
-                  }`}
-                  {...register("sku")}
-                />
-              )}
-            </RetroFormField>
+              register={register("sku")}
+            />
             <RetroInput
               label={<Trans>Name</Trans>}
               required
@@ -318,54 +295,21 @@ export function ItemFormPage() {
               error={errors.minStock?.message}
               {...register("minStock")}
             />
-            {/* Barcode uses RetroFormField so the FROM SCAN badge can sit in the
-                label row (right-aligned) per UI-SPEC §3. */}
-            <RetroFormField
-              label={
-                <span className="flex items-center justify-between gap-sp-2">
-                  <Trans>Barcode</Trans>
-                  {showFromScan && (
-                    <RetroBadge variant="info">
-                      <Trans>FROM SCAN</Trans>
-                    </RetroBadge>
-                  )}
-                </span>
-              }
-              hint={
-                showFromScan ? (
-                  <Trans>Prefilled from scan — edit if needed.</Trans>
-                ) : undefined
-              }
+            <BarcodeField
+              showFromScan={showFromScan}
               error={errors.barcode?.message}
-            >
-              {(fieldId, describedBy) => (
-                <input
-                  id={fieldId}
-                  type="text"
-                  aria-invalid={errors.barcode ? true : undefined}
-                  aria-describedby={describedBy}
-                  className={`w-full border-2 px-[10px] py-[7px] font-mono text-14 text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue ${
-                    errors.barcode
-                      ? "border-danger bg-danger-bg"
-                      : "border-border-ink bg-bg-panel"
-                  }`}
-                  {...register("barcode")}
-                />
-              )}
-            </RetroFormField>
-            {showFromScan && !upcDismissed && (
-              <UpcSuggestionBanner
-                code={prefillBarcode}
-                onUse={(s: UpcSuggestion) => {
-                  setValue("name", s.name, {
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  });
-                  if (s.brand !== undefined) setScanBrand(s.brand);
-                }}
-                onDismiss={() => setUpcDismissed(true)}
-              />
-            )}
+              register={register("barcode")}
+              code={prefillBarcode}
+              upcDismissed={upcDismissed}
+              onUse={(s: UpcSuggestion) => {
+                setValue("name", s.name, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                });
+                if (s.brand !== undefined) setScanBrand(s.brand);
+              }}
+              onDismiss={() => setUpcDismissed(true)}
+            />
           </div>
 
           {/* Group 3 — Notes */}

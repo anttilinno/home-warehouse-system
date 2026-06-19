@@ -12,6 +12,7 @@ import type { TreeNode } from "@/features/taxonomy/lib/buildTree";
 import { useLocationsQuery } from "../hooks/useLocationsQuery";
 import { useLocationMutations } from "../hooks/useLocationMutations";
 import { LocationFormDialog } from "./LocationFormDialog";
+import { TaxonomyTabState } from "./TaxonomyTabState";
 
 // Phase 10 Plan 03 — the Locations tab (TAX-03 tree + CRUD, TAX-04 archive).
 // Filled IN-PLACE over the W2 stub; export name `LocationsTab` UNCHANGED so the
@@ -91,88 +92,71 @@ export function LocationsTab() {
     restoreLocation({ id: node.id, name: node.name });
   }
 
-  if (isError) {
-    return (
-      <div className="flex flex-col items-start gap-sp-3">
-        <p className="text-14 font-semibold text-danger">
-          <Trans>COULDN'T LOAD LOCATIONS</Trans>
-        </p>
-        <p className="text-13 text-fg-muted">
-          <Trans>Something went wrong. Try again.</Trans>
-        </p>
-        <BevelButton onClick={() => refetch()}>
-          <Trans>RETRY</Trans>
-        </BevelButton>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <p className="font-mono text-13 text-fg-muted">
-        <Trans>Loading…</Trans>
-      </p>
-    );
-  }
-
   return (
-    <div className="flex flex-col gap-sp-3">
-      <div className="flex items-center">
-        <BevelButton variant="mint" onClick={openCreateRoot}>
-          <Trans>⊕ ADD ROOT LOCATION</Trans>
-        </BevelButton>
-      </div>
+    <TaxonomyTabState
+      isError={isError}
+      isLoading={isLoading}
+      errorTitle={<Trans>COULDN'T LOAD LOCATIONS</Trans>}
+      onRetry={() => refetch()}
+    >
+      <div className="flex flex-col gap-sp-3">
+        <div className="flex items-center">
+          <BevelButton variant="mint" onClick={openCreateRoot}>
+            <Trans>⊕ ADD ROOT LOCATION</Trans>
+          </BevelButton>
+        </div>
 
-      <RetroTree
-        nodes={nodes}
-        storageKey="taxonomy:tree:locations"
-        onAddChild={openAddChild}
-        onEdit={openEdit}
-        onArchive={openArchive}
-        onRestore={onRestore}
-        emptyState={
-          <RetroEmptyState
-            eyebrow={<Trans>Taxonomy</Trans>}
-            glyph="◇"
-            heading={<Trans>NO LOCATIONS YET</Trans>}
-            body={
-              <Trans>
-                Add your first location — a room, shelf, or area. Nest
-                sub-locations to mirror your space.
-              </Trans>
-            }
-            action={{
-              label: <Trans>⊕ ADD ROOT LOCATION</Trans>,
-              onClick: openCreateRoot,
-            }}
-          />
-        }
-      />
+        <RetroTree
+          nodes={nodes}
+          storageKey="taxonomy:tree:locations"
+          onAddChild={openAddChild}
+          onEdit={openEdit}
+          onArchive={openArchive}
+          onRestore={onRestore}
+          emptyState={
+            <RetroEmptyState
+              eyebrow={<Trans>Taxonomy</Trans>}
+              glyph="◇"
+              heading={<Trans>NO LOCATIONS YET</Trans>}
+              body={
+                <Trans>
+                  Add your first location — a room, shelf, or area. Nest
+                  sub-locations to mirror your space.
+                </Trans>
+              }
+              action={{
+                label: <Trans>⊕ ADD ROOT LOCATION</Trans>,
+                onClick: openCreateRoot,
+              }}
+            />
+          }
+        />
 
-      {/* TAX-04 archive confirm (butter, non-destructive). Locations are
+        {/* TAX-04 archive confirm (butter, non-destructive). Locations are
           ARCHIVE-ONLY — no usage-count fetch, plain butter copy. */}
-      <RetroConfirmDialog
-        open={archiveTarget !== null}
-        title={<Trans>ARCHIVE LOCATION?</Trans>}
-        titlebarVariant="butter"
-        confirmVariant="neutral"
-        confirmLabel={<Trans>Archive</Trans>}
-        cancelLabel={<Trans>Cancel</Trans>}
-        onConfirm={confirmArchive}
-        onCancel={() => setArchiveTarget(null)}
-        onClose={() => setArchiveTarget(null)}
-      >
-        <span>
-          {t`Archive "${archiveTarget?.name ?? ""}"? You can restore it later.`}
-        </span>
-      </RetroConfirmDialog>
+        <RetroConfirmDialog
+          open={archiveTarget !== null}
+          title={<Trans>ARCHIVE LOCATION?</Trans>}
+          titlebarVariant="butter"
+          confirmVariant="neutral"
+          confirmLabel={<Trans>Archive</Trans>}
+          cancelLabel={<Trans>Cancel</Trans>}
+          onConfirm={confirmArchive}
+          onCancel={() => setArchiveTarget(null)}
+          onClose={() => setArchiveTarget(null)}
+        >
+          <span>
+            {t`Archive "${archiveTarget?.name ?? ""}"? You can restore it later.`}
+          </span>
+        </RetroConfirmDialog>
 
-      <LocationFormDialog
-        open={form.open}
-        location={form.location}
-        parentId={form.parentId}
-        onClose={closeForm}
-      />
-    </div>
+        <LocationFormDialog
+          open={form.open}
+          location={form.location}
+          parentId={form.parentId}
+          onClose={closeForm}
+        />
+      </div>
+    </TaxonomyTabState>
   );
 }

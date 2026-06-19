@@ -1,16 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trans, useLingui } from "@lingui/react/macro";
-import {
-  BevelButton,
-  RetroInput,
-  RetroTextarea,
-  RetroCombobox,
-  RetroConfirmDialog,
-  RetroDialog,
-  type RetroComboboxOption,
-} from "@/components/retro";
+import { RetroCombobox, type RetroComboboxOption } from "@/components/retro";
 import type { Location, CreateLocationBody } from "@/lib/api/location";
 import {
   locationSchema,
@@ -23,6 +15,12 @@ import {
   type UpdateLocationArg,
 } from "../hooks/useLocationMutations";
 import { buildTree, type TreeNode } from "@/features/taxonomy/lib/buildTree";
+import { TaxonomyDialogForm } from "./TaxonomyDialogForm";
+import {
+  DescriptionField,
+  NameField,
+  ShortCodeField,
+} from "./TaxonomyFormFields";
 
 // Phase 10 Plan 03 — the location create/edit form (TAX-03). Unlike the routed
 // CategoryFormDialog, this is an INLINE RetroDialog (no route — the W2
@@ -123,14 +121,6 @@ export function LocationFormDialog({
 
   const parentValue = watch("parent_location") ?? "";
 
-  // Dirty-form close guard.
-  const [confirmDiscard, setConfirmDiscard] = useState(false);
-
-  function attemptClose() {
-    if (isDirty) setConfirmDiscard(true);
-    else onClose();
-  }
-
   async function onSubmit(raw: LocationFormInput) {
     const values: LocationFormValues = locationSchema.parse(raw);
     // OMIT-EMPTY: a blank optional is never sent as "".
@@ -156,105 +146,43 @@ export function LocationFormDialog({
   const submitLabel = isEdit ? t`Save changes` : t`Save location`;
 
   return (
-    <>
-      <RetroDialog
-        open={open}
-        onClose={attemptClose}
-        title={titleText}
-        titlebarVariant="blue"
-      >
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-          className="flex flex-col gap-sp-4"
-        >
-          {errors.root?.message && (
-            <div
-              role="alert"
-              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
-            >
-              <span aria-hidden="true">✕ </span>
-              {errors.root.message}
-            </div>
-          )}
+    <TaxonomyDialogForm
+      open={open}
+      title={titleText}
+      submitLabel={submitLabel}
+      isSubmitting={isSubmitting}
+      isDirty={isDirty}
+      rootError={errors.root?.message}
+      onSubmit={handleSubmit(onSubmit)}
+      onClose={onClose}
+    >
+      <NameField register={register("name")} error={errors.name?.message} />
 
-          <RetroInput
-            label={<Trans>Name</Trans>}
-            required
-            aria-required="true"
-            error={errors.name?.message}
-            {...register("name")}
-          />
+      <div className="flex flex-col gap-sp-2">
+        <RetroCombobox
+          label={<Trans>Parent location</Trans>}
+          options={parentOptions}
+          value={parentValue}
+          onChange={(v) =>
+            setValue("parent_location", v, { shouldDirty: true })
+          }
+          placeholder={t`(Root — no parent)`}
+          error={errors.parent_location?.message}
+        />
+        <p className="text-12 text-fg-muted">
+          <Trans>Leave empty to create a top-level location.</Trans>
+        </p>
+      </div>
 
-          <div className="flex flex-col gap-sp-2">
-            <RetroCombobox
-              label={<Trans>Parent location</Trans>}
-              options={parentOptions}
-              value={parentValue}
-              onChange={(v) =>
-                setValue("parent_location", v, { shouldDirty: true })
-              }
-              placeholder={t`(Root — no parent)`}
-              error={errors.parent_location?.message}
-            />
-            <p className="text-12 text-fg-muted">
-              <Trans>Leave empty to create a top-level location.</Trans>
-            </p>
-          </div>
+      <DescriptionField
+        register={register("description")}
+        error={errors.description?.message}
+      />
 
-          <div className="flex flex-col gap-sp-2">
-            <RetroTextarea
-              label={<Trans>Description</Trans>}
-              error={errors.description?.message}
-              {...register("description")}
-            />
-            <p className="text-12 text-fg-muted">
-              <Trans>Optional.</Trans>
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-sp-2">
-            <RetroInput
-              label={<Trans>Short code</Trans>}
-              error={errors.short_code?.message}
-              {...register("short_code")}
-            />
-            <p className="text-12 text-fg-muted">
-              <Trans>Optional — auto-generated if left blank.</Trans>
-            </p>
-          </div>
-
-          <div className="flex justify-end gap-sp-2 border-t-2 border-border-ink pt-sp-3">
-            <BevelButton type="button" variant="neutral" onClick={attemptClose}>
-              <Trans>Cancel</Trans>
-            </BevelButton>
-            <BevelButton
-              type="submit"
-              variant="primary"
-              disabled={isSubmitting}
-            >
-              {submitLabel}
-            </BevelButton>
-          </div>
-        </form>
-      </RetroDialog>
-
-      <RetroConfirmDialog
-        open={confirmDiscard}
-        title={<Trans>DISCARD CHANGES?</Trans>}
-        titlebarVariant="butter"
-        confirmVariant="neutral"
-        confirmLabel={<Trans>Discard</Trans>}
-        cancelLabel={<Trans>Keep editing</Trans>}
-        onConfirm={() => {
-          setConfirmDiscard(false);
-          onClose();
-        }}
-        onCancel={() => setConfirmDiscard(false)}
-        onClose={() => setConfirmDiscard(false)}
-      >
-        <Trans>Your edits will be lost.</Trans>
-      </RetroConfirmDialog>
-    </>
+      <ShortCodeField
+        register={register("short_code")}
+        error={errors.short_code?.message}
+      />
+    </TaxonomyDialogForm>
   );
 }

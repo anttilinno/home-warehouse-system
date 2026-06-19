@@ -1,14 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Trans, useLingui } from "@lingui/react/macro";
-import {
-  BevelButton,
-  RetroBadge,
-  RetroConfirmDialog,
-  useTableSelection,
-} from "@/components/retro";
+import { Trans } from "@lingui/react/macro";
+import { RetroConfirmDialog, useTableSelection } from "@/components/retro";
 import { photosApi } from "@/lib/api/photos";
 import { usePhotoMutations } from "../hooks/usePhotoMutations";
 import { CaptionDialog } from "./CaptionDialog";
+import { PhotoTile } from "./PhotoTile";
+import { PhotoGalleryToolbar } from "./PhotoGalleryToolbar";
 
 // Phase 10b Plan 03 — DATA SEAM (single-writer). PhotoGallery is shared between
 // item photos and repair photos. The grid + caption/delete affordances are
@@ -92,7 +89,6 @@ export function PhotoGallery({
   canBulk = true,
   canDownloadZip = true,
 }: Readonly<PhotoGalleryProps>) {
-  const { t } = useLingui();
   const itemMutations = usePhotoMutations(wsId, itemId);
   // SEAM: injected mutations win; default to the item photo hook.
   const { setPrimary, updateCaption, del, bulkDelete, bulkCaption, reorder } =
@@ -137,63 +133,31 @@ export function PhotoGallery({
     );
   }
 
+  const showSetPrimary = canSetPrimary && Boolean(setPrimary);
+  const showReorder = canReorder && Boolean(reorder);
+
   return (
     <div className="flex flex-col gap-sp-2">
-      {/* Toolbar — SELECT (bulk) + DOWNLOAD (zip); both capability-gated. */}
-      {(canBulk || canDownloadZip) && (
-        <div className="flex items-center gap-sp-2 bg-bg-panel-2 p-sp-2">
-          {canBulk && (
-            <BevelButton
-              aria-pressed={selecting}
-              onClick={() => {
-                setSelecting((s) => !s);
-                selection.clear();
-              }}
-            >
-              <Trans>SELECT</Trans>
-            </BevelButton>
-          )}
-          <span className="flex-1" />
-          {canDownloadZip && (
-            <BevelButton
-              onClick={() =>
-                photosApi.downloadZip(
-                  wsId,
-                  itemId,
-                  selectedIds.length ? selectedIds : undefined,
-                )
-              }
-            >
-              {selectedIds.length ? (
-                <Trans>⤓ DOWNLOAD {selectedIds.length}</Trans>
-              ) : (
-                <Trans>⤓ DOWNLOAD ALL</Trans>
-              )}
-            </BevelButton>
-          )}
-        </div>
-      )}
-
-      {/* Bulk action bar */}
-      {canBulk && selecting && selectedIds.length > 0 && (
-        <div
-          data-testid="bulk-action-bar"
-          className="flex items-center gap-sp-2 bg-bg-panel-2 p-sp-2"
-        >
-          <RetroBadge variant="info">
-            <Trans>{selectedIds.length} SELECTED</Trans>
-          </RetroBadge>
-          <BevelButton onClick={() => setBulkCaptionOpen(true)}>
-            <Trans>EDIT CAPTION</Trans>
-          </BevelButton>
-          <BevelButton variant="danger" onClick={() => setBulkDeleteOpen(true)}>
-            <Trans>DELETE</Trans>
-          </BevelButton>
-          <BevelButton onClick={() => selection.clear()}>
-            <Trans>✕ CLEAR</Trans>
-          </BevelButton>
-        </div>
-      )}
+      <PhotoGalleryToolbar
+        canBulk={canBulk}
+        canDownloadZip={canDownloadZip}
+        selecting={selecting}
+        selectedCount={selectedIds.length}
+        onToggleSelecting={() => {
+          setSelecting((s) => !s);
+          selection.clear();
+        }}
+        onDownload={() =>
+          photosApi.downloadZip(
+            wsId,
+            itemId,
+            selectedIds.length ? selectedIds : undefined,
+          )
+        }
+        onBulkCaption={() => setBulkCaptionOpen(true)}
+        onBulkDelete={() => setBulkDeleteOpen(true)}
+        onClearSelection={() => selection.clear()}
+      />
 
       {/* Grid */}
       <ul
@@ -202,119 +166,33 @@ export function PhotoGallery({
           gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))",
         }}
       >
-        {order.map((photo, index) => {
-          const isSelected = selection.selected.has(photo.id);
-          return (
-            <li
-              key={photo.id}
-              className={`group relative h-24 w-24 border-2 ${
-                isSelected
-                  ? "border-border-ink ring-2 ring-titlebar-blue"
-                  : "border-border-ink"
-              }`}
-            >
-              <button
-                type="button"
-                aria-label={
-                  selecting
-                    ? t`Toggle ${photo.caption ?? photo.filename}`
-                    : t`Open ${photo.caption ?? photo.filename}`
-                }
-                aria-pressed={selecting ? isSelected : undefined}
-                onClick={(e) => {
-                  if (selecting) {
-                    // In gallery select mode each tile TOGGLES independently —
-                    // force the ctrl/cmd toggle path of useTableSelection so a
-                    // plain click adds/removes rather than single-selecting.
-                    selection.onRowClick(photo.id, {
-                      shiftKey: e.shiftKey,
-                      metaKey: true,
-                      ctrlKey: true,
-                    });
-                  } else {
-                    onOpenLightbox(index);
-                  }
-                }}
-                className="block h-full w-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
-              >
-                <img
-                  src={photo.thumbnail_url}
-                  alt={photo.caption ?? photo.filename}
-                  className="h-full w-full object-cover"
-                />
-              </button>
-
-              {/* Primary badge / set-primary (capability-gated) */}
-              {photo.is_primary ? (
-                <span className="absolute left-[2px] top-[2px]">
-                  <RetroBadge variant="info">
-                    <Trans>★ PRIMARY</Trans>
-                  </RetroBadge>
-                </span>
-              ) : (
-                canSetPrimary &&
-                setPrimary &&
-                !selecting && (
-                  <BevelButton
-                    className="absolute left-[2px] top-[2px] !px-[6px] !py-[1px] !text-10 opacity-0 focus-visible:opacity-100 group-hover:opacity-100"
-                    onClick={() => setPrimary.mutate(photo.id)}
-                  >
-                    <Trans>★ SET PRIMARY</Trans>
-                  </BevelButton>
-                )
-              )}
-
-              {/* Per-photo controls (hidden in select mode) */}
-              {!selecting && (
-                <div className="absolute inset-x-[2px] bottom-[2px] flex items-center justify-between opacity-0 focus-within:opacity-100 group-hover:opacity-100">
-                  <span className="flex gap-[2px]">
-                    {canReorder && reorder && (
-                      <>
-                        <BevelButton
-                          className="!px-[5px] !py-px !text-10"
-                          aria-label={t`Move ${photo.caption ?? photo.filename} earlier`}
-                          title={t`Move ${photo.caption ?? photo.filename} earlier`}
-                          disabled={index === 0}
-                          onClick={() => move(index, -1)}
-                        >
-                          ◂
-                        </BevelButton>
-                        <BevelButton
-                          className="!px-[5px] !py-px !text-10"
-                          aria-label={t`Move ${photo.caption ?? photo.filename} later`}
-                          title={t`Move ${photo.caption ?? photo.filename} later`}
-                          disabled={index === order.length - 1}
-                          onClick={() => move(index, 1)}
-                        >
-                          ▸
-                        </BevelButton>
-                      </>
-                    )}
-                  </span>
-                  <span className="flex gap-[2px]">
-                    <BevelButton
-                      className="!px-[5px] !py-px !text-10"
-                      aria-label={t`Edit caption for ${photo.filename}`}
-                      title={t`Edit caption for ${photo.filename}`}
-                      onClick={() => setCaptionTarget(photo)}
-                    >
-                      ✎
-                    </BevelButton>
-                    <BevelButton
-                      variant="danger"
-                      className="!px-[5px] !py-px !text-10"
-                      aria-label={t`Delete ${photo.filename}`}
-                      title={t`Delete ${photo.filename}`}
-                      onClick={() => setDeleteTarget(photo)}
-                    >
-                      ✕
-                    </BevelButton>
-                  </span>
-                </div>
-              )}
-            </li>
-          );
-        })}
+        {order.map((photo, index) => (
+          <PhotoTile
+            key={photo.id}
+            photo={photo}
+            index={index}
+            total={order.length}
+            selected={selection.selected.has(photo.id)}
+            selecting={selecting}
+            showSetPrimary={showSetPrimary}
+            showReorder={showReorder}
+            // In gallery select mode each tile TOGGLES independently — force the
+            // ctrl/cmd toggle path of useTableSelection so a plain click
+            // adds/removes rather than single-selecting.
+            onToggleSelect={(id, shiftKey) =>
+              selection.onRowClick(id, {
+                shiftKey,
+                metaKey: true,
+                ctrlKey: true,
+              })
+            }
+            onOpenLightbox={onOpenLightbox}
+            onSetPrimary={(id) => setPrimary?.mutate(id)}
+            onMove={move}
+            onEditCaption={setCaptionTarget}
+            onDelete={setDeleteTarget}
+          />
+        ))}
       </ul>
 
       {/* Per-photo delete confirm */}

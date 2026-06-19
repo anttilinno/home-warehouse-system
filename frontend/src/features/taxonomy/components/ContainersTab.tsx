@@ -10,8 +10,9 @@ import type { Container } from "@/lib/api/container";
 import { useContainersQuery } from "../hooks/useContainersQuery";
 import { useLocationsQuery } from "../hooks/useLocationsQuery";
 import { useContainerMutations } from "../hooks/useContainerMutations";
-import { useUsageCount } from "../hooks/useUsageCount";
+import { useUsageCountTarget } from "../hooks/useUsageCountTarget";
 import { ContainerFormDialog } from "./ContainerFormDialog";
+import { TaxonomyTabState } from "./TaxonomyTabState";
 
 // Phase 10 Plan 03 — the Containers tab (TAX-05 grouped-by-location list, TAX-06
 // DELETE-with-unassign). Filled IN-PLACE over the W2 stub; export name
@@ -41,12 +42,6 @@ interface GroupBucket {
   containers: Container[];
 }
 
-interface DeleteTarget {
-  id: string;
-  name: string;
-  count: number | null; // null = still loading
-}
-
 interface FormState {
   open: boolean;
   container?: Container;
@@ -59,7 +54,6 @@ export function ContainersTab() {
   const { rows: locationRows } = useLocationsQuery();
   const { del } = useContainerMutations();
   const deleteContainer = del.mutate;
-  const { fetchCount } = useUsageCount();
 
   const locationNameById = useMemo(() => {
     const m = new Map<string, string>();
@@ -101,175 +95,150 @@ export function ContainersTab() {
     return all;
   }, [rows, locationNameById, noLocationLabel]);
 
-  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [form, setForm] = useState<FormState>({ open: false });
+
+  // Delete opens the confirm immediately (count=null → "loading"), then the
+  // assigned-item count is fetched and patched in so the cascade copy resolves.
+  const {
+    target: deleteTarget,
+    open: openDeleteTarget,
+    clear: clearDelete,
+  } = useUsageCountTarget("container");
 
   const openCreate = () => setForm({ open: true });
   const openEdit = (c: Container) => setForm({ open: true, container: c });
   const closeForm = () => setForm({ open: false });
 
-  // Delete: open the confirm immediately (count=null → "loading"), then fetch
-  // the assigned-item count and patch the target so the cascade copy resolves.
-  function openDelete(c: Container) {
-    setDeleteTarget({ id: c.id, name: c.name, count: null });
-    fetchCount("container", c.id)
-      .then((count) =>
-        setDeleteTarget((prev) =>
-          prev?.id === c.id ? { ...prev, count } : prev,
-        ),
-      )
-      .catch(() =>
-        setDeleteTarget((prev) =>
-          prev?.id === c.id ? { ...prev, count: 0 } : prev,
-        ),
-      );
-  }
+  const openDelete = (c: Container) => openDeleteTarget(c.id, c.name);
 
   function confirmDelete() {
     if (!deleteTarget) return;
     // A single bare DELETE — NO ?force, NO second call (server cascades).
     deleteContainer({ id: deleteTarget.id, name: deleteTarget.name });
-    setDeleteTarget(null);
-  }
-
-  if (isError) {
-    return (
-      <div className="flex flex-col items-start gap-sp-3">
-        <p className="text-14 font-semibold text-danger">
-          <Trans>COULDN'T LOAD CONTAINERS</Trans>
-        </p>
-        <p className="text-13 text-fg-muted">
-          <Trans>Something went wrong. Try again.</Trans>
-        </p>
-        <BevelButton onClick={() => refetch()}>
-          <Trans>RETRY</Trans>
-        </BevelButton>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <p className="font-mono text-13 text-fg-muted">
-        <Trans>Loading…</Trans>
-      </p>
-    );
+    clearDelete();
   }
 
   const hasItems = (deleteTarget?.count ?? 0) > 0;
   const n = deleteTarget?.count ?? 0;
 
   return (
-    <div className="flex flex-col gap-sp-3">
-      <div className="flex items-center">
-        <BevelButton variant="mint" onClick={openCreate}>
-          <Trans>⊕ ADD CONTAINER</Trans>
-        </BevelButton>
-      </div>
-
-      {rows.length === 0 ? (
-        <RetroEmptyState
-          eyebrow={<Trans>Taxonomy</Trans>}
-          glyph="◇"
-          heading={<Trans>NO CONTAINERS YET</Trans>}
-          body={
-            <Trans>
-              Containers live inside a location. Add one to start grouping items
-              by box, bin, or drawer.
-            </Trans>
-          }
-          action={{
-            label: <Trans>⊕ ADD CONTAINER</Trans>,
-            onClick: openCreate,
-          }}
-        />
-      ) : (
-        <div className="flex flex-col gap-sp-5">
-          {groups.map((group) => (
-            <div key={group.key} className="flex flex-col">
-              <div className="bg-bg-panel-2 px-sp-2 py-sp-1 text-11 font-bold uppercase tracking-8 text-fg-muted">
-                {group.name}
-              </div>
-              <RetroTable>
-                <tbody>
-                  {group.containers.map((c) => (
-                    <tr key={c.id}>
-                      <td>
-                        <span
-                          className={`font-body text-14 ${
-                            c.is_archived ? "text-fg-muted" : "text-fg-ink"
-                          }`}
-                        >
-                          {c.name}
-                        </span>
-                        {c.is_archived && (
-                          <span className="ml-sp-2 text-11 uppercase text-fg-muted">
-                            <Trans>archived</Trans>
-                          </span>
-                        )}
-                      </td>
-                      <td className="text-right">
-                        <span className="inline-flex items-center gap-sp-1">
-                          <BevelButton
-                            type="button"
-                            className="!px-[8px] !py-[2px] !text-11"
-                            onClick={() => openEdit(c)}
-                          >
-                            EDIT
-                          </BevelButton>
-                          <BevelButton
-                            type="button"
-                            variant="danger"
-                            aria-label={t`Delete ${c.name}`}
-                            title={t`Delete ${c.name}`}
-                            className="!px-[8px] !py-[2px] !text-11"
-                            onClick={() => openDelete(c)}
-                          >
-                            {"⌫"}
-                          </BevelButton>
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </RetroTable>
-            </div>
-          ))}
+    <TaxonomyTabState
+      isError={isError}
+      isLoading={isLoading}
+      errorTitle={<Trans>COULDN'T LOAD CONTAINERS</Trans>}
+      onRetry={() => refetch()}
+    >
+      <div className="flex flex-col gap-sp-3">
+        <div className="flex items-center">
+          <BevelButton variant="mint" onClick={openCreate}>
+            <Trans>⊕ ADD CONTAINER</Trans>
+          </BevelButton>
         </div>
-      )}
 
-      {/* TAX-06 delete-with-cascade confirm (pink, destructive). The count is
-          fetched on open; total>0 surfaces the cascade copy with the count. */}
-      <RetroConfirmDialog
-        open={deleteTarget !== null}
-        title={<Trans>DELETE CONTAINER?</Trans>}
-        titlebarVariant="pink"
-        confirmVariant="danger"
-        confirmLabel={<Trans>DELETE</Trans>}
-        cancelLabel={<Trans>Cancel</Trans>}
-        onConfirm={confirmDelete}
-        onCancel={() => setDeleteTarget(null)}
-        onClose={() => setDeleteTarget(null)}
-      >
-        {hasItems ? (
-          <span>
-            <span aria-hidden="true">⚠ </span>
-            {t`"${deleteTarget?.name ?? ""}" holds ${n} item${
-              n === 1 ? "" : "s"
-            }. Deleting it will move those items out of any container (they stay in their location) and then delete the container. This can't be undone.`}
-          </span>
+        {rows.length === 0 ? (
+          <RetroEmptyState
+            eyebrow={<Trans>Taxonomy</Trans>}
+            glyph="◇"
+            heading={<Trans>NO CONTAINERS YET</Trans>}
+            body={
+              <Trans>
+                Containers live inside a location. Add one to start grouping
+                items by box, bin, or drawer.
+              </Trans>
+            }
+            action={{
+              label: <Trans>⊕ ADD CONTAINER</Trans>,
+              onClick: openCreate,
+            }}
+          />
         ) : (
-          <span>
-            {t`Delete "${deleteTarget?.name ?? ""}"? This can't be undone.`}
-          </span>
+          <div className="flex flex-col gap-sp-5">
+            {groups.map((group) => (
+              <div key={group.key} className="flex flex-col">
+                <div className="bg-bg-panel-2 px-sp-2 py-sp-1 text-11 font-bold uppercase tracking-8 text-fg-muted">
+                  {group.name}
+                </div>
+                <RetroTable>
+                  <tbody>
+                    {group.containers.map((c) => (
+                      <tr key={c.id}>
+                        <td>
+                          <span
+                            className={`font-body text-14 ${
+                              c.is_archived ? "text-fg-muted" : "text-fg-ink"
+                            }`}
+                          >
+                            {c.name}
+                          </span>
+                          {c.is_archived && (
+                            <span className="ml-sp-2 text-11 uppercase text-fg-muted">
+                              <Trans>archived</Trans>
+                            </span>
+                          )}
+                        </td>
+                        <td className="text-right">
+                          <span className="inline-flex items-center gap-sp-1">
+                            <BevelButton
+                              type="button"
+                              className="!px-[8px] !py-[2px] !text-11"
+                              onClick={() => openEdit(c)}
+                            >
+                              EDIT
+                            </BevelButton>
+                            <BevelButton
+                              type="button"
+                              variant="danger"
+                              aria-label={t`Delete ${c.name}`}
+                              title={t`Delete ${c.name}`}
+                              className="!px-[8px] !py-[2px] !text-11"
+                              onClick={() => openDelete(c)}
+                            >
+                              {"⌫"}
+                            </BevelButton>
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </RetroTable>
+              </div>
+            ))}
+          </div>
         )}
-      </RetroConfirmDialog>
 
-      <ContainerFormDialog
-        open={form.open}
-        container={form.container}
-        onClose={closeForm}
-      />
-    </div>
+        {/* TAX-06 delete-with-cascade confirm (pink, destructive). The count is
+          fetched on open; total>0 surfaces the cascade copy with the count. */}
+        <RetroConfirmDialog
+          open={deleteTarget !== null}
+          title={<Trans>DELETE CONTAINER?</Trans>}
+          titlebarVariant="pink"
+          confirmVariant="danger"
+          confirmLabel={<Trans>DELETE</Trans>}
+          cancelLabel={<Trans>Cancel</Trans>}
+          onConfirm={confirmDelete}
+          onCancel={clearDelete}
+          onClose={clearDelete}
+        >
+          {hasItems ? (
+            <span>
+              <span aria-hidden="true">⚠ </span>
+              {t`"${deleteTarget?.name ?? ""}" holds ${n} item${
+                n === 1 ? "" : "s"
+              }. Deleting it will move those items out of any container (they stay in their location) and then delete the container. This can't be undone.`}
+            </span>
+          ) : (
+            <span>
+              {t`Delete "${deleteTarget?.name ?? ""}"? This can't be undone.`}
+            </span>
+          )}
+        </RetroConfirmDialog>
+
+        <ContainerFormDialog
+          open={form.open}
+          container={form.container}
+          onClose={closeForm}
+        />
+      </div>
+    </TaxonomyTabState>
   );
 }

@@ -1,11 +1,9 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
 import {
   Window,
-  BevelButton,
-  RetroBadge,
   RetroEmptyState,
   RetroConfirmDialog,
   retroToast,
@@ -16,6 +14,8 @@ import { borrowersApi } from "@/lib/api/borrowers";
 import { BorrowerLoanPanels } from "@/features/loans/components/BorrowerLoanPanels";
 import { useBorrowerLoans } from "@/features/loans/hooks/useBorrowerLoans";
 import { useBorrowerMutations } from "./hooks/useBorrowerMutations";
+import { BorrowerProfile } from "./components/BorrowerProfile";
+import { BorrowerActions } from "./components/BorrowerActions";
 
 // Phase 9 Plan 03 — borrower detail page (`/borrowers/:id`, BORR-03 + BORR-05).
 //
@@ -145,75 +145,15 @@ export function BorrowerDetailPage() {
         title={borrower.name}
         titlebarVariant="mint"
         actions={
-          <span className="flex items-center gap-sp-1">
-            {blocked && (
-              <RetroBadge variant="danger">
-                <Trans>⚠ Active loans</Trans>
-              </RetroBadge>
-            )}
-            <BevelButton
-              className="!px-[8px] !py-[2px] !text-11"
-              onClick={() => navigate(`/borrowers/${borrower.id}/edit`)}
-            >
-              <Trans>EDIT</Trans>
-            </BevelButton>
-            <BevelButton
-              variant="danger"
-              className="!px-[8px] !py-[2px] !text-11"
-              disabled={blocked}
-              aria-disabled={blocked || undefined}
-              onClick={() => {
-                if (blocked) return;
-                setDeleteOpen(true);
-              }}
-            >
-              <Trans>DELETE…</Trans>
-            </BevelButton>
-          </span>
+          <BorrowerActions
+            blocked={blocked}
+            onEdit={() => navigate(`/borrowers/${borrower.id}/edit`)}
+            onDelete={() => setDeleteOpen(true)}
+          />
         }
       >
         <div className="flex flex-col gap-sp-4">
-          {/* Profile — definition grid (ItemDetailPage Field / Muted pattern). */}
-          <dl className="grid grid-cols-[minmax(0,140px)_1fr] gap-x-sp-4 gap-y-sp-3">
-            <Field label={<Trans>Name</Trans>}>{borrower.name}</Field>
-            <Field label={<Trans>Email</Trans>} mono>
-              {borrower.email ? borrower.email : <Muted>—</Muted>}
-            </Field>
-            <Field label={<Trans>Phone</Trans>} mono>
-              {borrower.phone ? borrower.phone : <Muted>—</Muted>}
-            </Field>
-            <Field label={<Trans>Notes</Trans>}>
-              {borrower.notes ? (
-                <span className="whitespace-pre-wrap">{borrower.notes}</span>
-              ) : (
-                <Muted>—</Muted>
-              )}
-            </Field>
-            <Field label={<Trans>Created</Trans>} mono muted>
-              {borrower.created_at}
-            </Field>
-          </dl>
-
-          {/* Delete-blocked banner (BORR-05) — only when active loans exist. */}
-          {blocked && (
-            <div
-              role="status"
-              className="flex items-center gap-sp-2 border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
-            >
-              <span aria-hidden="true">⚠</span>
-              <span>
-                <Trans>
-                  Return the active loans before deleting this borrower.
-                </Trans>
-              </span>
-              <Link
-                to="/loans?tab=active"
-                className="text-danger underline underline-offset-2"
-              >
-                <Trans>View active loans</Trans>
-              </Link>
-            </div>
-          )}
+          <BorrowerProfile borrower={borrower} blocked={blocked} />
 
           {/* The shipped Phase-8 loan panels — DO NOT MODIFY, only mount. */}
           <div id="active-loans">
@@ -247,36 +187,4 @@ export function BorrowerDetailPage() {
       </RetroConfirmDialog>
     </div>
   );
-}
-
-// ── Profile field helpers — verbatim ItemDetailPage pattern.
-function Field({
-  label,
-  children,
-  mono,
-  muted,
-}: Readonly<{
-  label: ReactNode;
-  children: ReactNode;
-  mono?: boolean;
-  muted?: boolean;
-}>) {
-  return (
-    <>
-      <dt className="text-12 font-bold uppercase tracking-8 text-fg-muted">
-        {label}
-      </dt>
-      <dd
-        className={`text-14 ${mono ? "font-mono tabular-nums" : ""} ${
-          muted ? "text-fg-muted" : "text-fg-ink"
-        }`}
-      >
-        {children}
-      </dd>
-    </>
-  );
-}
-
-function Muted({ children }: Readonly<{ children: ReactNode }>) {
-  return <span className="text-fg-muted">{children}</span>;
 }

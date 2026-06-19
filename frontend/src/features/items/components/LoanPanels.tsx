@@ -48,7 +48,10 @@ export interface ActiveLoanPanelProps {
  * RETURN/EXTEND when on loan; a danger overdue chip + line (server is_overdue)
  * when overdue.
  */
-export function ActiveLoanPanel({ active, itemId }: Readonly<ActiveLoanPanelProps>) {
+export function ActiveLoanPanel({
+  active,
+  itemId,
+}: Readonly<ActiveLoanPanelProps>) {
   const navigate = useNavigate();
   const [openDialog, setOpenDialog] = useState<"return" | "extend" | null>(
     null,

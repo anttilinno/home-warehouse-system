@@ -4,17 +4,9 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import {
   Window,
   BevelButton,
-  RetroTable,
-  RetroBadge,
-  RetroCheckbox,
-  StatusPill,
-  RetroEmptyState,
-  RetroConfirmDialog,
-  RetroPagination,
   useTableSelection,
   FilterBar,
   FilterPopover,
-  BulkActionBar,
   SavedFilters,
   useSavedFilters,
   retroToast,
@@ -25,19 +17,9 @@ import { photosApi } from "@/lib/api/photos";
 import type { Item } from "@/lib/types";
 import { useItemsQuery } from "./hooks/useItemsQuery";
 import { useItemMutations } from "./hooks/useItemMutations";
-
-// Sortable columns the backend supports (07-RESEARCH: name|sku|created_at|
-// updated_at). The list surfaces Name + Category headers as sort triggers; the
-// table also shows Location/Qty/Status columns per the sketch-008 density set.
-//
-// NOTE (deviation — backend data gap): the shipped ItemResponse (lib/types.ts)
-// carries category_id (a uuid, no name), and does NOT carry location, quantity,
-// or a derived stock status. Those cells render a `—` placeholder until the
-// detail/inventory wire contract surfaces them (tracked in SUMMARY Known Stubs).
-const SORTABLE: { key: string; label: string; sort: string }[] = [
-  { key: "name", label: "Name", sort: "name" },
-  { key: "sku", label: "SKU", sort: "sku" },
-];
+import { ItemsResults } from "./components/ItemsResults";
+import { ItemsBulkBar } from "./components/ItemsBulkBar";
+import { DeleteItemDialog } from "./components/DeleteItemDialog";
 
 const SAVED_FILTERS_KEY = "items-list-filters/v1";
 
@@ -135,17 +117,8 @@ export function ItemsListPage() {
     () =>
       selectedCount > 0
         ? [
-            {
-              key: "A",
-              label: archiveLabel,
-              action: bulkArchive,
-            },
-            {
-              key: "X",
-              label: deleteLabel,
-              action: bulkDelete,
-              danger: true,
-            },
+            { key: "A", label: archiveLabel, action: bulkArchive },
+            { key: "X", label: deleteLabel, action: bulkDelete, danger: true },
           ]
         : [],
     [selectedCount, bulkArchive, bulkDelete, archiveLabel, deleteLabel],
@@ -248,44 +221,7 @@ export function ItemsListPage() {
     return chips;
   }, [state.category, state.archived, t]);
 
-  const allSelected = selectedCount === items.length && items.length > 0;
-  const someSelected = selectedCount > 0 && !allSelected;
-
   const hasFilters = !!state.q || !!state.category || state.archived;
-
-  // ── Empty-state branches (rendered inside the table window body).
-  function renderEmpty() {
-    if (hasFilters) {
-      return (
-        <RetroEmptyState
-          eyebrow={<Trans>Inventory</Trans>}
-          heading={<Trans>NO MATCHES</Trans>}
-          body={
-            <Trans>
-              No items match these filters. Clear a filter or adjust your
-              search.
-            </Trans>
-          }
-          action={{
-            label: <Trans>CLEAR ALL</Trans>,
-            onClick: clearAllFilters,
-          }}
-        />
-      );
-    }
-    return (
-      <RetroEmptyState
-        eyebrow={<Trans>Inventory</Trans>}
-        heading={<Trans>NO ITEMS YET</Trans>}
-        body={
-          <Trans>
-            Your warehouse is empty. Add your first item to start tracking it.
-          </Trans>
-        }
-        action={{ label: <Trans>⊕ ADD ITEM</Trans>, onClick: goNew }}
-      />
-    );
-  }
 
   function clearAllFilters() {
     setSearchParams(() => {
@@ -294,6 +230,21 @@ export function ItemsListPage() {
       return next;
     });
   }
+
+  const toggleAll = () => {
+    const allSelected = selectedCount === items.length && items.length > 0;
+    if (allSelected) {
+      clearSelection();
+    } else {
+      items.forEach((r) => {
+        selection.onRowClick(r.id, {
+          metaKey: true,
+          ctrlKey: false,
+          shiftKey: false,
+        });
+      });
+    }
+  };
 
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">
@@ -365,241 +316,62 @@ export function ItemsListPage() {
         />
 
         {/* Mobile-only bulk surface (desktop uses the Bottombar SSOT chips). */}
-        {selectedCount > 0 && (
-          <div className="md:hidden">
-            <BulkActionBar
-              selectedCount={selectedCount}
-              onClear={clearSelection}
-              destructiveAction={
-                allSelectedArchived
-                  ? {
-                      label: <Trans>DELETE</Trans>,
-                      confirmTitle: <Trans>DELETE ITEMS?</Trans>,
-                      confirmBody: (
-                        <Trans>
-                          The selected archived items will be permanently
-                          removed.
-                        </Trans>
-                      ),
-                      onConfirm: bulkDelete,
-                    }
-                  : undefined
-              }
-            >
-              <BevelButton onClick={bulkArchive}>
-                <Trans>ARCHIVE</Trans>
-              </BevelButton>
-            </BulkActionBar>
-          </div>
-        )}
+        <ItemsBulkBar
+          selectedCount={selectedCount}
+          allSelectedArchived={allSelectedArchived}
+          onClear={clearSelection}
+          onArchive={bulkArchive}
+          onDelete={bulkDelete}
+        />
 
-        {isLoading && (
-          <p className="p-sp-4 font-mono text-13 text-fg-muted">
-            <Trans>Loading…</Trans>
-          </p>
-        )}
-
-        {isError && (
-          <p className="p-sp-4 text-13 font-semibold text-danger">
-            <Trans>Couldn't load items. Try again.</Trans>
-          </p>
-        )}
-
-        {!isLoading && !isError && items.length === 0 && (
-          <div className="p-sp-4">{renderEmpty()}</div>
-        )}
-
-        {!isLoading && !isError && items.length > 0 && (
-          <>
-            <RetroTable>
-              <thead>
-                <tr>
-                  <th>
-                    <RetroCheckbox
-                      label=""
-                      aria-label={t`Select all rows`}
-                      checked={allSelected}
-                      indeterminate={someSelected}
-                      onChange={() =>
-                        allSelected
-                          ? clearSelection()
-                          : items.forEach((r) => {
-                              selection.onRowClick(r.id, {
-                                metaKey: true,
-                                ctrlKey: false,
-                                shiftKey: false,
-                              });
-                            })
-                      }
-                    />
-                  </th>
-                  <th />
-                  {SORTABLE.map((col) => (
-                    <th key={col.key}>
-                      <button
-                        type="button"
-                        aria-label={t`Sort by ${col.label}`}
-                        onClick={() => onSort(col.sort)}
-                        className="cursor-pointer font-bold uppercase tracking-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
-                      >
-                        {col.label}
-                        <span aria-hidden="true">{sortGlyph(col.sort)}</span>
-                      </button>
-                    </th>
-                  ))}
-                  <th>{t`Location`}</th>
-                  <th className="text-right">{t`Qty`}</th>
-                  <th>{t`Status`}</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => {
-                  const archived = item.is_archived ?? false;
-                  return (
-                    <tr
-                      key={item.id}
-                      aria-selected={selected.has(item.id)}
-                      onClick={() => navigate(`/items/${item.id}`)}
-                      className={`cursor-pointer ${archived ? "text-fg-muted" : ""}`}
-                    >
-                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard to stop the row navigate; keyboard users focus the nested checkbox directly */}
-                      <td onClick={(e) => e.stopPropagation()}>
-                        <RetroCheckbox
-                          label=""
-                          aria-label={item.name}
-                          checked={selected.has(item.id)}
-                          onChange={() =>
-                            selection.onRowClick(item.id, {
-                              metaKey: true,
-                              ctrlKey: false,
-                              shiftKey: false,
-                            })
-                          }
-                        />
-                      </td>
-                      <td>
-                        {item.primary_photo_thumbnail_url ? (
-                          <img
-                            src={item.primary_photo_thumbnail_url}
-                            alt=""
-                            className={`h-[26px] w-[26px] border border-border-ink object-cover ${archived ? "opacity-60" : ""}`}
-                          />
-                        ) : (
-                          <span
-                            aria-hidden="true"
-                            className="flex h-[26px] w-[26px] items-center justify-center border border-border-ink bg-bg-panel-2 text-fg-faint"
-                          >
-                            ◇
-                          </span>
-                        )}
-                      </td>
-                      <td className="font-semibold">{item.name}</td>
-                      {/* SKU stands in for the second sort header column. */}
-                      <td className="mono">{item.sku}</td>
-                      {/* Location/Qty are not on the wire ItemResponse yet. */}
-                      <td className="text-fg-muted">—</td>
-                      <td className="mono text-right text-fg-muted">—</td>
-                      <td>
-                        {archived ? (
-                          <RetroBadge variant="neutral">
-                            <Trans>ARCHIVED</Trans>
-                          </RetroBadge>
-                        ) : (
-                          <StatusPill variant="ok">
-                            <Trans>IN STOCK</Trans>
-                          </StatusPill>
-                        )}
-                      </td>
-                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard to stop the row navigate; keyboard users focus the nested action buttons directly */}
-                      <td
-                        className="actions text-right"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {archived ? (
-                          <span className="inline-flex gap-sp-1">
-                            <BevelButton
-                              variant="mint"
-                              onClick={() => restoreItem(item.id)}
-                            >
-                              <Trans>RESTORE</Trans>
-                            </BevelButton>
-                            <BevelButton
-                              variant="danger"
-                              onClick={() => {
-                                setPendingDelete(item);
-                                setConfirmName("");
-                              }}
-                            >
-                              <Trans>DELETE…</Trans>
-                            </BevelButton>
-                          </span>
-                        ) : (
-                          <span className="inline-flex gap-sp-1">
-                            <BevelButton
-                              onClick={() => navigate(`/items/${item.id}/edit`)}
-                            >
-                              <Trans>EDIT</Trans>
-                            </BevelButton>
-                            <BevelButton onClick={() => archiveItem(item.id)}>
-                              <Trans>ARCHIVE</Trans>
-                            </BevelButton>
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </RetroTable>
-
-            <RetroPagination
-              page={currentPage}
-              pageCount={Math.max(1, totalPages)}
-              perPage={25}
-              onPageChange={(p) => setParam("page", String(p))}
-            />
-          </>
-        )}
+        <ItemsResults
+          isLoading={isLoading}
+          isError={isError}
+          items={items}
+          selectedCount={selectedCount}
+          isSelected={(id) => selected.has(id)}
+          onToggleAll={toggleAll}
+          onSort={onSort}
+          sortGlyph={sortGlyph}
+          hasFilters={hasFilters}
+          onAdd={goNew}
+          onClearAll={clearAllFilters}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          perPage={25}
+          onPageChange={(p) => setParam("page", String(p))}
+          rowActions={{
+            onNavigate: (id) => navigate(`/items/${id}`),
+            onNavigateEdit: (id) => navigate(`/items/${id}/edit`),
+            onArchive: archiveItem,
+            onRestore: restoreItem,
+            onRequestDelete: (item) => {
+              setPendingDelete(item);
+              setConfirmName("");
+            },
+            onToggleSelect: (id) =>
+              selection.onRowClick(id, {
+                metaKey: true,
+                ctrlKey: false,
+                shiftKey: false,
+              }),
+          }}
+        />
       </Window>
 
-      {/* Type-to-confirm single delete (ITEM-06) — confirm stays disabled until
-          the exact item name is typed. */}
-      <RetroConfirmDialog
-        open={pendingDelete !== null}
-        title={<Trans>DELETE ITEM?</Trans>}
-        confirmLabel={<Trans>DELETE</Trans>}
-        confirmDisabled={confirmName !== (pendingDelete?.name ?? "")}
-        onConfirm={() => {
-          if (pendingDelete) {
-            deleteItem({
-              id: pendingDelete.id,
-              isArchived: pendingDelete.is_archived ?? false,
-            });
-          }
-          setPendingDelete(null);
-          setConfirmName("");
-        }}
-        onCancel={() => {
-          setPendingDelete(null);
-          setConfirmName("");
-        }}
+      {/* Type-to-confirm single delete (ITEM-06). */}
+      <DeleteItemDialog
+        item={pendingDelete}
+        confirmName={confirmName}
+        onConfirmNameChange={setConfirmName}
+        onConfirm={(item) =>
+          deleteItem({ id: item.id, isArchived: item.is_archived ?? false })
+        }
         onClose={() => {
           setPendingDelete(null);
           setConfirmName("");
         }}
-      >
-        <div className="flex flex-col gap-sp-2">
-          <Trans>Type the item name to confirm. This can't be undone.</Trans>
-          <input
-            type="text"
-            aria-label={t`Confirm item name`}
-            value={confirmName}
-            onChange={(e) => setConfirmName(e.target.value)}
-            className="border-2 border-border-ink bg-bg-panel bevel-sunken px-[10px] py-[7px] text-14"
-          />
-        </div>
-      </RetroConfirmDialog>
+      />
     </div>
   );
 }

@@ -1,26 +1,21 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import type { StatusPillVariant } from "@/components/retro";
 import {
   BevelButton,
-  RetroEmptyState,
   RetroFileInput,
   RetroSelect,
-  RetroTable,
   retroToast,
-  StatusPill,
   Window,
 } from "@/components/retro";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 import {
   IMPORT_ENTITY_TYPES,
   type ImportEntityType,
-  type ImportJob,
-  type ImportJobStatus,
 } from "@/lib/api/importJobs";
 import { settingsApi } from "@/lib/api/settings";
 import { useImportJobs, useUploadImport } from "./hooks/useImportJobs";
+import { ImportHistory } from "./components/ImportHistory";
 
 // Phase 14 Plan 05 (SYS-04) — the /imports page. One blue Window with three
 // grouped sections (border-b dividers), mirroring DataStoragePage's admin gate
@@ -38,35 +33,6 @@ import { useImportJobs, useUploadImport } from "./hooks/useImportJobs";
 // ONLINE-ONLY: NO offline/sync import (FOUND-02 / lint:imports guard, T-14-16).
 
 const ADMIN_ROLES = new Set(["owner", "admin"]);
-
-const STATUS_VARIANT: Record<ImportJobStatus, StatusPillVariant> = {
-  pending: "info",
-  processing: "info",
-  completed: "ok",
-  failed: "danger",
-  cancelled: "warn",
-};
-
-const STATUS_LABEL: Record<ImportJobStatus, React.ReactNode> = {
-  completed: <Trans>Completed</Trans>,
-  failed: <Trans>Failed</Trans>,
-  processing: <Trans>Processing</Trans>,
-  cancelled: <Trans>Cancelled</Trans>,
-  pending: <Trans>Pending</Trans>,
-};
-
-function StatusBadge({ status }: Readonly<{ status: ImportJobStatus }>) {
-  const variant = STATUS_VARIANT[status] ?? "info";
-  return (
-    <StatusPill variant={variant}>
-      {STATUS_LABEL[status] ?? <Trans>Pending</Trans>}
-    </StatusPill>
-  );
-}
-
-function isoDate(value?: string): string {
-  return value ? value.slice(0, 10) : "—";
-}
 
 export function ImportsPage() {
   const { t } = useLingui();
@@ -211,84 +177,11 @@ export function ImportsPage() {
               <Trans>Import history</Trans>
             </h2>
 
-            {isLoading && (
-              <p className="p-sp-2 font-mono text-13 text-fg-muted">
-                <Trans>Loading…</Trans>
-              </p>
-            )}
-
-            {isError && (
-              <p className="p-sp-2 text-13 font-semibold text-danger">
-                <Trans>Couldn't load import history. Try again.</Trans>
-              </p>
-            )}
-
-            {!isLoading && !isError && jobs.length === 0 && (
-              <RetroEmptyState
-                eyebrow={<Trans>Imports</Trans>}
-                glyph="◇"
-                heading={<Trans>NO IMPORTS YET</Trans>}
-                body={
-                  <Trans>
-                    Imported files show up here with their progress and results.
-                  </Trans>
-                }
-              />
-            )}
-
-            {!isLoading && !isError && jobs.length > 0 && (
-              <RetroTable>
-                <thead>
-                  <tr>
-                    <th>{t`File`}</th>
-                    <th>{t`Type`}</th>
-                    <th>{t`Status`}</th>
-                    <th>{t`Progress`}</th>
-                    <th>{t`Rows`}</th>
-                    <th>{t`Created`}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {jobs.map((job: ImportJob) => (
-                    <tr key={job.id}>
-                      <td className="font-semibold">{job.file_name}</td>
-                      <td className="font-mono text-fg-muted">
-                        {job.entity_type}
-                      </td>
-                      <td>
-                        <StatusBadge status={job.status} />
-                        {job.status === "failed" && job.error_message && (
-                          <span className="ml-sp-2 text-12 text-danger">
-                            {job.error_message}
-                          </span>
-                        )}
-                      </td>
-                      <td className="font-mono tabular-nums text-fg-muted">
-                        {job.progress}%
-                      </td>
-                      <td className="font-mono tabular-nums">
-                        <span className="text-ok-deep">
-                          {job.success_count}
-                        </span>
-                        <span className="text-fg-muted"> / </span>
-                        <span
-                          className={
-                            job.error_count > 0
-                              ? "text-danger"
-                              : "text-fg-muted"
-                          }
-                        >
-                          {job.error_count}
-                        </span>
-                      </td>
-                      <td className="font-mono tabular-nums text-fg-muted">
-                        {isoDate(job.created_at)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </RetroTable>
-            )}
+            <ImportHistory
+              jobs={jobs}
+              isLoading={isLoading}
+              isError={isError}
+            />
           </section>
         </div>
       </Window>

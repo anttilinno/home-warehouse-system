@@ -7,10 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Window,
   BevelButton,
-  RetroInput,
-  RetroTextarea,
   RetroCombobox,
-  RetroConfirmDialog,
   type RetroComboboxOption,
 } from "@/components/retro";
 import {
@@ -30,6 +27,8 @@ import {
   type UpdateCategoryArg,
 } from "../hooks/useCategoryMutations";
 import { buildTree, type TreeNode } from "@/features/taxonomy/lib/buildTree";
+import { DiscardChangesDialog, FormRootError } from "./TaxonomyDialogForm";
+import { DescriptionField, NameField } from "./TaxonomyFormFields";
 
 // Phase 10 Plan 02 — the category create/edit form (TAX-01). Despite the
 // "Dialog" name it is a ROUTED blue Window (the InventoryFormPage / BorrowerForm
@@ -75,7 +74,9 @@ function flattenExcluding(
   return out;
 }
 
-export function CategoryFormDialog({ mode }: Readonly<CategoryFormDialogProps>) {
+export function CategoryFormDialog({
+  mode,
+}: Readonly<CategoryFormDialogProps>) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const { currentWorkspaceId: wsId } = useWorkspace();
@@ -185,23 +186,9 @@ export function CategoryFormDialog({ mode }: Readonly<CategoryFormDialogProps>) 
           noValidate
           className="flex flex-col gap-sp-4"
         >
-          {errors.root?.message && (
-            <div
-              role="alert"
-              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
-            >
-              <span aria-hidden="true">✕ </span>
-              {errors.root.message}
-            </div>
-          )}
+          <FormRootError message={errors.root?.message} />
 
-          <RetroInput
-            label={<Trans>Name</Trans>}
-            required
-            aria-required="true"
-            error={errors.name?.message}
-            {...register("name")}
-          />
+          <NameField register={register("name")} error={errors.name?.message} />
 
           <div className="flex flex-col gap-sp-2">
             <RetroCombobox
@@ -219,16 +206,10 @@ export function CategoryFormDialog({ mode }: Readonly<CategoryFormDialogProps>) 
             </p>
           </div>
 
-          <div className="flex flex-col gap-sp-2">
-            <RetroTextarea
-              label={<Trans>Description</Trans>}
-              error={errors.description?.message}
-              {...register("description")}
-            />
-            <p className="text-12 text-fg-muted">
-              <Trans>Optional.</Trans>
-            </p>
-          </div>
+          <DescriptionField
+            register={register("description")}
+            error={errors.description?.message}
+          />
 
           <div className="flex justify-end gap-sp-2 border-t-2 border-border-ink pt-sp-3">
             <BevelButton
@@ -249,23 +230,15 @@ export function CategoryFormDialog({ mode }: Readonly<CategoryFormDialogProps>) 
         </form>
       </Window>
 
-      <RetroConfirmDialog
+      <DiscardChangesDialog
         open={pendingLeave !== null}
-        title={<Trans>DISCARD CHANGES?</Trans>}
-        titlebarVariant="butter"
-        confirmVariant="neutral"
-        confirmLabel={<Trans>Discard</Trans>}
-        cancelLabel={<Trans>Keep editing</Trans>}
         onConfirm={() => {
           const to = pendingLeave;
           setPendingLeave(null);
           if (to) navigate(to);
         }}
         onCancel={() => setPendingLeave(null)}
-        onClose={() => setPendingLeave(null)}
-      >
-        <Trans>Your edits will be lost.</Trans>
-      </RetroConfirmDialog>
+      />
     </div>
   );
 }

@@ -1,15 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trans, useLingui } from "@lingui/react/macro";
-import {
-  BevelButton,
-  RetroInput,
-  RetroTextarea,
-  RetroConfirmDialog,
-  RetroDialog,
-  type RetroComboboxOption,
-} from "@/components/retro";
+import type { RetroComboboxOption } from "@/components/retro";
 import type { Container, CreateContainerBody } from "@/lib/api/container";
 import {
   containerSchema,
@@ -22,6 +15,12 @@ import {
   type UpdateContainerArg,
 } from "../hooks/useContainerMutations";
 import { SearchPicker } from "./SearchPicker";
+import { TaxonomyDialogForm } from "./TaxonomyDialogForm";
+import {
+  DescriptionField,
+  NameField,
+  ShortCodeField,
+} from "./TaxonomyFormFields";
 
 // Phase 10 Plan 03 — the container create/edit form (TAX-05). INLINE RetroDialog
 // (no route — the W2 form-routing decision; only category forms are routed).
@@ -99,14 +98,6 @@ export function ContainerFormDialog({
 
   const locationValue = watch("location_id") ?? "";
 
-  // Dirty-form close guard.
-  const [confirmDiscard, setConfirmDiscard] = useState(false);
-
-  function attemptClose() {
-    if (isDirty) setConfirmDiscard(true);
-    else onClose();
-  }
-
   async function onSubmit(raw: ContainerFormInput) {
     const values: ContainerFormValues = containerSchema.parse(raw);
     const body: CreateContainerBody = {
@@ -133,113 +124,49 @@ export function ContainerFormDialog({
   const submitLabel = isEdit ? t`Save changes` : t`Save container`;
 
   return (
-    <>
-      <RetroDialog
-        open={open}
-        onClose={attemptClose}
-        title={titleText}
-        titlebarVariant="blue"
-      >
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-          className="flex flex-col gap-sp-4"
-        >
-          {errors.root?.message && (
-            <div
-              role="alert"
-              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
-            >
-              <span aria-hidden="true">✕ </span>
-              {errors.root.message}
-            </div>
-          )}
+    <TaxonomyDialogForm
+      open={open}
+      title={titleText}
+      submitLabel={submitLabel}
+      isSubmitting={isSubmitting}
+      isDirty={isDirty}
+      rootError={errors.root?.message}
+      onSubmit={handleSubmit(onSubmit)}
+      onClose={onClose}
+    >
+      <NameField register={register("name")} error={errors.name?.message} />
 
-          <RetroInput
-            label={<Trans>Name</Trans>}
-            required
-            aria-required="true"
-            error={errors.name?.message}
-            {...register("name")}
-          />
+      <div className="flex flex-col gap-sp-2">
+        <SearchPicker
+          label={<Trans>Location</Trans>}
+          domain="locations"
+          value={locationValue}
+          onChange={(v) => setValue("location_id", v, { shouldDirty: true })}
+          fallbackOptions={locationOptions}
+          disabled={noLocations}
+          error={errors.location_id?.message}
+          placeholder={t`Search locations…`}
+        />
+        {noLocations ? (
+          <p className="text-12 text-fg-muted">
+            <Trans>No locations yet — add one first.</Trans>
+          </p>
+        ) : (
+          <p className="text-12 text-fg-muted">
+            <Trans>Required — every container lives in a location.</Trans>
+          </p>
+        )}
+      </div>
 
-          <div className="flex flex-col gap-sp-2">
-            <SearchPicker
-              label={<Trans>Location</Trans>}
-              domain="locations"
-              value={locationValue}
-              onChange={(v) =>
-                setValue("location_id", v, { shouldDirty: true })
-              }
-              fallbackOptions={locationOptions}
-              disabled={noLocations}
-              error={errors.location_id?.message}
-              placeholder={t`Search locations…`}
-            />
-            {noLocations ? (
-              <p className="text-12 text-fg-muted">
-                <Trans>No locations yet — add one first.</Trans>
-              </p>
-            ) : (
-              <p className="text-12 text-fg-muted">
-                <Trans>Required — every container lives in a location.</Trans>
-              </p>
-            )}
-          </div>
+      <DescriptionField
+        register={register("description")}
+        error={errors.description?.message}
+      />
 
-          <div className="flex flex-col gap-sp-2">
-            <RetroTextarea
-              label={<Trans>Description</Trans>}
-              error={errors.description?.message}
-              {...register("description")}
-            />
-            <p className="text-12 text-fg-muted">
-              <Trans>Optional.</Trans>
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-sp-2">
-            <RetroInput
-              label={<Trans>Short code</Trans>}
-              error={errors.short_code?.message}
-              {...register("short_code")}
-            />
-            <p className="text-12 text-fg-muted">
-              <Trans>Optional — auto-generated if left blank.</Trans>
-            </p>
-          </div>
-
-          <div className="flex justify-end gap-sp-2 border-t-2 border-border-ink pt-sp-3">
-            <BevelButton type="button" variant="neutral" onClick={attemptClose}>
-              <Trans>Cancel</Trans>
-            </BevelButton>
-            <BevelButton
-              type="submit"
-              variant="primary"
-              disabled={isSubmitting}
-            >
-              {submitLabel}
-            </BevelButton>
-          </div>
-        </form>
-      </RetroDialog>
-
-      <RetroConfirmDialog
-        open={confirmDiscard}
-        title={<Trans>DISCARD CHANGES?</Trans>}
-        titlebarVariant="butter"
-        confirmVariant="neutral"
-        confirmLabel={<Trans>Discard</Trans>}
-        cancelLabel={<Trans>Keep editing</Trans>}
-        onConfirm={() => {
-          setConfirmDiscard(false);
-          onClose();
-        }}
-        onCancel={() => setConfirmDiscard(false)}
-        onClose={() => setConfirmDiscard(false)}
-      >
-        <Trans>Your edits will be lost.</Trans>
-      </RetroConfirmDialog>
-    </>
+      <ShortCodeField
+        register={register("short_code")}
+        error={errors.short_code?.message}
+      />
+    </TaxonomyDialogForm>
   );
 }
