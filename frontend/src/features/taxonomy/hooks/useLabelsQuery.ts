@@ -1,14 +1,12 @@
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { labelsApi } from "@/lib/api/labels";
 import type { Label } from "@/lib/types";
-import { useWorkspace } from "@/features/workspace/useWorkspace";
+import { useTaxonomyListQuery } from "./useTaxonomyListQuery";
 
-// Phase 10 Plan 04 (TAX-07) — the Labels list query. Mirrors useCategoriesQuery
-// (key ["…", wsId] PREFIX + enabled !!wsId + retry false) adapted to the BARE
-// { items } label envelope (Pitfall 2 — labelsApi.listWorkspaceLabels returns
-// no total; NEVER read .total). The PLAIN ["labels", wsId] key is the PREFIX so
-// the mutation-layer invalidate (useLabelMutations) covers it WITHOUT exact:true.
+// Phase 10 Plan 04 (TAX-07) — the Labels list query. Built on the shared
+// useTaxonomyListQuery skeleton (PLAIN ["labels", wsId] PREFIX so the
+// useLabelMutations invalidate covers it WITHOUT exact:true). The BARE { items }
+// label envelope is unwrapped by labelsApi.listWorkspaceLabels itself (Pitfall 2
+// — no total; NEVER read .total), so the fetch arg returns the array directly.
 
 export interface UseLabelsQueryResult {
   rows: Label[];
@@ -18,21 +16,7 @@ export interface UseLabelsQueryResult {
 }
 
 export function useLabelsQuery(): UseLabelsQueryResult {
-  const { currentWorkspaceId: wsId } = useWorkspace();
-
-  const query = useQuery({
-    queryKey: ["labels", wsId],
-    queryFn: () => labelsApi.listWorkspaceLabels(wsId as string),
-    enabled: !!wsId,
-    retry: false,
-  });
-
-  const rows = useMemo(() => query.data ?? [], [query.data]);
-
-  return {
-    rows,
-    isLoading: query.isLoading,
-    isError: query.isError,
-    refetch: query.refetch,
-  };
+  return useTaxonomyListQuery<Label>("labels", (wsId) =>
+    labelsApi.listWorkspaceLabels(wsId),
+  );
 }
