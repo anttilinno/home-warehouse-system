@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <!-- Beveled panel + ink border — mirrors the TopBar brand square. -->
+  <rect x="1" y="1" width="30" height="30" fill="#ffffff" stroke="#26262e" stroke-width="2"/>
+  <!-- Bevel: bottom/right shade for the raised-ink look. -->
+  <path d="M2 28 H30 V30 H2 Z M28 2 H30 V30 H28 Z" fill="#efe6d3"/>
+  <!-- ▦ grid mark: 2x2 mint cells with ink outline. -->
+  <g fill="#b8e0c8" stroke="#26262e" stroke-width="1.5">
+    <rect x="6" y="6" width="8" height="8"/>
+    <rect x="18" y="6" width="8" height="8"/>
+    <rect x="6" y="18" width="8" height="8"/>
+    <rect x="18" y="18" width="8" height="8"/>
+  </g>
+</svg>
