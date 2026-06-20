@@ -31,7 +31,9 @@ function monthTick(value: string): string {
 // Square ink-stroked marker for the returns line (sketch-009 data points).
 // `ink` is threaded from useChartColors (recharts clones this element with
 // cx/cy, preserving the ink prop) so the stroke flips with the theme.
-function SquareDot(props: Readonly<{ cx?: number; cy?: number; ink?: string }>) {
+function SquareDot(
+  props: Readonly<{ cx?: number; cy?: number; ink?: string }>,
+) {
   const { cx, cy, ink } = props;
   if (cx == null || cy == null) return null;
   return (

@@ -9,7 +9,9 @@ export interface ManualBarcodeEntryProps {
   onSubmit: (code: string, source: "manual") => void;
 }
 
-export function ManualBarcodeEntry({ onSubmit }: Readonly<ManualBarcodeEntryProps>) {
+export function ManualBarcodeEntry({
+  onSubmit,
+}: Readonly<ManualBarcodeEntryProps>) {
   const { t } = useLingui();
   const [value, setValue] = useState("");
   const trimmed = value.trim();

@@ -129,85 +129,85 @@ export function MembersPage() {
   } else {
     membersContent = (
       <RetroTable>
-          <thead>
-            <tr>
-              <th scope="col" className="text-left">
-                <Trans>Name</Trans>
-              </th>
-              <th scope="col" className="text-left">
-                <Trans>Email</Trans>
-              </th>
-              <th scope="col" className="text-left">
-                <Trans>Role</Trans>
-              </th>
-              <th scope="col" className="text-right">
-                <span className="sr-only">
-                  <Trans>Actions</Trans>
-                </span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((m) => {
-              const isSelf = meId != null && m.user_id === meId;
-              const name = memberName(m);
-              return (
-                <tr key={m.id} aria-selected={isSelf || undefined}>
-                  <td className="py-sp-3">
-                    <span className="flex items-center gap-sp-2">
-                      <span className="text-14 text-fg-ink">{name}</span>
-                      {isSelf && (
-                        <RetroBadge variant="info">
-                          <Trans>YOU</Trans>
-                        </RetroBadge>
-                      )}
-                    </span>
-                  </td>
-                  <td className="mono py-sp-3 text-12 text-fg-muted">
-                    {m.email ?? "—"}
-                  </td>
-                  <td className="py-sp-3">
-                    <RetroSelect
-                      label={
-                        <span className="sr-only">
-                          <Trans>Role for {name}</Trans>
-                        </span>
-                      }
-                      value={m.role}
-                      // Own role is server-authoritative (T-12-12): the select
-                      // is disabled for self so the user can't self-promote.
-                      disabled={isSelf || changeRole.isPending}
-                      onChange={(e) =>
-                        changeRole.mutate({
-                          userId: m.user_id,
-                          role: e.target.value,
-                        })
-                      }
-                    >
-                      {ROLES.map((r) => (
-                        <option key={r} value={r}>
-                          {roleLabel(r)}
-                        </option>
-                      ))}
-                    </RetroSelect>
-                  </td>
-                  <td className="py-sp-3 text-right">
-                    {!isSelf && (
-                      <BevelButton
-                        aria-label={t`Remove ${name}`}
-                        title={t`Remove ${name}`}
-                        disabled={removeMember.isPending}
-                        onClick={() => setRemoveTarget(m)}
-                      >
-                        <Trans>Remove</Trans>
-                      </BevelButton>
+        <thead>
+          <tr>
+            <th scope="col" className="text-left">
+              <Trans>Name</Trans>
+            </th>
+            <th scope="col" className="text-left">
+              <Trans>Email</Trans>
+            </th>
+            <th scope="col" className="text-left">
+              <Trans>Role</Trans>
+            </th>
+            <th scope="col" className="text-right">
+              <span className="sr-only">
+                <Trans>Actions</Trans>
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((m) => {
+            const isSelf = meId != null && m.user_id === meId;
+            const name = memberName(m);
+            return (
+              <tr key={m.id} aria-selected={isSelf || undefined}>
+                <td className="py-sp-3">
+                  <span className="flex items-center gap-sp-2">
+                    <span className="text-14 text-fg-ink">{name}</span>
+                    {isSelf && (
+                      <RetroBadge variant="info">
+                        <Trans>YOU</Trans>
+                      </RetroBadge>
                     )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </RetroTable>
+                  </span>
+                </td>
+                <td className="mono py-sp-3 text-12 text-fg-muted">
+                  {m.email ?? "—"}
+                </td>
+                <td className="py-sp-3">
+                  <RetroSelect
+                    label={
+                      <span className="sr-only">
+                        <Trans>Role for {name}</Trans>
+                      </span>
+                    }
+                    value={m.role}
+                    // Own role is server-authoritative (T-12-12): the select
+                    // is disabled for self so the user can't self-promote.
+                    disabled={isSelf || changeRole.isPending}
+                    onChange={(e) =>
+                      changeRole.mutate({
+                        userId: m.user_id,
+                        role: e.target.value,
+                      })
+                    }
+                  >
+                    {ROLES.map((r) => (
+                      <option key={r} value={r}>
+                        {roleLabel(r)}
+                      </option>
+                    ))}
+                  </RetroSelect>
+                </td>
+                <td className="py-sp-3 text-right">
+                  {!isSelf && (
+                    <BevelButton
+                      aria-label={t`Remove ${name}`}
+                      title={t`Remove ${name}`}
+                      disabled={removeMember.isPending}
+                      onClick={() => setRemoveTarget(m)}
+                    >
+                      <Trans>Remove</Trans>
+                    </BevelButton>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </RetroTable>
     );
   }
 

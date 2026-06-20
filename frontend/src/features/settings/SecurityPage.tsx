@@ -109,69 +109,69 @@ function SessionsCard() {
   } else {
     sessionsContent = (
       <RetroTable>
-          <thead>
-            <tr>
-              <th scope="col" className="text-left">
-                <Trans>Device</Trans>
-              </th>
-              <th scope="col" className="text-left">
-                <Trans>IP</Trans>
-              </th>
-              <th scope="col" className="text-left">
-                <Trans>Last active</Trans>
-              </th>
-              <th scope="col" className="text-right">
-                <span className="sr-only">
-                  <Trans>Actions</Trans>
+        <thead>
+          <tr>
+            <th scope="col" className="text-left">
+              <Trans>Device</Trans>
+            </th>
+            <th scope="col" className="text-left">
+              <Trans>IP</Trans>
+            </th>
+            <th scope="col" className="text-left">
+              <Trans>Last active</Trans>
+            </th>
+            <th scope="col" className="text-right">
+              <span className="sr-only">
+                <Trans>Actions</Trans>
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((s) => (
+            <tr key={s.id} aria-selected={s.is_current || undefined}>
+              <td className="py-sp-3">
+                <span className="flex items-center gap-sp-2">
+                  <span className="text-14 text-fg-ink">{s.device_info}</span>
+                  {s.is_current && (
+                    <RetroBadge variant="info">
+                      <Trans>THIS DEVICE</Trans>
+                    </RetroBadge>
+                  )}
                 </span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((s) => (
-              <tr key={s.id} aria-selected={s.is_current || undefined}>
-                <td className="py-sp-3">
-                  <span className="flex items-center gap-sp-2">
-                    <span className="text-14 text-fg-ink">{s.device_info}</span>
-                    {s.is_current && (
-                      <RetroBadge variant="info">
-                        <Trans>THIS DEVICE</Trans>
-                      </RetroBadge>
-                    )}
+              </td>
+              <td className="mono py-sp-3 text-12 text-fg-muted">
+                {s.ip_address ?? "—"}
+              </td>
+              <td
+                className="mono py-sp-3 text-12"
+                title={`${formatDate(s.last_active_at)} ${formatTime(
+                  s.last_active_at,
+                )}`}
+              >
+                {s.is_current ? (
+                  <span className="text-accent-mint-deep">
+                    <Trans>active now</Trans>
                   </span>
-                </td>
-                <td className="mono py-sp-3 text-12 text-fg-muted">
-                  {s.ip_address ?? "—"}
-                </td>
-                <td
-                  className="mono py-sp-3 text-12"
-                  title={`${formatDate(s.last_active_at)} ${formatTime(
-                    s.last_active_at,
-                  )}`}
-                >
-                  {s.is_current ? (
-                    <span className="text-accent-mint-deep">
-                      <Trans>active now</Trans>
-                    </span>
-                  ) : (
-                    relativeTime(s.last_active_at)
-                  )}
-                </td>
-                <td className="py-sp-3 text-right">
-                  {!s.is_current && (
-                    <BevelButton
-                      aria-label={t`Revoke session on ${s.device_info}`}
-                      disabled={revokeOne.isPending}
-                      onClick={() => revokeOne.mutate(s.id)}
-                    >
-                      <Trans>Revoke</Trans>
-                    </BevelButton>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </RetroTable>
+                ) : (
+                  relativeTime(s.last_active_at)
+                )}
+              </td>
+              <td className="py-sp-3 text-right">
+                {!s.is_current && (
+                  <BevelButton
+                    aria-label={t`Revoke session on ${s.device_info}`}
+                    disabled={revokeOne.isPending}
+                    onClick={() => revokeOne.mutate(s.id)}
+                  >
+                    <Trans>Revoke</Trans>
+                  </BevelButton>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </RetroTable>
     );
   }
 

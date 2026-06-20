@@ -36,7 +36,9 @@ function navigate(href: string): void {
   globalThis.location.href = href;
 }
 
-export function SocialLoginButtons({ mode }: Readonly<{ mode: SocialLoginMode }>) {
+export function SocialLoginButtons({
+  mode,
+}: Readonly<{ mode: SocialLoginMode }>) {
   const autheliaEnabled = import.meta.env.VITE_AUTHELIA_ENABLED === "true";
 
   return (

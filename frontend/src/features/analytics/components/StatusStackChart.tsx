@@ -9,7 +9,9 @@ import { seriesAt, markProps } from "../charts/retroChartTheme";
 // status count is normalized to its share of the total; the segments stack
 // across one row, palette-walked + ink-stroked. A swatch legend names each
 // status with its raw count. NO default recharts tooltip skin.
-export function StatusStackChart({ data }: Readonly<{ data: StatusBreakdown[] }>) {
+export function StatusStackChart({
+  data,
+}: Readonly<{ data: StatusBreakdown[] }>) {
   const { ink } = useChartColors();
   const isEmpty = data.length === 0;
   const total = data.reduce((sum, d) => sum + d.count, 0);

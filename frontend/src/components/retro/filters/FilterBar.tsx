@@ -97,22 +97,22 @@ export function FilterBar({
                 ? String(chip.label)
                 : chip.key;
             return (
-            <span
-              key={chip.key}
-              className="inline-flex items-center gap-[6px] rounded-chip border border-border-ink bg-titlebar-blue px-sp-2 py-px text-11 font-bold uppercase tracking-7 text-fg-ink"
-            >
-              <span className="text-fg-muted">{chip.label}:</span>
-              <span>{chip.displayValue}</span>
-              <button
-                type="button"
-                aria-label={t`Remove ${labelText} filter`}
-                title={t`Remove ${labelText} filter`}
-                onClick={() => onRemoveFilter(chip.key)}
-                className="cursor-pointer text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
+              <span
+                key={chip.key}
+                className="inline-flex items-center gap-[6px] rounded-chip border border-border-ink bg-titlebar-blue px-sp-2 py-px text-11 font-bold uppercase tracking-7 text-fg-ink"
               >
-                <span aria-hidden="true">✕</span>
-              </button>
-            </span>
+                <span className="text-fg-muted">{chip.label}:</span>
+                <span>{chip.displayValue}</span>
+                <button
+                  type="button"
+                  aria-label={t`Remove ${labelText} filter`}
+                  title={t`Remove ${labelText} filter`}
+                  onClick={() => onRemoveFilter(chip.key)}
+                  className="cursor-pointer text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
+                >
+                  <span aria-hidden="true">✕</span>
+                </button>
+              </span>
             );
           })}
           <button
