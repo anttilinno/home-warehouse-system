@@ -27,7 +27,21 @@ export interface RetroTreeNode {
   name: string;
   itemCount: number;
   isArchived: boolean;
+  /** Optional short code shown muted after the name (e.g. locations). */
+  shortCode?: string;
   children: RetroTreeNode[];
+}
+
+// Collect ids of every node that HAS children (the expandable set) in document
+// order — used by the expand-all control.
+function expandableIds(nodes: RetroTreeNode[], out: string[] = []): string[] {
+  for (const node of nodes) {
+    if (node.children.length > 0) {
+      out.push(node.id);
+      expandableIds(node.children, out);
+    }
+  }
+  return out;
 }
 
 export interface RetroTreeProps {
@@ -43,6 +57,9 @@ export interface RetroTreeProps {
   onRestore: (node: RetroTreeNode) => void;
   /** Shown when there are no nodes (consumer-supplied RetroEmptyState). */
   emptyState: ReactNode;
+  /** Optional control rendered at the START of the toolbar row (e.g. the
+   *  consumer's "⊕ ADD ROOT" button). Expand/collapse-all sit opposite it. */
+  leadingAction?: ReactNode;
 }
 
 // A row in document order, carrying depth for indentation + a11y level.
@@ -75,6 +92,7 @@ export function RetroTree({
   onArchive,
   onRestore,
   emptyState,
+  leadingAction,
 }: Readonly<RetroTreeProps>) {
   const [expanded, setExpanded] = useState<Set<string>>(
     () => new Set(getSet(storageKey)),
@@ -109,7 +127,21 @@ export function RetroTree({
     });
   }
 
-  if (nodes.length === 0) return <>{emptyState}</>;
+  if (nodes.length === 0) {
+    return (
+      <div className="flex flex-col gap-sp-2">
+        {leadingAction && (
+          <div className="flex items-center">{leadingAction}</div>
+        )}
+        {emptyState}
+      </div>
+    );
+  }
+
+  const allExpandable = expandableIds(nodes);
+  const expandAll = () => setExpanded(new Set(allExpandable));
+  const collapseAll = () => setExpanded(new Set());
+  const hasBranches = allExpandable.length > 0;
 
   const rows = flatten(nodes, expanded, 0, []);
 
@@ -164,142 +196,174 @@ export function RetroTree({
   }
 
   return (
-    <div role="tree" className="flex flex-col">
-      {rows.map((row, i) => {
-        const { node, depth } = row;
-        const hasChildren = node.children.length > 0;
-        const isOpen = expanded.has(node.id);
-        const isFirst = i === 0;
-
-        return (
-          <div
-            key={node.id}
-            role="treeitem"
-            aria-level={depth + 1}
-            aria-expanded={hasChildren ? isOpen : undefined}
-            aria-selected={false}
-            tabIndex={isFirst ? 0 : -1}
-            ref={(el) => {
-              if (el) rowRefs.current.set(node.id, el);
-              else rowRefs.current.delete(node.id);
-            }}
-            onKeyDown={(e) => onKeyDown(e, row)}
-            onClick={() => hasChildren && toggle(node.id)}
-            className="group flex cursor-default items-center gap-sp-1 py-[3px] pr-sp-2 hover:bg-bg-panel-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-[-2px]"
-          >
-            {/* Indent guides: one 1px sand rule per depth level. */}
-            {Array.from(
-              { length: depth },
-              (_, d) => `${node.id}-guide-${d}`,
-            ).map((guideKey) => (
-              <span
-                key={guideKey}
-                aria-hidden
-                className="self-stretch border-l border-table-rule"
-                style={{ width: INDENT_PX }}
-              />
-            ))}
-
-            {/* Disclosure caret / leaf glyph. */}
-            {hasChildren ? (
-              <button
+    <div className="flex flex-col gap-sp-2">
+      {(leadingAction || hasBranches) && (
+        <div className="flex items-center gap-sp-1">
+          {leadingAction}
+          {hasBranches && (
+            <div className="ml-auto flex items-center gap-sp-1">
+              <BevelButton
                 type="button"
-                aria-expanded={isOpen}
-                aria-label={isOpen ? "Collapse" : "Expand"}
-                title={isOpen ? "Collapse" : "Expand"}
-                tabIndex={-1}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggle(node.id);
-                }}
-                className="w-[12px] shrink-0 text-center text-12 leading-none text-fg-ink"
+                className="!px-[8px] !py-[2px] !text-11"
+                onClick={expandAll}
               >
-                {isOpen ? "▾" : "▸"}
-              </button>
-            ) : (
-              <span
-                aria-hidden
-                className="w-[12px] shrink-0 text-center text-12 leading-none text-fg-faint"
+                EXPAND ALL
+              </BevelButton>
+              <BevelButton
+                type="button"
+                className="!px-[8px] !py-[2px] !text-11"
+                onClick={collapseAll}
               >
-                {"·"}
-              </span>
-            )}
+                COLLAPSE ALL
+              </BevelButton>
+            </div>
+          )}
+        </div>
+      )}
+      <div role="tree" className="flex flex-col">
+        {rows.map((row, i) => {
+          const { node, depth } = row;
+          const hasChildren = node.children.length > 0;
+          const isOpen = expanded.has(node.id);
+          const isFirst = i === 0;
 
-            {/* Name (archived → muted). */}
-            <span
-              className={`truncate font-body text-14 ${
-                node.isArchived ? "text-fg-muted" : "text-fg-ink"
-              }`}
+          return (
+            <div
+              key={node.id}
+              role="treeitem"
+              aria-level={depth + 1}
+              aria-expanded={hasChildren ? isOpen : undefined}
+              aria-selected={false}
+              tabIndex={isFirst ? 0 : -1}
+              ref={(el) => {
+                if (el) rowRefs.current.set(node.id, el);
+                else rowRefs.current.delete(node.id);
+              }}
+              onKeyDown={(e) => onKeyDown(e, row)}
+              onClick={() => hasChildren && toggle(node.id)}
+              className="group flex cursor-default items-center gap-sp-1 py-[3px] pr-sp-2 hover:bg-bg-panel-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-[-2px]"
             >
-              {node.name}
-            </span>
+              {/* Indent guides: one 1px sand rule per depth level. */}
+              {Array.from(
+                { length: depth },
+                (_, d) => `${node.id}-guide-${d}`,
+              ).map((guideKey) => (
+                <span
+                  key={guideKey}
+                  aria-hidden
+                  className="self-stretch border-l border-table-rule"
+                  style={{ width: INDENT_PX }}
+                />
+              ))}
 
-            {/* Item-count badge — hidden at 0 (avoid "(0)" noise). */}
-            {node.itemCount > 0 && (
-              <RetroBadge variant="neutral" className="font-mono">
-                ({node.itemCount})
-              </RetroBadge>
-            )}
+              {/* Disclosure caret / leaf glyph. */}
+              {hasChildren ? (
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  aria-label={isOpen ? "Collapse" : "Expand"}
+                  title={isOpen ? "Collapse" : "Expand"}
+                  tabIndex={-1}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggle(node.id);
+                  }}
+                  className="w-[12px] shrink-0 text-center text-12 leading-none text-fg-ink"
+                >
+                  {isOpen ? "▾" : "▸"}
+                </button>
+              ) : (
+                <span
+                  aria-hidden
+                  className="w-[12px] shrink-0 text-center text-12 leading-none text-fg-faint"
+                >
+                  {"·"}
+                </span>
+              )}
 
-            {node.isArchived && (
-              <RetroBadge variant="neutral">ARCHIVED</RetroBadge>
-            )}
+              {/* Name (archived → muted). */}
+              <span
+                className={`truncate font-body text-14 ${
+                  node.isArchived ? "text-fg-muted" : "text-fg-ink"
+                }`}
+              >
+                {node.name}
+              </span>
 
-            {/* Row actions — reveal on hover/focus; always rendered for
+              {/* Short code — muted mono, after the name (e.g. location codes). */}
+              {node.shortCode && (
+                <span className="shrink-0 font-mono text-11 text-fg-faint">
+                  {node.shortCode}
+                </span>
+              )}
+
+              {/* Item-count badge — hidden at 0 (avoid "(0)" noise). */}
+              {node.itemCount > 0 && (
+                <RetroBadge variant="neutral" className="font-mono">
+                  ({node.itemCount})
+                </RetroBadge>
+              )}
+
+              {node.isArchived && (
+                <RetroBadge variant="neutral">ARCHIVED</RetroBadge>
+              )}
+
+              {/* Row actions — reveal on hover/focus; always rendered for
                 keyboard reach. Cluster stops propagation so it never toggles
                 the row. */}
-            {/* biome-ignore lint/a11y/noStaticElementInteractions: stops row-click propagation only, not an interactive control */}
-            {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops row-click propagation only, not an interactive control */}
-            <div
-              className="ml-auto flex items-center gap-sp-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {node.isArchived ? (
-                <BevelButton
-                  type="button"
-                  variant="mint"
-                  tabIndex={-1}
-                  className="!px-[8px] !py-[2px] !text-11"
-                  onClick={() => onRestore(node)}
-                >
-                  RESTORE
-                </BevelButton>
-              ) : (
-                <>
+              {/* biome-ignore lint/a11y/noStaticElementInteractions: stops row-click propagation only, not an interactive control */}
+              {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops row-click propagation only, not an interactive control */}
+              <div
+                className="ml-auto flex items-center gap-sp-1 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {node.isArchived ? (
                   <BevelButton
                     type="button"
+                    variant="mint"
                     tabIndex={-1}
                     className="!px-[8px] !py-[2px] !text-11"
-                    onClick={() => onEdit(node)}
+                    onClick={() => onRestore(node)}
                   >
-                    EDIT
+                    RESTORE
                   </BevelButton>
-                  <BevelButton
-                    type="button"
-                    tabIndex={-1}
-                    aria-label="Add child"
-                    title="Add child"
-                    className="!px-[8px] !py-[2px] !text-11"
-                    onClick={() => onAddChild(node)}
-                  >
-                    {"⊕"}
-                  </BevelButton>
-                  <BevelButton
-                    type="button"
-                    tabIndex={-1}
-                    aria-label="Archive"
-                    title="Archive"
-                    className="!px-[8px] !py-[2px] !text-11"
-                    onClick={() => onArchive(node)}
-                  >
-                    {"⌫"}
-                  </BevelButton>
-                </>
-              )}
+                ) : (
+                  <>
+                    <BevelButton
+                      type="button"
+                      tabIndex={-1}
+                      className="!px-[8px] !py-[2px] !text-11"
+                      onClick={() => onEdit(node)}
+                    >
+                      EDIT
+                    </BevelButton>
+                    <BevelButton
+                      type="button"
+                      tabIndex={-1}
+                      aria-label="Add child"
+                      title="Add child"
+                      className="!px-[8px] !py-[2px] !text-11"
+                      onClick={() => onAddChild(node)}
+                    >
+                      {"⊕"}
+                    </BevelButton>
+                    <BevelButton
+                      type="button"
+                      tabIndex={-1}
+                      aria-label="Archive"
+                      title="Archive"
+                      className="!px-[8px] !py-[2px] !text-11"
+                      onClick={() => onArchive(node)}
+                    >
+                      {"⌫"}
+                    </BevelButton>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

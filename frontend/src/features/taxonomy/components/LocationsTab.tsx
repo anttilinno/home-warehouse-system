@@ -34,6 +34,7 @@ function toTreeNodes(nodes: TreeNode<Location>[]): RetroTreeNode[] {
     name: n.node.name,
     itemCount: 0,
     isArchived: n.node.is_archived,
+    shortCode: n.node.short_code,
     children: toTreeNodes(n.children),
   }));
 }
@@ -100,22 +101,21 @@ export function LocationsTab() {
       onRetry={() => refetch()}
     >
       <div className="flex flex-col gap-sp-3">
-        <div className="flex items-center">
-          <BevelButton variant="mint" onClick={openCreateRoot}>
-            <Trans>⊕ ADD ROOT LOCATION</Trans>
-          </BevelButton>
-        </div>
-
         <RetroTree
           nodes={nodes}
           storageKey="taxonomy:tree:locations"
+          leadingAction={
+            <BevelButton variant="mint" onClick={openCreateRoot}>
+              <Trans>⊕ ADD ROOT LOCATION</Trans>
+            </BevelButton>
+          }
           onAddChild={openAddChild}
           onEdit={openEdit}
           onArchive={openArchive}
           onRestore={onRestore}
           emptyState={
             <RetroEmptyState
-              eyebrow={<Trans>Taxonomy</Trans>}
+              eyebrow={<Trans>Locations</Trans>}
               glyph="◇"
               heading={<Trans>NO LOCATIONS YET</Trans>}
               body={

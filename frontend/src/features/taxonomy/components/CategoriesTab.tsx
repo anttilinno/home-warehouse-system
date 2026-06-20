@@ -90,22 +90,21 @@ export function CategoriesTab() {
       onRetry={() => refetch()}
     >
       <div className="flex flex-col gap-sp-3">
-        <div className="flex items-center">
-          <BevelButton variant="mint" onClick={openCreateRoot}>
-            <Trans>⊕ ADD ROOT CATEGORY</Trans>
-          </BevelButton>
-        </div>
-
         <RetroTree
           nodes={nodes}
           storageKey="taxonomy:tree:categories"
+          leadingAction={
+            <BevelButton variant="mint" onClick={openCreateRoot}>
+              <Trans>⊕ ADD ROOT CATEGORY</Trans>
+            </BevelButton>
+          }
           onAddChild={openAddChild}
           onEdit={openEdit}
           onArchive={openArchive}
           onRestore={onRestore}
           emptyState={
             <RetroEmptyState
-              eyebrow={<Trans>Taxonomy</Trans>}
+              eyebrow={<Trans>Categories</Trans>}
               glyph="◇"
               heading={<Trans>NO CATEGORIES YET</Trans>}
               body={
