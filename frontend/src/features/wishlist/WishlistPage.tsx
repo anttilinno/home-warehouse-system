@@ -1,11 +1,7 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
-import {
-  Window,
-  RetroTabs,
-  RetroConfirmDialog,
-} from "@/components/retro";
+import { Window, RetroTabs, RetroConfirmDialog } from "@/components/retro";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 import type { WishlistItem, WishlistStatus } from "@/lib/api/wishlist";
 import { useWishlist } from "./hooks/useWishlist";

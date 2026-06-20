@@ -153,8 +153,8 @@ export function RepairsDrawer({
           heading={<Trans>NO REPAIRS</Trans>}
           body={
             <Trans>
-              No repairs logged for this entry yet. Add one to track work,
-              cost, and warranty.
+              No repairs logged for this entry yet. Add one to track work, cost,
+              and warranty.
             </Trans>
           }
           action={{
@@ -181,9 +181,7 @@ export function RepairsDrawer({
                 <span className="text-14 font-semibold text-fg-ink">
                   {repair.description}
                 </span>
-                <StatusPill variant={status.variant}>
-                  {status.label}
-                </StatusPill>
+                <StatusPill variant={status.variant}>{status.label}</StatusPill>
               </div>
 
               <div className="flex flex-wrap items-baseline gap-sp-2 font-mono text-12 text-fg-muted">
@@ -207,8 +205,7 @@ export function RepairsDrawer({
                 )}
                 {isCompleted && repair.completed_at && (
                   <span>
-                    <Trans>completed</Trans>{" "}
-                    {formatDate(repair.completed_at)}
+                    <Trans>completed</Trans> {formatDate(repair.completed_at)}
                   </span>
                 )}
               </div>

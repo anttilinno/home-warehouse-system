@@ -49,7 +49,10 @@ function matches(label: string, query: string): boolean {
   return label.toLowerCase().includes(q);
 }
 
-export default function CommandPalette({ open, onClose }: Readonly<CommandPaletteProps>) {
+export default function CommandPalette({
+  open,
+  onClose,
+}: Readonly<CommandPaletteProps>) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const { workspaces, setWorkspace } = useWorkspace();

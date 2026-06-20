@@ -101,8 +101,7 @@ export function useMaintenanceMutations() {
   >({
     mutationFn: ({ id, body }) =>
       maintenanceApi.update(wsId as string, id, body),
-    onMutate: ({ id, body }) =>
-      optimisticPatch(id, body),
+    onMutate: ({ id, body }) => optimisticPatch(id, body),
     onError: (_err, _arg, ctx) => {
       restore(ctx);
       retroToast.error(t`Couldn't save this schedule.`);

@@ -10,7 +10,9 @@ import { seriesAt, markProps } from "../charts/retroChartTheme";
 // border + pastel swatch + mono count). The PieChart is rendered at a fixed box
 // (it sits beside the legend, so it does not use the full-width responsive
 // frame). NO default recharts tooltip skin.
-export function ConditionDonutChart({ data }: Readonly<{ data: ConditionBreakdown[] }>) {
+export function ConditionDonutChart({
+  data,
+}: Readonly<{ data: ConditionBreakdown[] }>) {
   const { ink } = useChartColors();
   const isEmpty = data.length === 0;
   const total = data.reduce((sum, d) => sum + d.count, 0);
