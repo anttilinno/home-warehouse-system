@@ -159,6 +159,7 @@ function ShellChrome() {
         <TopBar
           online={connected}
           onToggleDrawer={() => setDrawerOpen((v) => !v)}
+          onOpenSearch={() => setPaletteOpen(true)}
         />
       </div>
 

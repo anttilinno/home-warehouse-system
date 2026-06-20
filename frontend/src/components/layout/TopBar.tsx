@@ -22,6 +22,12 @@ import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 const FOCUS_RING =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
 
+// ⌘K on Apple, Ctrl+K elsewhere — match the tinykeys `$mod+k` chord label.
+const IS_APPLE =
+  typeof navigator !== "undefined" &&
+  /Mac|iPhone|iPad/.test(navigator.platform);
+const SEARCH_HINT = IS_APPLE ? "⌘K" : "Ctrl K";
+
 export interface TopBarProps {
   /**
    * Live connectivity for the ONLINE dot. Optional: defaults to
@@ -30,9 +36,15 @@ export interface TopBarProps {
   online?: boolean;
   /** Mobile hamburger toggle for the Navigator drawer (wired in Plan 06). */
   onToggleDrawer?: () => void;
+  /** Open the global search / command palette (⌘K / F2 also open it). */
+  onOpenSearch?: () => void;
 }
 
-export function TopBar({ online, onToggleDrawer }: Readonly<TopBarProps>) {
+export function TopBar({
+  online,
+  onToggleDrawer,
+  onOpenSearch,
+}: Readonly<TopBarProps>) {
   // Live SSE connection status — drives BOTH the ONLINE dot (when no explicit
   // `online` prop) AND the sse-slot RetroStatusDot.
   const { connected } = useSSEStatus();
@@ -84,7 +96,24 @@ export function TopBar({ online, onToggleDrawer }: Readonly<TopBarProps>) {
         </span>
       </span>
 
-      <span className="flex-1" />
+      {/* Global search trigger — opens the command palette (⌘K / Ctrl+K / F2).
+          The visible counterpart to the keyboard-only chord; styled as a faux
+          search field that grows to fill the bar's centre. */}
+      <button
+        type="button"
+        onClick={onOpenSearch}
+        aria-label="Search"
+        aria-keyshortcuts="Meta+K Control+K"
+        className={`mx-sp-2 flex h-[28px] min-w-0 max-w-[420px] flex-1 items-center gap-sp-2 border-2 border-border-ink bg-bg-panel-2 px-sp-2 text-12 text-fg-muted bevel-pressed hover:text-fg-ink active:translate-x-px active:translate-y-px ${FOCUS_RING}`}
+      >
+        <span aria-hidden="true">⌕</span>
+        <span className="truncate">
+          <Trans>Search…</Trans>
+        </span>
+        <kbd className="ml-auto hidden flex-none border border-border-ink bg-bg-panel px-sp-1 font-mono text-10 text-fg-ink sm:inline">
+          {SEARCH_HINT}
+        </kbd>
+      </button>
 
       {/* Theme quick-toggle — moon to go dark, sun to go light. Mirrors the
           hamburger's beveled-square chrome. Full 3-way pref in Settings. */}

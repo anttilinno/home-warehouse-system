@@ -137,7 +137,7 @@ export function ContainersTab() {
 
         {rows.length === 0 ? (
           <RetroEmptyState
-            eyebrow={<Trans>Taxonomy</Trans>}
+            eyebrow={<Trans>Containers</Trans>}
             glyph="◇"
             heading={<Trans>NO CONTAINERS YET</Trans>}
             body={
@@ -170,6 +170,11 @@ export function ContainersTab() {
                           >
                             {c.name}
                           </span>
+                          {c.short_code && (
+                            <span className="ml-sp-2 font-mono text-11 text-fg-faint">
+                              {c.short_code}
+                            </span>
+                          )}
                           {c.is_archived && (
                             <span className="ml-sp-2 text-11 uppercase text-fg-muted">
                               <Trans>archived</Trans>

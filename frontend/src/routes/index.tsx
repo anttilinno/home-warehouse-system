@@ -37,7 +37,6 @@ import { SyncHistoryPage } from "@/features/system-history/Page";
 import { CategoryFormDialog } from "@/features/taxonomy/components/CategoryFormDialog";
 import { TaxonomyPage } from "@/features/taxonomy/TaxonomyPage";
 import { WishlistPage } from "@/features/wishlist/WishlistPage";
-import { DemoPage } from "@/routes/demo/DemoPage";
 
 // /scan is React.lazy so the camera scanner library lands in its own manualChunk
 // (11-01) and only downloads when the user actually visits /scan (T-11-16 DoS —
@@ -105,6 +104,16 @@ const PaperlessPage = lazy(() =>
     default: m.PaperlessPage,
   })),
 );
+
+// /demo is DEV-only. A GATED lazy import (not a static one) so the production
+// build drops both the route AND the chunk: `import.meta.env.DEV` is statically
+// false in prod, making the lazy()+import() branch dead code that Rollup DCEs —
+// the demo bytes never ship in the production artefact.
+const DemoPage = import.meta.env.DEV
+  ? lazy(() =>
+      import("@/routes/demo/DemoPage").then((m) => ({ default: m.DemoPage })),
+    )
+  : () => null;
 
 // Library-mode RR7 (NOT framework mode — AP-1). Literal routes before the
 // wildcard. /login stays public; the authenticated branch is now an AppShell
@@ -306,7 +315,16 @@ export function AppRoutes() {
       </Route>
       {/* /demo: standalone dark-terminal dashboard mockup. DEV-gated — renders
           full-screen OUTSIDE the AppShell (own chrome) and never ships. */}
-      {import.meta.env.DEV && <Route path="/demo" element={<DemoPage />} />}
+      {import.meta.env.DEV && (
+        <Route
+          path="/demo"
+          element={
+            <Suspense fallback={null}>
+              <DemoPage />
+            </Suspense>
+          }
+        />
+      )}
       <Route path="*" element={<PlaceholderShell />} />
     </Routes>
   );

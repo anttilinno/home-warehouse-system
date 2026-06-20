@@ -43,6 +43,19 @@ export function TaxonomyPage() {
   const workspaceName =
     workspaces?.find((w) => w.id === wsId)?.name ?? t`Workspace`;
 
+  const titleFor = (id: TaxTab): string => {
+    switch (id) {
+      case "categories":
+        return t`CATEGORIES — ${workspaceName}`;
+      case "locations":
+        return t`LOCATIONS — ${workspaceName}`;
+      case "containers":
+        return t`CONTAINERS — ${workspaceName}`;
+      case "labels":
+        return t`LABELS — ${workspaceName}`;
+    }
+  };
+
   const setTab = useCallback(
     (id: string) => {
       setSearchParams((prev) => {
@@ -77,7 +90,7 @@ export function TaxonomyPage() {
 
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">
-      <Window title={t`TAXONOMY — ${workspaceName}`} titlebarVariant="mint">
+      <Window title={titleFor(tab)} titlebarVariant="mint">
         <RetroTabs tabs={tabs} value={tab} onChange={setTab} />
       </Window>
     </div>

@@ -69,7 +69,7 @@ export function LabelsTab() {
 
         {rows.length === 0 ? (
           <RetroEmptyState
-            eyebrow={<Trans>Taxonomy</Trans>}
+            eyebrow={<Trans>Labels</Trans>}
             glyph="◇"
             heading={<Trans>NO LABELS YET</Trans>}
             body={
