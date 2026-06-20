@@ -124,7 +124,7 @@ export function TopBar({
           goingDark ? "Switch to dark theme" : "Switch to light theme"
         }
         title={goingDark ? "Switch to dark theme" : "Switch to light theme"}
-        className={`grid h-[28px] w-[28px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-14 leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed ${FOCUS_RING}`}
+        className={`ml-auto grid h-[28px] w-[28px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-14 leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed ${FOCUS_RING}`}
       >
         <span aria-hidden="true">{goingDark ? "☾" : "☀"}</span>
       </button>
