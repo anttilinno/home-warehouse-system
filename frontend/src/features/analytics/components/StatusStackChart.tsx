@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { Trans } from "@lingui/react/macro";
 import type { StatusBreakdown } from "@/features/analytics/types";
 import { Window, RetroEmptyState } from "@/components/retro";
@@ -33,11 +33,9 @@ export function StatusStackChart({
         />
       ) : (
         <div className="flex flex-col gap-sp-3">
-          <div style={{ width: "100%", height: 56 }}>
+          <ResponsiveContainer width="100%" height={56}>
             <BarChart
               layout="vertical"
-              width={520}
-              height={56}
               data={[row]}
               stackOffset="expand"
               margin={{ top: 6, right: 8, bottom: 6, left: 8 }}
@@ -55,7 +53,7 @@ export function StatusStackChart({
                 />
               ))}
             </BarChart>
-          </div>
+          </ResponsiveContainer>
           <ul
             data-testid="status-legend"
             className="flex flex-wrap gap-sp-2 gap-x-sp-4 text-12 font-semibold"

@@ -5,6 +5,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
+  ResponsiveContainer,
 } from "recharts";
 import { Trans } from "@lingui/react/macro";
 import { formatMonthYearToken } from "@/lib/format";
@@ -92,10 +93,8 @@ export function MonthlyLoanActivityChart({
               <Trans>Returns</Trans>
             </li>
           </ul>
-          <div style={{ width: "100%", height: 260 }}>
+          <ResponsiveContainer width="100%" height={260}>
             <ComposedChart
-              width={1000}
-              height={260}
               data={data}
               margin={{ top: 12, right: 24, bottom: 8, left: 8 }}
             >
@@ -131,7 +130,7 @@ export function MonthlyLoanActivityChart({
                 dot={<SquareDot ink={ink} />}
               />
             </ComposedChart>
-          </div>
+          </ResponsiveContainer>
         </div>
       )}
     </Window>
