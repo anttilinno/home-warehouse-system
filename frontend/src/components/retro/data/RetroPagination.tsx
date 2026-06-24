@@ -48,7 +48,9 @@ export function RetroPagination({
         disabled={page <= 1}
         onClick={() => onPageChange(page - 1)}
       >
-        ◂ {t`PREV`}
+        {/* Icon-only below sm so the whole pager fits one row on mobile;
+            the PREV/NEXT labels return from sm up. aria-label carries the name. */}
+        ◂<span className="hidden sm:inline"> {t`PREV`}</span>
       </BevelButton>
 
       <div className="flex flex-wrap items-center gap-sp-1">
@@ -74,11 +76,18 @@ export function RetroPagination({
         disabled={page >= pageCount}
         onClick={() => onPageChange(page + 1)}
       >
-        {t`NEXT`} ▸
+        <span className="hidden sm:inline">{t`NEXT`} </span>▸
       </BevelButton>
 
       <span className="ml-auto font-mono text-12 tabular-nums text-fg-muted">
-        {t`page ${page} of ${pageCount} · ${perPage} / page`}
+        {/* Compact "X / Y" on mobile; the full sentence (with rows/page) from
+            sm up — keeps the strip on one row at narrow widths. */}
+        <span className="sm:hidden">
+          {page} / {pageCount}
+        </span>
+        <span className="hidden sm:inline">
+          {t`page ${page} of ${pageCount} · ${perPage} / page`}
+        </span>
       </span>
     </nav>
   );

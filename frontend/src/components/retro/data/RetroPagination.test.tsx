@@ -64,6 +64,8 @@ describe("RetroPagination", () => {
     renderPager({ page: 2, pageCount: 7, perPage: 25 });
     const meta = screen.getByText(/page 2 of 7 · 25 \/ page/i);
     expect(meta).toBeInTheDocument();
-    expect(meta.className).toContain("tabular-nums");
+    // The full sentence renders from sm up inside the mono tabular-nums meta
+    // container (a compact "2 / 7" shows below sm); assert the styled ancestor.
+    expect(meta.closest(".tabular-nums")).not.toBeNull();
   });
 });
