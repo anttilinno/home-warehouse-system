@@ -123,7 +123,11 @@ export function RetroTabs({
           role="tabpanel"
           id={panelId(active.id)}
           aria-labelledby={tabId(active.id)}
-          className="border-2 border-t-0 border-border-ink bg-bg-panel p-sp-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
+          // Top border is normally dropped so the active tab connects into the
+          // panel. When the tablist is hidden below md, the panel would be an
+          // open-topped box — keep its top border on mobile, drop it only at md
+          // where the tablist returns.
+          className={`border-2 ${hideTablistBelowMd ? "md:border-t-0" : "border-t-0"} border-border-ink bg-bg-panel p-sp-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2`}
         >
           {active.content}
         </div>
