@@ -198,7 +198,7 @@ export function RetroTree({
   return (
     <div className="flex flex-col gap-sp-2">
       {(leadingAction || hasBranches) && (
-        <div className="flex items-center gap-sp-1">
+        <div className="flex flex-wrap items-center gap-sp-1 gap-y-sp-2">
           {leadingAction}
           {hasBranches && (
             <div className="ml-auto flex items-center gap-sp-1">
