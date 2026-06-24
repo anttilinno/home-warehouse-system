@@ -202,19 +202,26 @@ export function RetroTree({
           {leadingAction}
           {hasBranches && (
             <div className="ml-auto flex items-center gap-sp-1">
+              {/* Icon-only below sm (⊞/⊟) so the toolbar fits one row beside the
+                  leading action; the labels return from sm up. aria-label keeps
+                  the accessible name in both modes. */}
               <BevelButton
                 type="button"
+                aria-label="Expand all"
+                title="Expand all"
                 className="!px-[8px] !py-[2px] !text-11"
                 onClick={expandAll}
               >
-                EXPAND ALL
+                ⊞<span className="hidden sm:inline"> EXPAND ALL</span>
               </BevelButton>
               <BevelButton
                 type="button"
+                aria-label="Collapse all"
+                title="Collapse all"
                 className="!px-[8px] !py-[2px] !text-11"
                 onClick={collapseAll}
               >
-                COLLAPSE ALL
+                ⊟<span className="hidden sm:inline"> COLLAPSE ALL</span>
               </BevelButton>
             </div>
           )}
