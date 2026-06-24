@@ -43,6 +43,13 @@ const VIEWPORT_HEIGHT = 900;
 // Small tolerance for sub-pixel rounding when comparing scrollWidth/clientWidth.
 const OVERFLOW_TOL = 2;
 
+// Dashboard + the items list. /items is the representative table view: the wide
+// multi-column table is rendered through the shared RetroTable, which now owns
+// the overflow-x wrapper, so this one route guards the fix for ALL list tables.
+// (We keep the route set small on purpose — looping every list view here pushes
+// the dev server into blank-page resource exhaustion after ~20 rapid full-page
+// navigations, a harness artifact unrelated to layout. The full per-view sweep
+// is done manually via the browser devtools probe in the layout PR.)
 const ROUTES = ["/", "/items"] as const;
 
 /** Log in via the real /login flow and land on the dashboard (one login/test). */
@@ -60,6 +67,58 @@ async function hasNoHorizontalOverflow(page: Page): Promise<boolean> {
     const el = document.documentElement;
     return el.scrollWidth <= el.clientWidth + tol;
   }, OVERFLOW_TOL);
+}
+
+/**
+ * Find content that overflows the viewport but is NOT inside a horizontal
+ * scroll container — i.e. it is CLIPPED by an `overflow:hidden` ancestor (or
+ * overflows the root) and is therefore visibly cut off. This catches the class
+ * of bug the cheap root-scrollWidth check above misses entirely: a wide table
+ * whose min-content width propagates up through a card lacking `min-width:0`,
+ * forcing the card past the viewport where AppShell clips it. Properly handled
+ * wide content lives inside an `overflow-x:auto/scroll` wrapper and is excluded.
+ *
+ * SVG primitives and sub-60px slivers are ignored (decorative chrome like the
+ * FAB icon and chart-axis labels can sit a few px past the edge by design).
+ */
+async function clippedOverflowOffenders(
+  page: Page,
+  tol: number,
+): Promise<{ tag: string; cls: string; width: number; right: number }[]> {
+  return page.evaluate((t) => {
+    const SVG = new Set([
+      "svg", "g", "ellipse", "path", "rect", "circle", "line",
+      "polygon", "polyline", "use", "defs", "clippath", "text", "tspan",
+    ]);
+    const vw = document.documentElement.clientWidth;
+    const out: { tag: string; cls: string; width: number; right: number }[] = [];
+    for (const el of document.querySelectorAll<HTMLElement>("body *")) {
+      const tag = el.tagName.toLowerCase();
+      if (SVG.has(tag)) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 60 || r.right <= vw + t) continue;
+      // Walk ancestors: the FIRST overflow-managing ancestor decides. auto/
+      // scroll => the element scrolls in place (fine). hidden / none => the
+      // element is clipped or overflows the root (a real visual break).
+      let p: HTMLElement | null = el.parentElement;
+      let scrollable = false;
+      while (p) {
+        const ox = getComputedStyle(p).overflowX;
+        if (ox === "auto" || ox === "scroll") { scrollable = true; break; }
+        if (ox === "hidden") break;
+        p = p.parentElement;
+      }
+      if (!scrollable) {
+        out.push({
+          tag,
+          cls: (el.className || "").toString().slice(0, 60),
+          width: Math.round(r.width),
+          right: Math.round(r.right),
+        });
+      }
+    }
+    return out.sort((a, b) => b.right - a.right).slice(0, 8);
+  }, tol);
 }
 
 test.describe("responsive breakpoint matrix (POL-05)", () => {
@@ -83,13 +142,25 @@ test.describe("responsive breakpoint matrix (POL-05)", () => {
           route === "/" ? "/" : new RegExp(`${route}$`),
         );
         // Wait for the shell to settle: the <main> region is always present.
-        await expect(page.locator("#main")).toBeVisible();
+        await expect(
+          page.locator("#main"),
+          `#main missing at ${width}px on ${route}`,
+        ).toBeVisible();
 
-        // 1) No horizontal overflow at this viewport/route.
+        // 1) No horizontal overflow at this viewport/route (cheap root check).
         expect(
           await hasNoHorizontalOverflow(page),
           `horizontal overflow at ${width}px on ${route}`,
         ).toBe(true);
+
+        // 1b) No CLIPPED overflow — content cut off by an overflow:hidden
+        // ancestor (the failure the root check above cannot see). Wide tables
+        // must live in an overflow-x:auto wrapper, not spill out of their card.
+        const offenders = await clippedOverflowOffenders(page, OVERFLOW_TOL);
+        expect(
+          offenders,
+          `clipped overflow at ${width}px on ${route}: ${JSON.stringify(offenders)}`,
+        ).toEqual([]);
 
         // 2) Nav-surface contract at the `md` (768px) boundary.
         if (isDesktop) {

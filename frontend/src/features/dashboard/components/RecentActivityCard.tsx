@@ -44,77 +44,71 @@ export function RecentActivityCard({
           <Trans>Could not load activity.</Trans>
         </p>
       )}
-      {/* Scroll the 5-column table horizontally WITHIN the card on narrow
-          viewports — without this the table's min-content width overflows the
-          window and clips its right border (the min-w-0 dashboard column lets
-          the card shrink below the table's intrinsic width). */}
       {data && (
-        <div className="overflow-x-auto">
-          <RetroTable>
-            <thead>
-              <tr>
-                <th>
-                  <Trans>Time</Trans>
-                </th>
-                <th>
-                  <Trans>Action</Trans>
-                </th>
-                <th>
-                  <Trans>Entity</Trans>
-                </th>
-                <th>
-                  <Trans>Actor</Trans>
-                </th>
-                <th>
-                  <Trans>Status</Trans>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((row) => (
-                <tr key={row.id}>
-                  {/* DASH-02: relative under 24h, absolute after (../relativeTime). */}
-                  <td className="mono">{formatRelativeTime(row.created_at)}</td>
-                  <td>{row.action}</td>
-                  {/* Entity type with the entity_name folded in as a secondary
+        <RetroTable>
+          <thead>
+            <tr>
+              <th>
+                <Trans>Time</Trans>
+              </th>
+              <th>
+                <Trans>Action</Trans>
+              </th>
+              <th>
+                <Trans>Entity</Trans>
+              </th>
+              <th>
+                <Trans>Actor</Trans>
+              </th>
+              <th>
+                <Trans>Status</Trans>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row) => (
+              <tr key={row.id}>
+                {/* DASH-02: relative under 24h, absolute after (../relativeTime). */}
+                <td className="mono">{formatRelativeTime(row.created_at)}</td>
+                <td>{row.action}</td>
+                {/* Entity type with the entity_name folded in as a secondary
                     line so no data is lost when the Name column is dropped. */}
-                  <td>
-                    <span className="block">{row.entity_type}</span>
-                    {row.entity_name && (
-                      <span className="block text-12 text-fg-muted">
-                        {row.entity_name}
-                      </span>
-                    )}
-                  </td>
-                  {/* Actor: the raw user_id slug (no actor name on the wire —
+                <td>
+                  <span className="block">{row.entity_type}</span>
+                  {row.entity_name && (
+                    <span className="block text-12 text-fg-muted">
+                      {row.entity_name}
+                    </span>
+                  )}
+                </td>
+                {/* Actor: the raw user_id slug (no actor name on the wire —
                     RecentActivity carries user_id? only). "—" when absent. */}
-                  <td className="mono">
-                    {row.user_id ? row.user_id.slice(0, 8) : "—"}
-                  </td>
-                  {/* Status: a pill DERIVED from `action` via ACTION_BADGES —
+                <td className="mono">
+                  {row.user_id ? row.user_id.slice(0, 8) : "—"}
+                </td>
+                {/* Status: a pill DERIVED from `action` via ACTION_BADGES —
                     RecentActivity has NO status field; this is honestly an
                     action-derived badge (T-13-10), never a fabricated status. */}
-                  <td>
-                    <RetroBadge
-                      variant={
-                        ACTION_BADGES[row.action.toUpperCase()] ?? "neutral"
-                      }
-                    >
-                      {row.action}
-                    </RetroBadge>
-                  </td>
-                </tr>
-              ))}
-              {data.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="text-fg-muted">
-                    <Trans>No activity yet.</Trans>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </RetroTable>
-        </div>
+                <td>
+                  <RetroBadge
+                    variant={
+                      ACTION_BADGES[row.action.toUpperCase()] ?? "neutral"
+                    }
+                  >
+                    {row.action}
+                  </RetroBadge>
+                </td>
+              </tr>
+            ))}
+            {data.length === 0 && (
+              <tr>
+                <td colSpan={5} className="text-fg-muted">
+                  <Trans>No activity yet.</Trans>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </RetroTable>
       )}
     </Window>
   );
