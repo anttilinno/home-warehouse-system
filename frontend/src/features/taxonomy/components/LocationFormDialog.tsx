@@ -15,6 +15,7 @@ import {
   type UpdateLocationArg,
 } from "../hooks/useLocationMutations";
 import { buildTree, type TreeNode } from "@/features/taxonomy/lib/buildTree";
+import { generateShortCode } from "../generateShortCode";
 import { TaxonomyDialogForm } from "./TaxonomyDialogForm";
 import {
   DescriptionField,
@@ -109,7 +110,14 @@ export function LocationFormDialog({
     if (location) {
       reset(locationToDefaults(location));
     } else {
-      reset({ ...EMPTY_DEFAULTS, parent_location: parentId ?? "" });
+      // Pre-fill a generated short code on create so the user has a code to put
+      // on a label; still editable (and cleared/overwritten if they scan an
+      // existing label instead). A fresh code per open.
+      reset({
+        ...EMPTY_DEFAULTS,
+        parent_location: parentId ?? "",
+        short_code: generateShortCode(),
+      });
     }
   }, [open, location, parentId, reset]);
 

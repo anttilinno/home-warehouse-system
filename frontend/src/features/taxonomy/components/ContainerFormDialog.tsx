@@ -14,6 +14,7 @@ import {
   useContainerMutations,
   type UpdateContainerArg,
 } from "../hooks/useContainerMutations";
+import { generateShortCode } from "../generateShortCode";
 import { SearchPicker } from "./SearchPicker";
 import { TaxonomyDialogForm } from "./TaxonomyDialogForm";
 import {
@@ -93,7 +94,9 @@ export function ContainerFormDialog({
   useEffect(() => {
     if (!open) return;
     if (container) reset(containerToDefaults(container));
-    else reset(EMPTY_DEFAULTS);
+    // Pre-fill a generated short code on create (editable; cleared/overwritten
+    // if the user scans an existing label). Fresh code per open.
+    else reset({ ...EMPTY_DEFAULTS, short_code: generateShortCode() });
   }, [open, container, reset]);
 
   const locationValue = watch("location_id") ?? "";
