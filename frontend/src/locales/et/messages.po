@@ -129,8 +129,8 @@ msgstr "{0} taastatud."
 
 #. placeholder {0}: selectedIds.length
 #: src/features/items/components/PhotoGallery.tsx
-msgid "{0} SELECTED"
-msgstr "{0} VALITUD"
+msgid "{selectedCount} SELECTED"
+msgstr "{selectedCount} VALITUD"
 
 #: src/features/dashboard/components/DashboardStatTiles.tsx
 msgid "{total_inventory} units total"
@@ -312,8 +312,8 @@ msgstr "⟳"
 
 #. placeholder {0}: selectedIds.length
 #: src/features/items/components/PhotoGallery.tsx
-msgid "⤓ DOWNLOAD {0}"
-msgstr "⤓ LAE ALLA {0}"
+msgid "⤓ DOWNLOAD {selectedCount}"
+msgstr "⤓ LAE ALLA {selectedCount}"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "⤓ DOWNLOAD ALL"
@@ -2638,13 +2638,13 @@ msgstr "TEISALDA"
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
-msgid "Move {0} earlier"
-msgstr "Teisalda {0} ettepoole"
+msgid "Move {label} earlier"
+msgstr "Teisalda {label} ettepoole"
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
-msgid "Move {0} later"
-msgstr "Teisalda {0} tahapoole"
+msgid "Move {label} later"
+msgstr "Teisalda {label} tahapoole"
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "MOVE ENTRY"
@@ -3164,8 +3164,8 @@ msgstr "Kinnitusi saavad üle vaadata ainult tööruumi omanikud ja administraat
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
-msgid "Open {0}"
-msgstr "Ava {0}"
+msgid "Open {label}"
+msgstr "Ava {label}"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "Optional — a follow-up maintenance reminder."
@@ -3525,8 +3525,8 @@ msgstr "Eemalda {0}"
 
 #. placeholder {0}: String(chip.label)
 #: src/components/retro/filters/FilterBar.tsx
-msgid "Remove {0} filter"
-msgstr "Eemalda filter {0}"
+msgid "Remove {labelText} filter"
+msgstr "Eemalda filter {labelText}"
 
 #. placeholder {0}: removeTarget ? memberName(removeTarget) : ""
 #: src/features/settings/MembersPage.tsx
@@ -4319,8 +4319,8 @@ msgstr "Toast: hoiatus"
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
-msgid "Toggle {0}"
-msgstr "Lülita {0}"
+msgid "Toggle {label}"
+msgstr "Lülita {label}"
 
 #: src/features/analytics/components/TopBorrowersChart.tsx
 msgid "Top borrowers"
@@ -4593,3 +4593,21 @@ msgstr "Suumi sisse"
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Zoom out"
 msgstr "Suumi valja"
+
+msgid "CATEGORIES — {workspaceName}"
+msgstr "KATEGOORIAD — {workspaceName}"
+
+msgid "CONTAINERS — {workspaceName}"
+msgstr "KONTEINERID — {workspaceName}"
+
+msgid "LABELS — {workspaceName}"
+msgstr "SILDID — {workspaceName}"
+
+msgid "LOCATIONS — {workspaceName}"
+msgstr "ASUKOHAD — {workspaceName}"
+
+msgid "Archive {selectedCount} selected"
+msgstr "Arhiveeri {selectedCount} valitud"
+
+msgid "Delete {selectedCount} selected"
+msgstr "Kustuta {selectedCount} valitud"

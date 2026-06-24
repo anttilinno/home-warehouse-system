@@ -129,8 +129,8 @@ msgstr "{0} restored."
 
 #. placeholder {0}: selectedIds.length
 #: src/features/items/components/PhotoGallery.tsx
-msgid "{0} SELECTED"
-msgstr "{0} SELECTED"
+msgid "{selectedCount} SELECTED"
+msgstr "{selectedCount} SELECTED"
 
 #: src/features/dashboard/components/DashboardStatTiles.tsx
 msgid "{total_inventory} units total"
@@ -312,8 +312,8 @@ msgstr "⟳"
 
 #. placeholder {0}: selectedIds.length
 #: src/features/items/components/PhotoGallery.tsx
-msgid "⤓ DOWNLOAD {0}"
-msgstr "⤓ DOWNLOAD {0}"
+msgid "⤓ DOWNLOAD {selectedCount}"
+msgstr "⤓ DOWNLOAD {selectedCount}"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "⤓ DOWNLOAD ALL"
@@ -2638,13 +2638,13 @@ msgstr "MOVE"
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
-msgid "Move {0} earlier"
-msgstr "Move {0} earlier"
+msgid "Move {label} earlier"
+msgstr "Move {label} earlier"
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
-msgid "Move {0} later"
-msgstr "Move {0} later"
+msgid "Move {label} later"
+msgstr "Move {label} later"
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "MOVE ENTRY"
@@ -3164,8 +3164,8 @@ msgstr "Only workspace owners and admins can review approvals."
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
-msgid "Open {0}"
-msgstr "Open {0}"
+msgid "Open {label}"
+msgstr "Open {label}"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "Optional — a follow-up maintenance reminder."
@@ -3525,8 +3525,8 @@ msgstr "Remove {0}"
 
 #. placeholder {0}: String(chip.label)
 #: src/components/retro/filters/FilterBar.tsx
-msgid "Remove {0} filter"
-msgstr "Remove {0} filter"
+msgid "Remove {labelText} filter"
+msgstr "Remove {labelText} filter"
 
 #. placeholder {0}: removeTarget ? memberName(removeTarget) : ""
 #: src/features/settings/MembersPage.tsx
@@ -4319,8 +4319,8 @@ msgstr "Toast: warning"
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
-msgid "Toggle {0}"
-msgstr "Toggle {0}"
+msgid "Toggle {label}"
+msgstr "Toggle {label}"
 
 #: src/features/analytics/components/TopBorrowersChart.tsx
 msgid "Top borrowers"
@@ -4593,3 +4593,21 @@ msgstr "Zoom in"
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Zoom out"
 msgstr "Zoom out"
+
+msgid "CATEGORIES — {workspaceName}"
+msgstr "CATEGORIES — {workspaceName}"
+
+msgid "CONTAINERS — {workspaceName}"
+msgstr "CONTAINERS — {workspaceName}"
+
+msgid "LABELS — {workspaceName}"
+msgstr "LABELS — {workspaceName}"
+
+msgid "LOCATIONS — {workspaceName}"
+msgstr "LOCATIONS — {workspaceName}"
+
+msgid "Archive {selectedCount} selected"
+msgstr "Archive {selectedCount} selected"
+
+msgid "Delete {selectedCount} selected"
+msgstr "Delete {selectedCount} selected"
