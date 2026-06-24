@@ -22,9 +22,18 @@ import { DataStoragePage } from "./DataStoragePage";
 const exportWorkspace = vi.fn<(wsId: string, format?: string) => Promise<void>>(
   () => Promise.resolve(),
 );
+// The Show-archived section READS via getMe and WRITES via updatePreferences
+// (shared ["me"] query). Default getMe → show_archived: false.
+const getMe = vi.fn(() => Promise.resolve({ show_archived: false }));
+const updatePreferences = vi.fn((body: Record<string, unknown>) =>
+  Promise.resolve(body),
+);
 vi.mock("@/lib/api/settings", () => ({
   settingsApi: {
     exportWorkspace: (...a: [string, string?]) => exportWorkspace(...a),
+    getMe: () => getMe(),
+    updatePreferences: (body: Record<string, unknown>) =>
+      updatePreferences(body),
   },
 }));
 
@@ -95,6 +104,10 @@ const fetchSpy = vi.spyOn(globalThis, "fetch");
 beforeEach(() => {
   workspaceValue = adminWorkspace();
   exportWorkspace.mockClear();
+  getMe.mockClear();
+  getMe.mockResolvedValue({ show_archived: false });
+  updatePreferences.mockClear();
+  updatePreferences.mockImplementation((body) => Promise.resolve(body));
   fetchSpy.mockClear();
 });
 
@@ -164,6 +177,28 @@ describe("DataStoragePage — export (admin-gated, real endpoint)", () => {
     ).not.toBeInTheDocument();
     // An explanatory note replaces the action.
     expect(screen.getByText(/admin/i)).toBeInTheDocument();
+  });
+});
+
+describe("DataStoragePage — show archived (global preference)", () => {
+  it("reflects the current show_archived value from getMe", async () => {
+    getMe.mockResolvedValue({ show_archived: true });
+    renderPage();
+    const toggle = (await screen.findByRole("checkbox", {
+      name: /show archived items/i,
+    })) as HTMLInputElement;
+    await waitFor(() => expect(toggle.checked).toBe(true));
+  });
+
+  it("toggling ON writes show_archived: true via updatePreferences", async () => {
+    renderPage();
+    const toggle = await screen.findByRole("checkbox", {
+      name: /show archived items/i,
+    });
+    await userEvent.click(toggle);
+    await waitFor(() =>
+      expect(updatePreferences).toHaveBeenCalledWith({ show_archived: true }),
+    );
   });
 });
 

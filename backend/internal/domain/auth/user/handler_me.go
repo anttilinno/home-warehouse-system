@@ -129,6 +129,7 @@ func (h *Handler) updatePreferences(ctx context.Context, input *UpdatePrefsReque
 		ThousandSeparator:       input.Body.ThousandSeparator,
 		DecimalSeparator:        input.Body.DecimalSeparator,
 		NotificationPreferences: input.Body.NotificationPreferences,
+		ShowArchived:            input.Body.ShowArchived,
 	})
 	if err != nil {
 		return nil, appMiddleware.MapDomainError(err)

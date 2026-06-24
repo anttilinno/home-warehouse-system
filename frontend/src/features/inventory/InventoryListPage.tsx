@@ -90,8 +90,6 @@ export function InventoryListPage() {
     setStatusFilter,
     conditionFilter,
     setConditionFilter,
-    showArchived,
-    setShowArchived,
     visible,
     onSort,
     sortGlyph,
@@ -182,20 +180,6 @@ export function InventoryListPage() {
                   }))}
                   selected={conditionFilter}
                   onChange={(next) => setConditionFilter(next as Condition[])}
-                />
-              ),
-            },
-            {
-              key: "archived",
-              label: t`Archived`,
-              trigger: (
-                <FilterPopover
-                  label={<Trans>ARCHIVED</Trans>}
-                  options={[
-                    { value: "true", label: <Trans>Show archived</Trans> },
-                  ]}
-                  selected={showArchived ? ["true"] : []}
-                  onChange={(next) => setShowArchived(next.includes("true"))}
                 />
               ),
             },

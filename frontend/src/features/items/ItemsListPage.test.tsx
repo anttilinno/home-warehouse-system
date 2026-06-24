@@ -146,9 +146,38 @@ describe("ItemsListPage", () => {
     expect(lastSearch).toContain("page=1");
   });
 
-  it("the ARCHIVED facet toggles ?archived and reveals archived rows", async () => {
-    const user = userEvent.setup();
+  it("has no per-page ARCHIVED facet (archived is a global preference now)", async () => {
     server.use(
+      http.get("/api/workspaces/:wsId/items", () =>
+        HttpResponse.json(listOf([makeItem(1)])),
+      ),
+    );
+    renderPage();
+    await screen.findByText("Item 1");
+
+    // The ARCHIVED facet was removed from the FilterBar — only the CATEGORY
+    // facet remains. Visibility is driven by Settings → Data & Storage.
+    expect(
+      screen.queryByRole("button", { name: /archived ▾/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /category ▾/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("includes archived rows when the show_archived preference is on", async () => {
+    server.use(
+      // Global preference ON → the list hook sends archived=true.
+      http.get("/api/users/me", () =>
+        HttpResponse.json({
+          id: "user-1",
+          email: "seeder@test.local",
+          full_name: "Seed Er",
+          has_password: true,
+          avatar_url: null,
+          show_archived: true,
+        }),
+      ),
       http.get("/api/workspaces/:wsId/items", ({ request }) => {
         const archived = new URL(request.url).searchParams.get("archived");
         return HttpResponse.json(
@@ -159,17 +188,8 @@ describe("ItemsListPage", () => {
       }),
     );
     renderPage();
-    await screen.findByText("Item 1");
-    expect(screen.queryByText("Item 2")).not.toBeInTheDocument();
-
-    // Open the ARCHIVED facet and check its toggle.
-    await user.click(screen.getByRole("button", { name: /archived ▾/i }));
-    await user.click(
-      await screen.findByRole("checkbox", { name: /show archived/i }),
-    );
-    await waitFor(() => expect(lastSearch).toContain("archived=true"));
+    // The archived row appears because the request carried archived=true.
     expect(await screen.findByText("Item 2")).toBeInTheDocument();
-    // The archived row carries an ARCHIVED badge.
     expect(screen.getByText(/^archived$/i)).toBeInTheDocument();
   });
 
@@ -229,7 +249,7 @@ describe("ItemsListPage", () => {
     expect(await screen.findByText("DETAIL PAGE")).toBeInTheDocument();
   });
 
-  it("registers the N // F shortcuts for the items route", async () => {
+  it("registers the N // route shortcuts but no F toggle-archived", async () => {
     server.use(
       http.get("/api/workspaces/:wsId/items", () =>
         HttpResponse.json(listOf([makeItem(1)])),
@@ -240,13 +260,25 @@ describe("ItemsListPage", () => {
     await waitFor(() => {
       expect(shortcutKeys).toContain("N");
       expect(shortcutKeys).toContain("/");
-      expect(shortcutKeys).toContain("F");
     });
+    // F (toggle archived) is gone — archived is the global show_archived pref.
+    expect(shortcutKeys).not.toContain("F");
   });
 
   it("blocks bulk delete unless the whole selection is archived", async () => {
     const user = userEvent.setup();
     server.use(
+      // Global show_archived ON so archived rows are loaded and selectable.
+      http.get("/api/users/me", () =>
+        HttpResponse.json({
+          id: "user-1",
+          email: "seeder@test.local",
+          full_name: "Seed Er",
+          has_password: true,
+          avatar_url: null,
+          show_archived: true,
+        }),
+      ),
       http.get("/api/workspaces/:wsId/items", ({ request }) => {
         const archived = new URL(request.url).searchParams.get("archived");
         return HttpResponse.json(
@@ -256,8 +288,7 @@ describe("ItemsListPage", () => {
         );
       }),
     );
-    // Start with the archived facet on so both rows are archived.
-    renderPage(["/items?archived=true"]);
+    renderPage();
     await screen.findByText("Item 1");
 
     // Select the first row via its checkbox.

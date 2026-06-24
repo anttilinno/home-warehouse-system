@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useSearchParams } from "react-router";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { itemsApi, type ItemListParams } from "@/lib/api/items";
+import { settingsApi } from "@/lib/api/settings";
 import type { ItemListResponse } from "@/lib/types";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 
@@ -16,38 +17,33 @@ export const DEFAULT_SORT_DIR = "asc";
 export interface ItemsListUrlState {
   q: string;
   category: string;
-  archived: boolean;
   sort: string;
   sortDir: string;
   page: number;
 }
 
 /**
- * Decode the list state from the URL search params (?q&category&archived&sort
- * &sort_dir&page). This is the SSOT — every filter/sort/page lives here so the
- * list deep-links and the back button works (Pattern 1).
+ * Decode the list state from the URL search params (?q&category&sort&sort_dir
+ * &page). This is the SSOT for the URL-driven filters/sort/page so the list
+ * deep-links and the back button works (Pattern 1). The archived toggle is NO
+ * longer URL-driven — it is the global, backend-synced `show_archived` user
+ * preference, read from the shared ["me"] query in the hook below.
  */
 export function readItemsUrlState(params: URLSearchParams): ItemsListUrlState {
   return {
     q: params.get("q") ?? "",
     category: params.get("category") ?? "",
-    // The Archived facet is OFF by default; archived items stay hidden until the
-    // facet sets ?archived=true.
-    archived: params.get("archived") === "true",
     sort: params.get("sort") ?? DEFAULT_SORT,
     sortDir: params.get("sort_dir") ?? DEFAULT_SORT_DIR,
     page: Math.max(1, Number(params.get("page") ?? "1") || 1),
   };
 }
 
-/** Map the decoded URL state to the itemsApi list params (archived omitted when off). */
+/** Map the decoded URL state to the itemsApi list params (archived set separately). */
 export function toListParams(state: ItemsListUrlState): ItemListParams {
   return {
     search: state.q || undefined,
     category_id: state.category || undefined,
-    // Only sent when the facet is on — the default query excludes archived
-    // (buildQuery in items.ts drops `archived:false`, so this is belt-and-braces).
-    archived: state.archived ? true : undefined,
     sort: state.sort,
     sort_dir: state.sortDir,
     page: state.page,
@@ -66,14 +62,32 @@ export interface UseItemsQueryResult {
  * Phase 6 SSE invalidation map (`["items", wsId]` prefix) covers it WITHOUT
  * `exact:true`. Returns both the query result and the decoded URL state the
  * page renders its FilterBar/sort/pager from.
+ *
+ * `archived` comes from the global `show_archived` user preference (shared
+ * ["me"] query), NOT the URL — toggling it on Settings → Data & Storage flips
+ * `params.archived`, which is part of the query key, so the list refetches.
  */
 export function useItemsQuery(): UseQueryResult<ItemListResponse> &
   UseItemsQueryResult {
   const { currentWorkspaceId: wsId } = useWorkspace();
   const [searchParams] = useSearchParams();
 
+  const me = useQuery({
+    queryKey: ["me"],
+    queryFn: () => settingsApi.getMe(),
+  });
+  const showArchived = me.data?.show_archived ?? false;
+
   const state = useMemo(() => readItemsUrlState(searchParams), [searchParams]);
-  const params = useMemo(() => toListParams(state), [state]);
+  const params = useMemo(
+    () => ({
+      ...toListParams(state),
+      // Only sent when the preference is on — the default query excludes
+      // archived (buildQuery in items.ts drops `archived:false`).
+      archived: showArchived ? true : undefined,
+    }),
+    [state, showArchived],
+  );
 
   const query = useQuery({
     // Phase 6 contract: ["items", wsId, ...rest] — prefix-match invalidation.

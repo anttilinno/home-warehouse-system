@@ -614,13 +614,27 @@ func TestUserHandler_UpdatePreferences(t *testing.T) {
 
 	t.Run("updates preferences successfully", func(t *testing.T) {
 		testUser, _ := user.NewUser("test@example.com", "Test User", "password123")
-		testUser.UpdatePreferences("YYYY-MM-DD", "en", "dark", "", "", "", nil)
+		testUser.UpdatePreferences("YYYY-MM-DD", "en", "dark", "", "", "", nil, nil)
 
 		mockSvc.On("UpdatePreferences", mock.Anything, setup.UserID, mock.MatchedBy(func(input user.UpdatePreferencesInput) bool {
 			return input.Theme == "dark" && input.Language == "en"
 		})).Return(testUser, nil).Once()
 
 		body := `{"theme":"dark","language":"en","date_format":"YYYY-MM-DD"}`
+		rec := setup.Patch("/users/me/preferences", body)
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("forwards show_archived to the service", func(t *testing.T) {
+		testUser, _ := user.NewUser("test@example.com", "Test User", "password123")
+
+		mockSvc.On("UpdatePreferences", mock.Anything, setup.UserID, mock.MatchedBy(func(input user.UpdatePreferencesInput) bool {
+			return input.ShowArchived != nil && *input.ShowArchived
+		})).Return(testUser, nil).Once()
+
+		body := `{"show_archived":true}`
 		rec := setup.Patch("/users/me/preferences", body)
 
 		testutil.AssertStatus(t, rec, http.StatusOK)

@@ -1,15 +1,18 @@
 import { useMemo, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
+import { useQuery } from "@tanstack/react-query";
+import { settingsApi } from "@/lib/api/settings";
 import type { Condition, Inventory, InventoryStatus } from "@/lib/types";
 import { CONDITION_LABEL, STATUS_LABEL } from "../inventoryEnums";
 
 // Phase 7b refactor — the client-side filter/sort machine for the inventory list
 // (INV-01 R1: the list endpoint has NO server filter params, so search + status
-// + condition + archived + sort are all client state applied to the loaded
-// page). Extracted verbatim from InventoryListPage to drop that component's
-// cyclomatic load; behavior is identical (same predicates, same sort, same
-// chip/clear wiring). `itemName` is injected so the search predicate can match
-// on the joined item name.
+// + condition + sort are all client state applied to the loaded page).
+// Extracted from InventoryListPage to drop that component's cyclomatic load.
+// `itemName` is injected so the search predicate can match on the joined item
+// name. Archived visibility is NO longer a per-page facet — it reads from the
+// global, backend-synced `show_archived` user preference (shared ["me"] query),
+// toggled on Settings → Data & Storage.
 
 // Client-side sortable columns (the loaded page only — the endpoint can't sort).
 export type SortKey = "qty" | "status" | "condition";
@@ -29,9 +32,16 @@ export function useInventoryFilters(
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<InventoryStatus[]>([]);
   const [conditionFilter, setConditionFilter] = useState<Condition[]>([]);
-  const [showArchived, setShowArchived] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  // Archived visibility is the global, backend-synced user preference (shared
+  // ["me"] query), NOT a per-page facet — toggled on Settings → Data & Storage.
+  const me = useQuery({
+    queryKey: ["me"],
+    queryFn: () => settingsApi.getMe(),
+  });
+  const showArchived = me.data?.show_archived ?? false;
 
   // Apply client filters + sort to the loaded page.
   const visible = useMemo(() => {
@@ -90,16 +100,12 @@ export function useInventoryFilters(
   }
 
   const hasFilters =
-    !!search ||
-    statusFilter.length > 0 ||
-    conditionFilter.length > 0 ||
-    showArchived;
+    !!search || statusFilter.length > 0 || conditionFilter.length > 0;
 
   function clearAllFilters() {
     setSearch("");
     setStatusFilter([]);
     setConditionFilter([]);
-    setShowArchived(false);
   }
 
   const filterChips = useMemo<FilterChip[]>(() => {
@@ -116,19 +122,12 @@ export function useInventoryFilters(
         label: t`Condition`,
         displayValue: conditionFilter.map((c) => CONDITION_LABEL[c]).join(", "),
       });
-    if (showArchived)
-      chips.push({
-        key: "archived",
-        label: t`Archived`,
-        displayValue: t`shown`,
-      });
     return chips;
-  }, [statusFilter, conditionFilter, showArchived, t]);
+  }, [statusFilter, conditionFilter, t]);
 
   function removeFilter(key: string) {
     if (key === "status") setStatusFilter([]);
     else if (key === "condition") setConditionFilter([]);
-    else if (key === "archived") setShowArchived(false);
   }
 
   return {
@@ -138,8 +137,6 @@ export function useInventoryFilters(
     setStatusFilter,
     conditionFilter,
     setConditionFilter,
-    showArchived,
-    setShowArchived,
     visible,
     onSort,
     sortGlyph,

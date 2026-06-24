@@ -115,7 +115,7 @@ func TestUser_UpdatePreferences(t *testing.T) {
 	u, err := user.NewUser("test@example.com", "John Doe", "SecurePass123!")
 	assert.NoError(t, err)
 
-	err = u.UpdatePreferences("DD/MM/YYYY", "fr", "dark", "12h", ".", ",", nil)
+	err = u.UpdatePreferences("DD/MM/YYYY", "fr", "dark", "12h", ".", ",", nil, nil)
 	assert.NoError(t, err)
 
 	assert.Equal(t, "DD/MM/YYYY", u.DateFormat())
@@ -124,13 +124,22 @@ func TestUser_UpdatePreferences(t *testing.T) {
 	assert.Equal(t, "12h", u.TimeFormat())
 	assert.Equal(t, ".", u.ThousandSeparator())
 	assert.Equal(t, ",", u.DecimalSeparator())
+
+	// show_archived defaults to false and is left unchanged when nil is passed.
+	assert.False(t, u.ShowArchived())
+
+	// A non-nil pointer flips the preference.
+	showArchived := true
+	err = u.UpdatePreferences("", "", "", "", "", "", nil, &showArchived)
+	assert.NoError(t, err)
+	assert.True(t, u.ShowArchived())
 }
 
 func TestUser_UpdatePreferences_ConflictingSeparators(t *testing.T) {
 	u, err := user.NewUser("test@example.com", "John Doe", "SecurePass123!")
 	assert.NoError(t, err)
 
-	err = u.UpdatePreferences("", "", "", "", ".", ".", nil)
+	err = u.UpdatePreferences("", "", "", "", ".", ".", nil, nil)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "thousand separator and decimal separator must be different")
 }
@@ -202,6 +211,7 @@ func TestUser_Reconstruct(t *testing.T) {
 		"24h",
 		",",
 		".",
+		false,
 		&avatarPath,
 		notifPrefs,
 		now,

@@ -199,6 +199,7 @@ type UpdatePreferencesInput struct {
 	ThousandSeparator       string
 	DecimalSeparator        string
 	NotificationPreferences map[string]bool
+	ShowArchived            *bool
 }
 
 // UpdatePreferences updates a user's preferences.
@@ -208,7 +209,7 @@ func (s *Service) UpdatePreferences(ctx context.Context, id uuid.UUID, input Upd
 		return nil, err
 	}
 
-	if err := user.UpdatePreferences(input.DateFormat, input.Language, input.Theme, input.TimeFormat, input.ThousandSeparator, input.DecimalSeparator, input.NotificationPreferences); err != nil {
+	if err := user.UpdatePreferences(input.DateFormat, input.Language, input.Theme, input.TimeFormat, input.ThousandSeparator, input.DecimalSeparator, input.NotificationPreferences, input.ShowArchived); err != nil {
 		return nil, err
 	}
 

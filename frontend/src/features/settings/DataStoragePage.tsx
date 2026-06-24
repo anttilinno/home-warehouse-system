@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Trans } from "@lingui/react/macro";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Trans, useLingui } from "@lingui/react/macro";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { settingsApi } from "@/lib/api/settings";
+import type { User } from "@/lib/types";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 import {
   BevelButton,
   RetroBadge,
+  RetroCheckbox,
   RetroConfirmDialog,
   Window,
   retroToast,
@@ -28,12 +30,35 @@ import {
 const ADMIN_ROLES = new Set(["owner", "admin"]);
 
 export function DataStoragePage() {
+  const { t } = useLingui();
   const queryClient = useQueryClient();
   const { currentWorkspaceId, workspaces } = useWorkspace();
   const [confirmClear, setConfirmClear] = useState(false);
 
   const role = workspaces?.find((w) => w.id === currentWorkspaceId)?.role;
   const canExport = role != null && ADMIN_ROLES.has(role);
+
+  // SHOW ARCHIVED — the global, backend-synced "include archived rows" toggle.
+  // READS the current value from the shared ["me"] query and WRITES via
+  // PATCH /users/me/preferences. The Items and Inventory list hooks bind to the
+  // same ["me"].show_archived value, so flipping it here refetches those lists.
+  const me = useQuery({
+    queryKey: ["me"],
+    queryFn: () => settingsApi.getMe(),
+  });
+  const showArchived = me.data?.show_archived ?? false;
+
+  const showArchivedMutation = useMutation({
+    mutationFn: (next: boolean) =>
+      settingsApi.updatePreferences({ show_archived: next }),
+    onSuccess: (_user: User) => {
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+      retroToast.success(t`Changes saved.`);
+    },
+    onError: () => {
+      retroToast.error(<Trans>Couldn't save. Try again.</Trans>);
+    },
+  });
 
   const exportMutation = useMutation({
     mutationFn: () => {
@@ -51,8 +76,32 @@ export function DataStoragePage() {
 
   return (
     <Window title={<Trans>Data & Storage</Trans>} bodyClassName="p-sp-4">
-      {/* 1. CACHED DATA — client-only clear */}
+      {/* 0. SHOW ARCHIVED — global, backend-synced list-view preference */}
       <section className="flex flex-col gap-sp-2 border-b border-table-rule pb-sp-4">
+        <h2 className="font-display text-12 uppercase tracking-6 text-fg-muted">
+          <Trans>Archived items</Trans>
+        </h2>
+        <RetroCheckbox
+          checked={showArchived}
+          disabled={me.isPending || showArchivedMutation.isPending}
+          onChange={(e) => showArchivedMutation.mutate(e.target.checked)}
+          label={
+            <span>
+              <span className="font-bold">
+                <Trans>Show archived items</Trans>
+              </span>{" "}
+              <span className="text-fg-muted">
+                <Trans>
+                  (include archived items and inventory in list views)
+                </Trans>
+              </span>
+            </span>
+          }
+        />
+      </section>
+
+      {/* 1. CACHED DATA — client-only clear */}
+      <section className="flex flex-col gap-sp-2 border-b border-table-rule py-sp-4">
         <h2 className="font-display text-12 uppercase tracking-6 text-fg-muted">
           <Trans>Cached data</Trans>
         </h2>

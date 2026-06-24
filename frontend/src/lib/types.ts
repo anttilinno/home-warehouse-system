@@ -31,6 +31,7 @@ export interface User {
   decimal_separator?: string;
   language?: string;
   theme?: string;
+  show_archived?: boolean;
   notification_preferences?: Record<string, boolean>;
 }
 
@@ -46,6 +47,7 @@ export interface Preferences {
   decimal_separator: string;
   language: string;
   theme: string;
+  show_archived: boolean;
   notification_preferences: Record<string, boolean>;
 }
 

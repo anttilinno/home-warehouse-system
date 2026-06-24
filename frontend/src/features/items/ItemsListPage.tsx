@@ -125,29 +125,27 @@ export function ItemsListPage() {
   );
   useShortcuts("bulk-actions", bulkActions);
 
-  // ── Route shortcuts (ITEM-10): N → new, / → focus search, F → toggle Archived.
+  // ── Route shortcuts (ITEM-10): N → new, / → focus search. Archived visibility
+  // is now the global `show_archived` user preference (Settings → Data &
+  // Storage), so there is no per-page F → toggle-archived shortcut.
   const goNew = useCallback(() => navigate("/items/new"), [navigate]);
   const focusSearch = useCallback(() => {
     document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
   }, []);
-  const toggleArchived = useCallback(() => {
-    setParam("archived", state.archived ? null : "true");
-  }, [setParam, state.archived]);
 
   const labelNew = t`New item`;
   const labelSearch = t`Focus search`;
-  const labelToggle = t`Toggle archived`;
   const routeShortcuts = useMemo(
     () => [
       { key: "N", label: labelNew, action: goNew },
       { key: "/", label: labelSearch, action: focusSearch },
-      { key: "F", label: labelToggle, action: toggleArchived },
     ],
-    [goNew, focusSearch, toggleArchived, labelNew, labelSearch, labelToggle],
+    [goNew, focusSearch, labelNew, labelSearch],
   );
   useShortcuts("items", routeShortcuts);
 
-  // ── SavedFilters: serialize/restore the full ?q&category&archived&sort shape.
+  // ── SavedFilters: serialize/restore the ?q&category&sort shape (archived is no
+  // longer URL-driven — it is the global show_archived preference).
   const applyPreset = useCallback(
     (filters: Record<string, unknown>) => {
       setSearchParams(() => {
@@ -212,16 +210,10 @@ export function ItemsListPage() {
         label: t`Category`,
         displayValue: state.category,
       });
-    if (state.archived)
-      chips.push({
-        key: "archived",
-        label: t`Archived`,
-        displayValue: t`shown`,
-      });
     return chips;
-  }, [state.category, state.archived, t]);
+  }, [state.category, t]);
 
-  const hasFilters = !!state.q || !!state.category || state.archived;
+  const hasFilters = !!state.q || !!state.category;
 
   function clearAllFilters() {
     setSearchParams(() => {
@@ -284,22 +276,6 @@ export function ItemsListPage() {
                   selected={state.category ? [state.category] : []}
                   onChange={(next) =>
                     setParam("category", next[next.length - 1] ?? null)
-                  }
-                />
-              ),
-            },
-            {
-              key: "archived",
-              label: t`Archived`,
-              trigger: (
-                <FilterPopover
-                  label={<Trans>ARCHIVED</Trans>}
-                  options={[
-                    { value: "true", label: <Trans>Show archived</Trans> },
-                  ]}
-                  selected={state.archived ? ["true"] : []}
-                  onChange={(next) =>
-                    setParam("archived", next.includes("true") ? "true" : null)
                   }
                 />
               ),

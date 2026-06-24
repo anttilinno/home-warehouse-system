@@ -29,6 +29,7 @@ type User struct {
 	timeFormat              string
 	thousandSeparator       string
 	decimalSeparator        string
+	showArchived            bool
 	notificationPreferences map[string]bool
 	avatarPath              *string
 	createdAt               time.Time
@@ -113,6 +114,7 @@ func Reconstruct(
 	isActive, isSuperuser bool,
 	dateFormat, language, theme string,
 	timeFormat, thousandSeparator, decimalSeparator string,
+	showArchived bool,
 	avatarPath *string,
 	notificationPreferences map[string]bool,
 	createdAt, updatedAt time.Time,
@@ -134,6 +136,7 @@ func Reconstruct(
 		timeFormat:              timeFormat,
 		thousandSeparator:       thousandSeparator,
 		decimalSeparator:        decimalSeparator,
+		showArchived:            showArchived,
 		notificationPreferences: notificationPreferences,
 		avatarPath:              avatarPath,
 		createdAt:               createdAt,
@@ -179,6 +182,9 @@ func (u *User) ThousandSeparator() string { return u.thousandSeparator }
 
 // DecimalSeparator returns the user's preferred decimal separator.
 func (u *User) DecimalSeparator() string { return u.decimalSeparator }
+
+// ShowArchived returns whether list views should include archived rows.
+func (u *User) ShowArchived() bool { return u.showArchived }
 
 // NotificationPreferences returns the user's notification preferences.
 func (u *User) NotificationPreferences() map[string]bool { return u.notificationPreferences }
@@ -243,7 +249,7 @@ func (u *User) UpdateNotificationPreferences(prefs map[string]bool) {
 
 // UpdatePreferences updates the user's preferences.
 // Returns an error if thousand_separator and decimal_separator are both non-empty and equal.
-func (u *User) UpdatePreferences(dateFormat, language, theme, timeFormat, thousandSeparator, decimalSeparator string, notificationPreferences map[string]bool) error {
+func (u *User) UpdatePreferences(dateFormat, language, theme, timeFormat, thousandSeparator, decimalSeparator string, notificationPreferences map[string]bool, showArchived *bool) error {
 	// Validate separator conflict: resolve effective values after update
 	effectiveThousand := u.thousandSeparator
 	if thousandSeparator != "" {
@@ -277,6 +283,9 @@ func (u *User) UpdatePreferences(dateFormat, language, theme, timeFormat, thousa
 	}
 	if notificationPreferences != nil {
 		u.UpdateNotificationPreferences(notificationPreferences)
+	}
+	if showArchived != nil {
+		u.showArchived = *showArchived
 	}
 	u.updatedAt = time.Now()
 	return nil

@@ -100,10 +100,43 @@ describe("useItemsQuery", () => {
     expect(ITEMS_LIMIT).toBe(25);
   });
 
-  it("omits the archived param by default (archived hidden)", async () => {
+  it("omits the archived param when the show_archived preference is off", async () => {
     setWsId("ws-A");
     let listUrl: URL | null = null;
     server.use(
+      http.get("/api/workspaces/:wsId/items", ({ request }) => {
+        listUrl = new URL(request.url);
+        return HttpResponse.json({
+          items: [],
+          total: 0,
+          page: 1,
+          total_pages: 0,
+        });
+      }),
+    );
+    // Default ME fixture has show_archived: false → archived stays hidden.
+    const { wrapper } = makeWrapper(["/items"]);
+    const { result } = renderHook(() => useItemsQuery(), { wrapper });
+
+    await waitFor(() => expect(result.current.data).toBeTruthy());
+    expect(listUrl!.searchParams.has("archived")).toBe(false);
+  });
+
+  it("sends archived=true when the show_archived preference is on", async () => {
+    setWsId("ws-A");
+    let listUrl: URL | null = null;
+    server.use(
+      // The global preference — not a URL facet — drives archived visibility.
+      http.get("/api/users/me", () =>
+        HttpResponse.json({
+          id: "user-1",
+          email: "seeder@test.local",
+          full_name: "Seed Er",
+          has_password: true,
+          avatar_url: null,
+          show_archived: true,
+        }),
+      ),
       http.get("/api/workspaces/:wsId/items", ({ request }) => {
         listUrl = new URL(request.url);
         return HttpResponse.json({
@@ -115,31 +148,11 @@ describe("useItemsQuery", () => {
       }),
     );
     const { wrapper } = makeWrapper(["/items"]);
-    const { result } = renderHook(() => useItemsQuery(), { wrapper });
+    renderHook(() => useItemsQuery(), { wrapper });
 
-    await waitFor(() => expect(result.current.data).toBeTruthy());
-    expect(listUrl!.searchParams.has("archived")).toBe(false);
-  });
-
-  it("sends archived=true only when the facet is on", async () => {
-    setWsId("ws-A");
-    let listUrl: URL | null = null;
-    server.use(
-      http.get("/api/workspaces/:wsId/items", ({ request }) => {
-        listUrl = new URL(request.url);
-        return HttpResponse.json({
-          items: [],
-          total: 0,
-          page: 1,
-          total_pages: 0,
-        });
-      }),
+    await waitFor(() =>
+      expect(listUrl?.searchParams.get("archived")).toBe("true"),
     );
-    const { wrapper } = makeWrapper(["/items?archived=true"]);
-    const { result } = renderHook(() => useItemsQuery(), { wrapper });
-
-    await waitFor(() => expect(result.current.data).toBeTruthy());
-    expect(listUrl!.searchParams.get("archived")).toBe("true");
   });
 
   it("is disabled without a workspace id", () => {

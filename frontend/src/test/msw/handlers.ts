@@ -41,14 +41,16 @@ const ME = {
   full_name: "Seed Er",
   has_password: true,
   avatar_url: null,
-  // Phase 12 (Settings) — GetMe carries the seven preference fields. Downstream
-  // preferences subpages READ these from the shared ["me"] query.
+  // Phase 12 (Settings) — GetMe carries the preference fields. Downstream
+  // preferences subpages READ these from the shared ["me"] query; the Items and
+  // Inventory list views read show_archived from here too.
   date_format: "YYYY-MM-DD",
   time_format: "24h",
   thousand_separator: " ",
   decimal_separator: ",",
   language: "en",
   theme: "light",
+  show_archived: false,
   notification_preferences: {} as Record<string, boolean>,
 };
 

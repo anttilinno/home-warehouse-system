@@ -78,6 +78,7 @@ type UserResponse struct {
 	DecimalSeparator        string          `json:"decimal_separator"`
 	Language                string          `json:"language"`
 	Theme                   string          `json:"theme"`
+	ShowArchived            bool            `json:"show_archived"`
 	NotificationPreferences map[string]bool `json:"notification_preferences"`
 	AvatarURL               *string         `json:"avatar_url,omitempty"`
 }
@@ -124,6 +125,7 @@ type UpdatePrefsRequestBody struct {
 	DecimalSeparator        string          `json:"decimal_separator,omitempty"`
 	Language                string          `json:"language,omitempty"`
 	Theme                   string          `json:"theme,omitempty"`
+	ShowArchived            *bool           `json:"show_archived,omitempty"`
 	NotificationPreferences map[string]bool `json:"notification_preferences,omitempty"`
 }
 
@@ -229,6 +231,7 @@ func newUserResponse(u *User) UserResponse {
 		DecimalSeparator:        u.DecimalSeparator(),
 		Language:                u.Language(),
 		Theme:                   u.Theme(),
+		ShowArchived:            u.ShowArchived(),
 		NotificationPreferences: u.NotificationPreferences(),
 		AvatarURL:               generateAvatarURL(u.AvatarPath()),
 	}
