@@ -17,6 +17,14 @@ export interface RetroTabsProps {
   value: string;
   /** Fired with the next active tab id on click / arrow navigation. */
   onChange: (id: string) => void;
+  /**
+   * Hide the tablist below `md` (the active panel still renders). Opt-in for tab
+   * sets that are ALSO reachable from the mobile menu (e.g. taxonomy
+   * categories/locations/containers each have a Sidebar entry), so the in-page
+   * tab strip is redundant on mobile and only forces an awkward horizontal
+   * scroll. Other tab sets (settings, detail panels) leave this off.
+   */
+  hideTablistBelowMd?: boolean;
 }
 
 const TAB_BASE =
@@ -33,7 +41,12 @@ const TAB_DISABLED = "text-fg-muted opacity-50 cursor-not-allowed";
  * Full ARIA: `role="tablist"/"tab"/"tabpanel"` with `aria-selected`,
  * `aria-controls`, and `aria-labelledby` wiring.
  */
-export function RetroTabs({ tabs, value, onChange }: Readonly<RetroTabsProps>) {
+export function RetroTabs({
+  tabs,
+  value,
+  onChange,
+  hideTablistBelowMd = false,
+}: Readonly<RetroTabsProps>) {
   const baseId = useId();
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
@@ -66,7 +79,9 @@ export function RetroTabs({ tabs, value, onChange }: Readonly<RetroTabsProps>) {
         // Tabs scroll horizontally within their card on narrow screens instead
         // of overflowing past its border (min-w-0 lets the strip shrink; the
         // tabs themselves stay full-size via shrink-0 in TAB_BASE).
-        className="flex min-w-0 items-end gap-sp-1 overflow-x-auto border-b-2 border-border-ink"
+        // hideTablistBelowMd: hidden on mobile (menu-reachable tab sets); the
+        // active panel still renders below.
+        className={`${hideTablistBelowMd ? "hidden md:flex" : "flex"} min-w-0 items-end gap-sp-1 overflow-x-auto border-b-2 border-border-ink`}
       >
         {tabs.map((tab) => {
           const isActive = tab.id === active?.id;

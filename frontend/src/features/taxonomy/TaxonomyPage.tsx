@@ -91,7 +91,15 @@ export function TaxonomyPage() {
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">
       <Window title={titleFor(tab)} titlebarVariant="mint">
-        <RetroTabs tabs={tabs} value={tab} onChange={setTab} />
+        {/* Tabs hidden on mobile — categories/locations/containers each have a
+            Sidebar (mobile menu) entry, and the Window title names the active
+            view, so the in-page strip is redundant and only forces a scroll. */}
+        <RetroTabs
+          tabs={tabs}
+          value={tab}
+          onChange={setTab}
+          hideTablistBelowMd
+        />
       </Window>
     </div>
   );
