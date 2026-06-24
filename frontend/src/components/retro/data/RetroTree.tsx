@@ -201,7 +201,9 @@ export function RetroTree({
         <div className="flex flex-wrap items-center gap-sp-1 gap-y-sp-2">
           {leadingAction}
           {hasBranches && (
-            <div className="ml-auto flex items-center gap-sp-1">
+            // sm:ml-auto — right-aligned beside the leading action on one row at
+            // sm+; left-aligned when it wraps below on mobile (no dangling float).
+            <div className="flex items-center gap-sp-1 sm:ml-auto">
               {/* Icon-only below sm (⊞/⊟) so the toolbar fits one row beside the
                   leading action; the labels return from sm up. aria-label keeps
                   the accessible name in both modes. */}
