@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// D-05 guard: blocks offline/sync/idb/serwist imports under frontend2/src/**.
+// D-05 guard: blocks offline/sync/idb/serwist imports under frontend/src/**.
 // Exits 1 with a list of offenders; 0 if clean.
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
@@ -9,7 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
 
 // Allow override for tests: first CLI arg = scan root.
-const SCAN_ROOT = resolve(process.argv[2] || join(REPO_ROOT, "frontend2", "src"));
+const SCAN_ROOT = resolve(process.argv[2] || join(REPO_ROOT, "frontend", "src"));
 
 // Guard: fail loudly if the scan root doesn't exist (catches cwd-relative invocations from repo root)
 try { statSync(SCAN_ROOT); } catch {

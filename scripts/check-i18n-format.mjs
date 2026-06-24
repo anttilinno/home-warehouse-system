@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// D-4 guard: blocks raw locale date/time formatting in frontend2/src/features +
-// frontend2/src/components. All user-facing date/time rendering must go through the
+// D-4 guard: blocks raw locale date/time formatting in frontend/src/features +
+// frontend/src/components. All user-facing date/time rendering must go through the
 // centralized format layer (src/lib/format/) so it honours the active i18n locale.
 //
 // FAILS (exit 1) on any line containing:
@@ -25,8 +25,8 @@ const REPO_ROOT = resolve(__dirname, "..");
 const SCAN_ROOTS = process.argv[2]
   ? [resolve(process.argv[2])]
   : [
-      resolve(REPO_ROOT, "frontend2", "src", "features"),
-      resolve(REPO_ROOT, "frontend2", "src", "components"),
+      resolve(REPO_ROOT, "frontend", "src", "features"),
+      resolve(REPO_ROOT, "frontend", "src", "components"),
     ];
 
 // Match raw locale formatting calls.

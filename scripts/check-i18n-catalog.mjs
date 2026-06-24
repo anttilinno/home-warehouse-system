@@ -11,7 +11,7 @@
 // the sibling locale has landed (et and ru plans run in parallel).
 //
 // Usage:
-//   node check-i18n-catalog.mjs                 # real tree: frontend2/src/locales/{en,et,ru}/messages.po
+//   node check-i18n-catalog.mjs                 # real tree: frontend/src/locales/{en,et,ru}/messages.po
 //   node check-i18n-catalog.mjs <dir>           # <dir>/en.po, <dir>/et.po, <dir>/ru.po (self-test)
 //   node check-i18n-catalog.mjs [<dir>] --only et
 import { readFileSync, statSync } from "node:fs";
@@ -39,10 +39,10 @@ if (onlyLocale && !["et", "ru"].includes(onlyLocale)) {
 }
 
 // Resolve each locale's po path. Fixture dir uses `<locale>.po`; the real tree uses
-// `frontend2/src/locales/<locale>/messages.po`.
+// `frontend/src/locales/<locale>/messages.po`.
 function poPath(locale) {
   if (dirArg) return resolve(dirArg, `${locale}.po`);
-  return resolve(REPO_ROOT, "frontend2", "src", "locales", locale, "messages.po");
+  return resolve(REPO_ROOT, "frontend", "src", "locales", locale, "messages.po");
 }
 
 // ---- minimal po parser ----

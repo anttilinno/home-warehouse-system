@@ -82,6 +82,11 @@ jobs:
         run: cd backend && go run ./cmd/seed/main.go all
 
       # --- backend: build + run on :8080 --------------------------------------
+      # The image pipeline uses kolesa-team/go-webp, a cgo binding to libwebp.
+      # Without the dev headers the backend fails to compile in CI with
+      # `fatal error: webp/encode.h: No such file or directory`.
+      - name: Install libwebp headers (cgo dep for go-webp)
+        run: sudo apt-get update && sudo apt-get install -y libwebp-dev
       - name: Start Go backend (:8080)
         run: |
           cd backend

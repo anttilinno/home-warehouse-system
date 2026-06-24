@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // POL-04 guard: per-chunk bundle-size budget enforcement.
-// Reads frontend2/bundle-budget.json (gzip-byte ceilings), measures the gzipped
+// Reads frontend/bundle-budget.json (gzip-byte ceilings), measures the gzipped
 // size of every *.js in a dist assets dir, buckets each file by filename prefix
 // into a logical chunk, and FAILS (exit 1) if any bucket exceeds its ceiling.
 // Prints a `chunk: cur/budget (Δ <signed bytes vs budget>)` delta report.
@@ -20,7 +20,7 @@
 // a crash (lazy chunks can legitimately be absent).
 //
 // Usage:
-//   node check-bundle-budget.mjs              # real build: frontend2/dist/assets
+//   node check-bundle-budget.mjs              # real build: frontend/dist/assets
 //   node check-bundle-budget.mjs <dir>        # measure <dir>/*.js (self-test)
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
@@ -32,12 +32,12 @@ const REPO_ROOT = resolve(__dirname, "..");
 
 // The manifest path is FIXED (always the committed repo manifest), independent of
 // the measured dir.
-const MANIFEST_PATH = resolve(REPO_ROOT, "frontend2", "bundle-budget.json");
+const MANIFEST_PATH = resolve(REPO_ROOT, "frontend", "bundle-budget.json");
 
 // Optional positional arg: a directory of *.js files to measure. Default = the
 // real vite build output.
 const dirArg = process.argv.slice(2).find((a) => !a.startsWith("-"));
-const ASSETS_DIR = dirArg ? resolve(dirArg) : resolve(REPO_ROOT, "frontend2", "dist", "assets");
+const ASSETS_DIR = dirArg ? resolve(dirArg) : resolve(REPO_ROOT, "frontend", "dist", "assets");
 
 // filename prefix -> logical chunk key. Order does not matter (prefixes disjoint).
 const PREFIX_TO_CHUNK = [

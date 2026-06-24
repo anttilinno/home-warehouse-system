@@ -30,8 +30,8 @@ test("does not flag safe fixtures", () => {
   assert.doesNotMatch(r.stderr, /safe-react\.ts/);
 });
 
-test("frontend2/src passes the guard", () => {
-  const frontendSrc = resolve(__dirname, "..", "..", "frontend2", "src");
+test("frontend/src passes the guard", () => {
+  const frontendSrc = resolve(__dirname, "..", "..", "frontend", "src");
   const r = spawnSync("node", [SCRIPT, frontendSrc], { encoding: "utf8" });
-  assert.equal(r.status, 0, `Guard should pass on frontend2/src. stderr=${r.stderr}`);
+  assert.equal(r.status, 0, `Guard should pass on frontend/src. stderr=${r.stderr}`);
 });

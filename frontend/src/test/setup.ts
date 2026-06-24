@@ -1,6 +1,29 @@
 import { afterAll, afterEach, beforeAll } from "vitest";
 import { server } from "./msw/server";
 
+// ── Blob.stream polyfill ─────────────────────────────────────────────────────
+// jsdom (29.x) shadows the global `Blob` with its own implementation that ships
+// NO `.stream()`. jsdom does NOT provide `Response`, so it stays the runtime's
+// native one — and runtimes that consume a Blob body via streaming (observed in
+// CI: `new Response(new Blob([...]))` in the blob-download specs) call
+// `blob.stream()` and throw `object.stream is not a function`. Local runtimes
+// that consume via `arrayBuffer()` don't hit it, so the failure is CI-only and
+// hard to see. Polyfill minimally when absent; no-op where `.stream()` exists.
+if (
+  typeof Blob !== "undefined" &&
+  typeof Blob.prototype.stream !== "function"
+) {
+  Blob.prototype.stream = function stream(): ReadableStream<Uint8Array<ArrayBuffer>> {
+    const blob = this;
+    return new ReadableStream<Uint8Array<ArrayBuffer>>({
+      async start(controller) {
+        controller.enqueue(new Uint8Array(await blob.arrayBuffer()));
+        controller.close();
+      },
+    });
+  };
+}
+
 // ── matchMedia test stub ─────────────────────────────────────────────────────
 // jsdom ships NO `window.matchMedia`. The Dark Mode ThemeProvider calls it to
 // follow `prefers-color-scheme` while the pref is `system` (the default), so
