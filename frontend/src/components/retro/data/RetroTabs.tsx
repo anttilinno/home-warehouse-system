@@ -20,7 +20,7 @@ export interface RetroTabsProps {
 }
 
 const TAB_BASE =
-  "cursor-pointer border-2 border-border-ink border-b-0 px-sp-3 py-[5px] font-body text-11 font-bold uppercase tracking-7 text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
+  "shrink-0 whitespace-nowrap cursor-pointer border-2 border-border-ink border-b-0 px-sp-3 py-[5px] font-body text-11 font-bold uppercase tracking-7 text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
 const TAB_INACTIVE = "bg-bg-panel-2";
 const TAB_ACTIVE = "bg-titlebar-blue bevel-raised-ink";
 const TAB_DISABLED = "text-fg-muted opacity-50 cursor-not-allowed";
@@ -63,7 +63,10 @@ export function RetroTabs({ tabs, value, onChange }: Readonly<RetroTabsProps>) {
     <div>
       <div
         role="tablist"
-        className="flex items-end gap-sp-1 border-b-2 border-border-ink"
+        // Tabs scroll horizontally within their card on narrow screens instead
+        // of overflowing past its border (min-w-0 lets the strip shrink; the
+        // tabs themselves stay full-size via shrink-0 in TAB_BASE).
+        className="flex min-w-0 items-end gap-sp-1 overflow-x-auto border-b-2 border-border-ink"
       >
         {tabs.map((tab) => {
           const isActive = tab.id === active?.id;

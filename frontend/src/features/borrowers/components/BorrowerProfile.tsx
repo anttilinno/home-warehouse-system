@@ -15,7 +15,7 @@ export function BorrowerProfile({
   return (
     <div className="flex flex-col gap-sp-4">
       {/* Profile — definition grid (ItemDetailPage Field / Muted pattern). */}
-      <dl className="grid grid-cols-[minmax(0,140px)_1fr] gap-x-sp-4 gap-y-sp-3">
+      <dl className="grid grid-cols-[minmax(0,140px)_minmax(0,1fr)] gap-x-sp-4 gap-y-sp-3">
         <Field label={<Trans>Name</Trans>}>{borrower.name}</Field>
         <Field label={<Trans>Email</Trans>} mono>
           {borrower.email ? borrower.email : <Muted>—</Muted>}
@@ -77,7 +77,7 @@ function Field({
         {label}
       </dt>
       <dd
-        className={`text-14 ${mono ? "font-mono tabular-nums" : ""} ${
+        className={`min-w-0 break-words text-14 ${mono ? "font-mono tabular-nums" : ""} ${
           muted ? "text-fg-muted" : "text-fg-ink"
         }`}
       >

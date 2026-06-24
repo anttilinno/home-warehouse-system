@@ -59,7 +59,7 @@ export function FilterBar({
 
   return (
     <div className={`flex flex-col gap-sp-2 bg-bg-panel-2 p-sp-3 ${className}`}>
-      <div className="flex items-center gap-sp-2">
+      <div className="flex flex-wrap items-center gap-sp-2">
         <input
           type="search"
           aria-label={t`Filter items`}
@@ -70,14 +70,18 @@ export function FilterBar({
           }
           value={searchValue}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-[260px] border-2 border-border-ink bg-bg-panel px-[10px] py-[7px] text-14 text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue"
+          // Full-width on narrow screens (the fixed 260px overflowed the card on
+          // mobile); pins to 260px from sm up. min-w-0 lets it shrink in the row.
+          className="w-full min-w-0 border-2 border-border-ink bg-bg-panel px-[10px] py-[7px] text-14 text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue sm:w-[260px]"
         />
 
         {facets.map((facet) => (
           <span key={facet.key}>{facet.trigger}</span>
         ))}
 
-        <span className="flex-1" />
+        {/* Desktop spacer pushing the count + CTA to the right edge. Hidden on
+            mobile, where the row wraps instead of distributing on one line. */}
+        <span className="hidden flex-1 sm:block" />
 
         <span className="font-mono text-12 tabular-nums text-fg-muted">
           {itemCount} <Trans>items</Trans>
