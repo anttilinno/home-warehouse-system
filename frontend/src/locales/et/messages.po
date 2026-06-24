@@ -132,10 +132,9 @@ msgstr "{0} taastatud."
 msgid "{0} SELECTED"
 msgstr "{0} VALITUD"
 
-#. placeholder {0}: s.total_inventory
-#: src/features/dashboard/DashboardPage.tsx
-msgid "{0} units total"
-msgstr "{0} ühikut kokku"
+#: src/features/dashboard/components/DashboardStatTiles.tsx
+msgid "{total_inventory} units total"
+msgstr "{total_inventory} ühikut kokku"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "{count} expiring"

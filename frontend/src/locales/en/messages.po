@@ -132,10 +132,9 @@ msgstr "{0} restored."
 msgid "{0} SELECTED"
 msgstr "{0} SELECTED"
 
-#. placeholder {0}: s.total_inventory
-#: src/features/dashboard/DashboardPage.tsx
-msgid "{0} units total"
-msgstr "{0} units total"
+#: src/features/dashboard/components/DashboardStatTiles.tsx
+msgid "{total_inventory} units total"
+msgstr "{total_inventory} units total"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "{count} expiring"

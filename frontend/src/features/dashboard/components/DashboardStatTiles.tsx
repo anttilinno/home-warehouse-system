@@ -35,23 +35,26 @@ export function DashboardStatTiles({
           truncation, `no-underline` drops the anchor underline so the card face
           is unchanged; the <a> default cursor:pointer signals interactivity. */}
       <section className="mb-sp-5 grid grid-cols-2 gap-sp-4 lg:grid-cols-4 [&>*]:min-w-0">
-        <Link to="/items" className="block min-w-0 no-underline">
+        <Link to="/items" className="block h-full min-w-0 no-underline">
           <StatCard
+            className="h-full"
             label={<Trans>Items</Trans>}
             value={total_items ?? "—"}
             sub={loaded && <Trans>{total_inventory} units total</Trans>}
           />
         </Link>
-        <Link to="/loans" className="block min-w-0 no-underline">
+        <Link to="/loans" className="block h-full min-w-0 no-underline">
           <StatCard
+            className="h-full"
             label={<Trans>Loans</Trans>}
             value={active_loans ?? "—"}
             sub={<Trans>active</Trans>}
             titlebarVariant="mint"
           />
         </Link>
-        <Link to="/loans" className="block min-w-0 no-underline">
+        <Link to="/loans" className="block h-full min-w-0 no-underline">
           <StatCard
+            className="h-full"
             label={<Trans>Overdue</Trans>}
             value={overdue_loans ?? "—"}
             sub={<Trans>action needed</Trans>}
@@ -59,8 +62,9 @@ export function DashboardStatTiles({
             valueTone={(overdue_loans ?? 0) > 0 ? "danger" : "ink"}
           />
         </Link>
-        <Link to="/inventory" className="block min-w-0 no-underline">
+        <Link to="/inventory" className="block h-full min-w-0 no-underline">
           <StatCard
+            className="h-full"
             label={<Trans>Low stock</Trans>}
             value={low_stock_items ?? "—"}
             sub={<Trans>below threshold</Trans>}
