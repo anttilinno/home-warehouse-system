@@ -17,7 +17,7 @@ import { test, expect, type Page } from "@playwright/test";
 // human-eye residue (OQ-5, logged to FINAL-REVIEW-CHECKLIST) — it is NOT
 // asserted here; only the captured screenshots feed that manual review.
 //
-// VERIFIED AppShell contract (frontend2/src/components/layout/):
+// VERIFIED AppShell contract (frontend/src/components/layout/):
 //   .app-sidebar => `hidden md:block`  -> Sidebar HIDDEN <768, VISIBLE >=768
 //   Fab wrapper  => `md:hidden`        -> Fab VISIBLE <768, HIDDEN >=768
 //   Bottombar    => `hidden md:flex`   -> desktop-only; NOT asserted at <768

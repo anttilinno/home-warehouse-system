@@ -1,6 +1,6 @@
 // Phase 10 Plan 01 — tiny try/catch wrapper around sessionStorage for the
 // RetroTree expand-set persistence. There is NO sessionStorage precedent in
-// frontend2 (verified grep), so this is the canonical helper. The try/catch
+// frontend (verified grep), so this is the canonical helper. The try/catch
 // guards private-mode / quota / disabled-storage failures: a read failure
 // yields [] (collapsed default), a write failure is silently swallowed (the UI
 // stays usable, it just won't persist).

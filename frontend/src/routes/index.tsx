@@ -124,7 +124,7 @@ const DemoPage = import.meta.env.DEV
 function PlaceholderShell() {
   return (
     <main className="p-sp-4 font-mono">
-      <h1>frontend2 — v3.0 placeholder shell</h1>
+      <h1>v3.0 — placeholder shell</h1>
       <p>
         Phase 1 scaffold OK. Tokens (Phase 2), chrome (Phase 3), atoms (Phase 4)
         follow.

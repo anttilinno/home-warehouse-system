@@ -1,5 +1,5 @@
 // SSE invalidation map — the EXECUTABLE mirror of the human-readable SSOT at
-// `frontend2/docs/sse-invalidation-contract.md`. Phases 7-10 APPEND a row here
+// `frontend/docs/sse-invalidation-contract.md`. Phases 7-10 APPEND a row here
 // AND a row in that doc when they wire a new entity's queries.
 //
 // Convention (locked, RESEARCH §Pattern 3 + Open-Questions resolution): every

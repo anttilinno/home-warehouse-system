@@ -10,7 +10,7 @@
  *    that the scanner lib consumes), NOT derived from the local tuple — so
  *    downstream code shares one source of truth for format strings.
  *  - The legacy `EntityMatch` union (item/container/location) is dropped: it
- *    depended on legacy entity types that do not exist in frontend2, and the
+ *    depended on legacy entity types that do not exist in frontend, and the
  *    v3.0 resolve funnel keys off `entityType: 'item' | 'unknown'` instead.
  */
 

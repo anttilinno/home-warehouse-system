@@ -12,7 +12,7 @@ import { describe, expect, it } from "vitest";
 // brittle pixel/screenshot test here (02-RESEARCH.md Open Question 1).
 //
 // Pure-Node Vitest (mirrors tokens.test.ts): readFileSync + process.cwd()
-// (= frontend2 package root = vitest cwd; import.meta.url is http-scheme
+// (= frontend package root = vitest cwd; import.meta.url is http-scheme
 // under jsdom, so resolve from cwd instead).
 
 const plexMonoFilesDir = join(

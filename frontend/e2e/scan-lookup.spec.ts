@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 
 // Phase 11 Plan 08 — live by-barcode lookup E2E (G-65-01 re-add). Restores the
-// browser-level barcode-lookup guard that was wiped with the v2.2 frontend2
+// browser-level barcode-lookup guard that was wiped with the v2.2 frontend
 // rebuild (CLAUDE.md §Backend Integration Tests: "Frontend-side barcode-lookup
 // coverage is currently NOWHERE … must be re-added"). Runs against the live dev
 // stack per the CLAUDE.md §E2E runbook (backend :8080 + Postgres warehouse_dev +

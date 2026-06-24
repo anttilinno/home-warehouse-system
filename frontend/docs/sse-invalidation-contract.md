@@ -1,7 +1,7 @@
 # SSE Invalidation Contract (SSOT)
 
 **Status:** Canonical for Phases 6-10.
-**Code mirror:** `frontend2/src/features/sse/invalidationMap.ts`
+**Code mirror:** `frontend/src/features/sse/invalidationMap.ts`
 **Established:** Phase 6 Plan 06-01 (PROV-02).
 
 This is the single source of truth for how server-sent events map to TanStack
@@ -91,7 +91,7 @@ does nothing until a phase registers it.
 ## 4. Procedure: adding a new entity
 
 1. Append a row to `INVALIDATION_MAP` in
-   `frontend2/src/features/sse/invalidationMap.ts` keyed by the **lowercase**
+   `frontend/src/features/sse/invalidationMap.ts` keyed by the **lowercase**
    `entity_type`, value = array of query-key-prefix arrays.
 2. If the backend emits a new event NAME (`type`), add it to
    `KNOWN_EVENT_TYPES` in the same file so `SSEProvider` registers a listener.

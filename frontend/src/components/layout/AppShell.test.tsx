@@ -133,7 +133,7 @@ describe("AppShell", () => {
   });
 
   it("uses NO JS layout measurement APIs (CSS-only collapse — SHELL-02)", () => {
-    // Read the component source (vitest cwd is the frontend2 package root).
+    // Read the component source (vitest cwd is the frontend package root).
     const src = readFileSync(
       resolve(process.cwd(), "src/components/layout/AppShell.tsx"),
       "utf8",

@@ -27,7 +27,7 @@ import { test, expect, type Page } from "@playwright/test";
 //     as the alternative create path, so the lifecycle gate (ITEM-01/05) is
 //     proven without coupling to that separate form bug.
 //   • The by-barcode browser spec is STILL a gap (CLAUDE.md): the Phase 65
-//     scan-lookup Playwright spec was wiped with the v2.2 frontend2. The
+//     scan-lookup Playwright spec was wiped with the v2.2 frontend. The
 //     `itemsApi.lookupByBarcode` helper is re-added + unit-tested this phase
 //     (ITEM-09) and the backend G-65-01 integration test guards the server
 //     side, but the browser-level by-barcode flow lands when the scan feature

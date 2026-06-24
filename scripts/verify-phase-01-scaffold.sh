@@ -10,8 +10,8 @@ echo "=== FOUND-02: forbidden-imports grep guard ==="
 node scripts/check-forbidden-imports.mjs
 node --test scripts/__tests__/check-forbidden-imports.test.mjs
 
-echo "=== FOUND-01: frontend2 scaffold typecheck + build ==="
-cd "$REPO_ROOT/frontend2"
+echo "=== FOUND-01: frontend scaffold typecheck + build ==="
+cd "$REPO_ROOT/frontend"
 bun run lint:tsc
 bun run lint:imports
 bun run build
@@ -46,7 +46,7 @@ kill "$DEVPID" 2>/dev/null || true
 trap - EXIT
 # Bundle-side assertion: the placeholder text must be present in the built JS
 # bundle (proves the React route compiled and the text reaches the client).
-if ! grep -rq "frontend2 — v3.0 placeholder shell" dist/assets/ 2>/dev/null; then
+if ! grep -rq "v3.0 — placeholder shell" dist/assets/ 2>/dev/null; then
   echo "FAIL: built bundle does not contain placeholder shell text" >&2
   exit 1
 fi
