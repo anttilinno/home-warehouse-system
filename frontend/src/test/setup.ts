@@ -13,7 +13,9 @@ if (
   typeof Blob !== "undefined" &&
   typeof Blob.prototype.stream !== "function"
 ) {
-  Blob.prototype.stream = function stream(): ReadableStream<Uint8Array<ArrayBuffer>> {
+  Blob.prototype.stream = function stream(): ReadableStream<
+    Uint8Array<ArrayBuffer>
+  > {
     const blob = this;
     return new ReadableStream<Uint8Array<ArrayBuffer>>({
       async start(controller) {
