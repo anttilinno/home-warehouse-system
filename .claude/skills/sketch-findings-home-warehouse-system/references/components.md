@@ -1,7 +1,7 @@
 # Components — Retro OS Pastel
 
 Reference CSS in `sources/themes/retro-os.css`; production components land
-in `frontend2/src/components/retro/` (barrel export).
+in `frontend/src/components/retro/` (barrel export).
 
 ## Window (the workhorse)
 

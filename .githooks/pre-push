@@ -36,9 +36,14 @@ if grep -q '^backend/' <<<"$CHANGED"; then
 fi
 
 if grep -q '^frontend/' <<<"$CHANGED"; then
-  echo "pre-push: frontend changed — biome lint + tsc + complexity + dup…"
+  echo "pre-push: frontend changed — biome format + lint + tsc + complexity + dup…"
   (
     cd frontend || exit 1
+    # Format gate (read-only `biome format src`, NO --write). Mirrors the build's
+    # `prebuild` + CI `format:check`: catches format drift HERE so it can never
+    # sit unformatted in the working tree and dirty a deploy tag (`<sha>-dirty`).
+    # This is the one gate the build relies on that pre-push previously skipped.
+    bun run format:check || exit 1
     # Gate on biome ERRORS (correctness) only — pre-existing style warnings
     # must not block pushes.
     bunx biome lint --diagnostic-level=error src || exit 1

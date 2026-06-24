@@ -3,7 +3,7 @@ sketch: 005
 name: interactive-nav
 question: "Does the locked aesthetic hold up across multiple destination pages, and does the sidebar feel right as actual navigation rather than a static panel?"
 winner: "★ Variant A (Expanded sidebar) — also locks in: context-aware bottom function-key bar (replaces dashboard quick-actions tile) + user menu in sidebar footer (frontend1 pattern)"
-tags: [layout, sidebar, navigation, bottombar, user-menu, interactivity, frontend2]
+tags: [layout, sidebar, navigation, bottombar, user-menu, interactivity, frontend]
 ---
 
 # Sketch 005: Interactive Nav Playground
@@ -81,10 +81,10 @@ same content stubs. Switching A↔B preserves which page you're on.
 | Approvals    | Full          | Batch toolbar, alert-row queue with priority |
 | Analytics    | Stub          | "wave-2 backend rollups required" |
 | Containers   | Stub          | "borrows the locations grid pattern" |
-| Categories   | Stub          | "already shipped to frontend2 — re-skin only" |
+| Categories   | Stub          | "already shipped to frontend — re-skin only" |
 | Out of Stock | Stub          | "items with quantity zero or below threshold" |
 | Declutter    | Stub          | "unused 12+ months — borrow / sell / discard" |
-| Loans        | Stub          | "already shipped to frontend2 — re-skin only" |
+| Loans        | Stub          | "already shipped to frontend — re-skin only" |
 | Borrowers    | Stub          | "contacts who currently hold or have held items" |
 | Imports      | Stub          | "CSV / barcode batch loader" |
 | My Changes   | Stub          | "edits awaiting workspace-admin review" |

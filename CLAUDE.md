@@ -92,7 +92,9 @@ reaches master. `mise run setup` enables it; otherwise run once:
   (config `backend/.golangci.yml`: goconst/gocognit/dupl/gosec + standard) plus
   `go build`. Only NEW regressions vs. master block; legacy findings don't. A
   bare `golangci-lint run` audits the whole tree on demand.
-- **Frontend:** `biome lint --diagnostic-level=error` (blocks correctness
+- **Frontend:** `format:check` (read-only `biome format src`, no `--write` —
+  mirrors the build's `prebuild`/CI so format drift can't sit uncommitted and
+  dirty a deploy tag), `biome lint --diagnostic-level=error` (blocks correctness
   errors; pre-existing style warnings don't), `tsc`, a **complexity gate**
   (`bun run lint:complexity` — ESLint + sonarjs, cyclomatic AND cognitive
   threshold 15; config `frontend/eslint.complexity.config.mjs`, the

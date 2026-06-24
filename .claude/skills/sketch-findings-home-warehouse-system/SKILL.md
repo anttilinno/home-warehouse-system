@@ -1,12 +1,12 @@
 ---
 name: sketch-findings-home-warehouse-system
-description: Validated design decisions, CSS tokens, and visual direction for the frontend2 Retro OS Pastel aesthetic (sketches 006-008). Auto-load when implementing any frontend2 screen or component.
+description: Validated design decisions, CSS tokens, and visual direction for the frontend Retro OS Pastel aesthetic (sketches 006-008). Auto-load when implementing any frontend screen or component.
 ---
 
 <context>
 ## Project: home-warehouse-system
 
-**Retro OS Pastel** for `frontend2/` — System 7 / Win95 window chrome
+**Retro OS Pastel** for `frontend/` — System 7 / Win95 window chrome
 rebuilt in pastel. Cream desktop with dot dither, white window panels with
 2px ink bevels and hard offset shadows, pinstriped pastel title bars,
 beveled press-state buttons, sunken inputs. Silkscreen pixel display type
@@ -62,7 +62,7 @@ pastel fills (`--titlebar-blue/pink/mint/butter`), deep text companions
 the 4px spacing scale (`--sp-1..6`).
 
 When porting to Tailwind v4: emit tokens as CSS custom properties in
-`frontend2/src/styles/tokens.css` (`:root`) and map them in an
+`frontend/src/styles/tokens.css` (`:root`) and map them in an
 `@theme inline` block (`--color-*`, `--font-*`, `--shadow-*`,
 `--spacing-sp-*`) so utilities like `bg-bg-panel` / `text-fg-ink` /
 `shadow-hard` resolve.
@@ -76,7 +76,7 @@ When porting to Tailwind v4: emit tokens as CSS custom properties in
 3. `--fg-faint` is decorative/disabled only — never running text.
 4. Radii: 0 everywhere except badges (2px).
 5. Every text pair ≥ 4.5:1 (AA) — enforced by
-   `frontend2/src/styles/tokens.test.ts`.
+   `frontend/src/styles/tokens.test.ts`.
 
 ## Anti-Patterns (tried/considered and declined)
 

@@ -3,7 +3,7 @@ sketch: 003
 name: icon-style
 question: "How big should icons be, and should we keep monospace glyphs or move to lucide-style strokes?"
 winner: "C"
-tags: [icons, sidebar, polish, frontend2]
+tags: [icons, sidebar, polish, frontend]
 ---
 
 # Sketch 003: Icon Style Side-by-Side
@@ -27,7 +27,7 @@ Three nav strips visible at once — A, B, C — same content, only the icon tre
 | | A — Glyph 32px | B — Padded 40px | C — Lucide |
 |---|---|---|---|
 | Vertical density | tight | most generous | medium |
-| Production cost | zero (just text) | zero | small (`lucide-react` already in `frontend/` deps; would add to `frontend2/`) |
+| Production cost | zero (just text) | zero | small (`lucide-react` already in `frontend/` deps; would add to `frontend/`) |
 | Mobile (small viewport) | weakest | medium | strongest |
 | Aesthetic preservation | high | highest (control panel) | medium (less CRT) |
 | Icon vocabulary | limited to monospace glyph slots | same | full lucide library (1000+ icons) |
@@ -43,4 +43,4 @@ Three nav strips visible at once — A, B, C — same content, only the icon tre
 ## Recommendation Path
 
 If you want the **terminal feel preserved**, B is the strongest of the glyph options.
-If you'd rather the icons just **work and stop being a design problem**, C is the production answer — and `frontend2/` would inherit lucide naturally from the existing legacy frontend lookup.
+If you'd rather the icons just **work and stop being a design problem**, C is the production answer — and `frontend/` would inherit lucide naturally from the existing legacy frontend lookup.

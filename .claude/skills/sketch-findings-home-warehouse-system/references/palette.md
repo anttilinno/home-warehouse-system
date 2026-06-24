@@ -56,6 +56,6 @@ Ink on all four ≥ 9.9:1. **Never put colored text on these fills.**
 
 ## Regression guard
 
-`frontend2/src/styles/tokens.test.ts` asserts ≥4.5:1 for: ink/panel,
+`frontend/src/styles/tokens.test.ts` asserts ≥4.5:1 for: ink/panel,
 ink/desktop, muted/panel, ink on each titlebar fill, each `*-deep` on
 panel, danger on danger-bg.

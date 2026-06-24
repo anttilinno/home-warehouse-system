@@ -3,7 +3,7 @@ sketch: 002
 name: contrast-refinement
 question: "How do we keep the premium-terminal aesthetic while making text actually readable? Sketch 001's palette failed WCAG (timestamps at ~2.1:1)."
 winner: null
-tags: [theme, contrast, palette, accessibility, frontend2]
+tags: [theme, contrast, palette, accessibility, frontend]
 ---
 
 # Sketch 002: Contrast Refinement

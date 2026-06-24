@@ -3,7 +3,7 @@ sketch: 004
 name: retro-icons
 question: "Lucide reads too modern for the premium-terminal aesthetic. What retro icon family fits?"
 winner: "A"
-tags: [icons, retro, sidebar, frontend2]
+tags: [icons, retro, sidebar, frontend]
 ---
 
 # Sketch 004: Retro Icon Style Side-by-Side
@@ -44,7 +44,7 @@ Surfaced in the web search but not embedded in this sketch:
 
 ## Recommendation Path
 
-If **B** wins: add `pixelarticons` to `frontend2/package.json`, render via the CSS-mask pattern shown here (or as a React component if SSR matters — it doesn't here, frontend2 is SPA).
+If **B** wins: add `pixelarticons` to `frontend/package.json`, render via the CSS-mask pattern shown here (or as a React component if SSR matters — it doesn't here, frontend is SPA).
 
 If **C** wins: budget for a small icon-set commission or accept the hand-crafted maintenance overhead. Could start with the 14 nav icons + 5-6 utility icons (~20 total) and grow as needed.
 

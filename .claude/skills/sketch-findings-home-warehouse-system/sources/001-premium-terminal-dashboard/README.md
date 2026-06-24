@@ -3,12 +3,12 @@ sketch: 001
 name: premium-terminal-dashboard
 question: "What does the full premium-terminal dashboard look like with all locked decisions applied?"
 winner: "A — refreshed as canonical reference"
-tags: [layout, dashboard, theme, sidebar, frontend2, reference]
+tags: [layout, dashboard, theme, sidebar, frontend, reference]
 ---
 
 # Sketch 001: Premium Terminal Dashboard [CANONICAL REFERENCE]
 
-This sketch was refreshed after sketches 002-004 finalized the open palette/icon/typography decisions. It is now the **single canonical reference** for the frontend2 dashboard re-skin.
+This sketch was refreshed after sketches 002-004 finalized the open palette/icon/typography decisions. It is now the **single canonical reference** for the frontend dashboard re-skin.
 
 All earlier variant exploration (Mission Control vs Quiet Bridge) is captured in git history; this file is the post-decision target.
 
@@ -33,12 +33,12 @@ Click the `«` / `»` button in the sidebar header to toggle the collapsed icon-
 
 ## Implementation Notes
 
-- Theme tokens live in `../themes/default.css` — translate to Tailwind v4 CSS custom properties for `frontend2/src/styles/`.
+- Theme tokens live in `../themes/default.css` — translate to Tailwind v4 CSS custom properties for `frontend/src/styles/`.
 - All icon SVGs in this sketch are inlined from the `lucide` set; production should `bun add lucide-react` and import each as a component (`<LayoutDashboard />`, `<Package />`, etc.). Same icon family is already in legacy `frontend/`.
-- Sidebar grouping in `frontend2/src/components/layout/Sidebar.tsx` currently flat — refactor mirrors the legacy `frontend/components/dashboard/sidebar.tsx` (post-`eacaa01`) grouped structure.
+- Sidebar grouping in `frontend/src/components/layout/Sidebar.tsx` currently flat — refactor mirrors the legacy `frontend/components/dashboard/sidebar.tsx` (post-`eacaa01`) grouped structure.
 - HUD widgets (capacity gauge, 14d sparkline) need backend data:
   - **Capacity gauge** requires `capacity_target` per workspace (or app-wide constant)
   - **Activity sparkline** requires an activity-events-by-day rollup endpoint
   Both are small backend additions and could be deferred behind feature flags if needed.
-- "Approvals", "My Changes", "Sync History" routes don't exist in `frontend2` yet — see `.planning/FRONTEND2-PARITY-ROADMAP.md`. Stub pages are sufficient for a dashboard re-skin phase.
+- "Approvals", "My Changes", "Sync History" routes don't exist in `frontend` yet — see `.planning/FRONTEND2-PARITY-ROADMAP.md`. Stub pages are sufficient for a dashboard re-skin phase.
 - Quick-actions command bar can launch as static buttons; keyboard-shortcut wiring (`[N]/[S]/[L]/[Q]`) is a follow-on phase.
