@@ -37,7 +37,10 @@ export function RetroPagination({
   return (
     <nav
       aria-label={t`Pagination`}
-      className="flex items-center gap-sp-2 border-t-2 border-border-ink bg-bg-panel-2 p-sp-3"
+      // flex-wrap so the controls + meta sentence drop to the next line instead
+      // of overflowing the card on narrow viewports (the row can't fit PREV +
+      // page buttons + NEXT + "page X of Y" at mobile width).
+      className="flex flex-wrap items-center gap-sp-2 border-t-2 border-border-ink bg-bg-panel-2 p-sp-3"
     >
       <BevelButton
         aria-label={t`Previous page`}
@@ -48,7 +51,7 @@ export function RetroPagination({
         ◂ {t`PREV`}
       </BevelButton>
 
-      <div className="flex items-center gap-sp-1">
+      <div className="flex flex-wrap items-center gap-sp-1">
         {pages.map((p) => {
           const isCurrent = p === page;
           return (
