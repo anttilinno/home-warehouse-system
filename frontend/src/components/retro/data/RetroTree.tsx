@@ -241,7 +241,7 @@ export function RetroTree({
               }}
               onKeyDown={(e) => onKeyDown(e, row)}
               onClick={() => hasChildren && toggle(node.id)}
-              className="group flex cursor-default items-center gap-sp-1 py-[3px] pr-sp-2 hover:bg-bg-panel-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-[-2px]"
+              className="group relative flex cursor-default items-center gap-sp-1 py-[3px] pr-sp-2 hover:bg-bg-panel-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-[-2px]"
             >
               {/* Indent guides: one 1px sand rule per depth level. */}
               {Array.from(
@@ -281,18 +281,20 @@ export function RetroTree({
                 </span>
               )}
 
-              {/* Name (archived → muted). */}
+              {/* Name (archived → muted). min-w-0 so it truncates instead of
+                  shoving the short code off the row. */}
               <span
-                className={`truncate font-body text-14 ${
+                className={`min-w-0 truncate font-body text-14 ${
                   node.isArchived ? "text-fg-muted" : "text-fg-ink"
                 }`}
               >
                 {node.name}
               </span>
 
-              {/* Short code — muted mono, after the name (e.g. location codes). */}
+              {/* Short code — muted mono, pinned to the RIGHT edge (ml-auto)
+                  instead of sitting right after the name with a dead gap. */}
               {node.shortCode && (
-                <span className="shrink-0 font-mono text-11 text-fg-faint">
+                <span className="ml-auto shrink-0 pl-sp-2 font-mono text-11 text-fg-faint">
                   {node.shortCode}
                 </span>
               )}
@@ -314,7 +316,11 @@ export function RetroTree({
               {/* biome-ignore lint/a11y/noStaticElementInteractions: stops row-click propagation only, not an interactive control */}
               {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops row-click propagation only, not an interactive control */}
               <div
-                className="ml-auto flex items-center gap-sp-1 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+                // Absolute overlay on the right so the actions reserve NO inline
+                // space when hidden (lets the short code sit flush against the
+                // right edge). Reveal on hover/focus; the panel-2 bg + left fade
+                // covers the code beneath while acting on the row.
+                className="absolute inset-y-0 right-0 flex items-center gap-sp-1 bg-bg-panel-2 pl-sp-3 pr-sp-2 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
                 onClick={(e) => e.stopPropagation()}
               >
                 {node.isArchived ? (
