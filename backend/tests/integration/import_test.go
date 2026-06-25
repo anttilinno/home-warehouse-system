@@ -5,6 +5,7 @@ package integration
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"testing"
 	"time"
@@ -24,9 +25,24 @@ func TestImportJobWorkflow(t *testing.T) {
 
 	repo := postgres.NewImportJobRepository(ts.Pool)
 
-	// Create test workspace and user
-	workspaceID := uuid.New()
-	userID := uuid.New()
+	// import_jobs has FK constraints on both user_id (auth.users) and
+	// workspace_id (auth.workspaces), so we must use real persisted IDs rather
+	// than random UUIDs. Register a user (which creates them) and a workspace
+	// via the API.
+	token := ts.AuthHelper(t, "import_"+uuid.New().String()[:8]+"@example.com")
+	ts.SetToken(token)
+	userID := getUserID(t, ts)
+
+	resp := ts.Post("/workspaces", map[string]interface{}{
+		"name":        "Import Workspace",
+		"slug":        "import-ws-" + uuid.New().String()[:8],
+		"is_personal": false,
+	})
+	RequireStatus(t, resp, http.StatusOK)
+	ws := ParseResponse[struct {
+		ID uuid.UUID `json:"id"`
+	}](t, resp)
+	workspaceID := ws.ID
 
 	// Create test CSV file
 	testFile := createTestCSV(t)

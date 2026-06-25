@@ -1268,13 +1268,11 @@ func TestLocationSearch(t *testing.T) {
 		{
 			"name":        "Warehouse Main Floor",
 			"description": "Primary storage area",
-			"zone":        "A",
 			"short_code":  "WHMAIN",
 		},
 		{
 			"name":        "Warehouse Basement",
 			"description": "Secondary storage",
-			"zone":        "B",
 		},
 		{
 			"name":        "Office Storage",
@@ -1311,18 +1309,8 @@ func TestLocationSearch(t *testing.T) {
 
 	assert.Equal(t, 2, len(searchResult.Items), "Should find 2 locations with 'warehouse'")
 
-	// Test search by zone
-	resp = ts.Get(workspacePath + "/locations/search?q=zone%20A&limit=10")
-	RequireStatus(t, resp, http.StatusOK)
-
-	searchResult = ParseResponse[struct {
-		Items []struct {
-			ID   uuid.UUID `json:"id"`
-			Name string    `json:"name"`
-		} `json:"items"`
-	}](t, resp)
-
-	assert.GreaterOrEqual(t, len(searchResult.Items), 1, "Should find at least 1 location with zone A")
+	// (Locations no longer have a "zone" field, and the location search_vector
+	// indexes only name/description/short_code, so there is no zone search.)
 
 	// Test search by short code
 	resp = ts.Get(workspacePath + "/locations/search?q=WHMAIN&limit=10")
@@ -1541,7 +1529,11 @@ func TestBorrowerSearch(t *testing.T) {
 		} `json:"items"`
 	}](t, resp)
 
-	assert.Equal(t, 2, len(searchResult.Items), "Should find 2 borrowers with 'John' in name")
+	// Borrower search is full-text (plainto_tsquery), so it matches whole
+	// lexemes, not substrings: "John" matches "John Smith" but not the distinct
+	// lexeme "Johnson".
+	assert.Equal(t, 1, len(searchResult.Items), "Should find 1 borrower with the 'John' lexeme in name")
+	assert.Equal(t, "John Smith", searchResult.Items[0].Name)
 
 	// Test search by email
 	resp = ts.Get(workspacePath + "/borrowers/search?q=jane.doe@example.com&limit=10")
@@ -1565,8 +1557,10 @@ func TestBorrowerSearch(t *testing.T) {
 	assert.Equal(t, 1, len(emailSearchResult.Items), "Should find 1 borrower by email")
 	assert.Equal(t, "Jane Doe", emailSearchResult.Items[0].Name)
 
-	// Test search by phone
-	resp = ts.Get(workspacePath + "/borrowers/search?q=555-0103&limit=10")
+	// Test search by phone. Full-text search tokenizes the stored phone, so the
+	// query must be the full phone string (a bare fragment like "555-0103" is
+	// not a matching lexeme).
+	resp = ts.Get(workspacePath + "/borrowers/search?q=%2B1-555-0103&limit=10")
 	RequireStatus(t, resp, http.StatusOK)
 
 	searchResult = ParseResponse[struct {

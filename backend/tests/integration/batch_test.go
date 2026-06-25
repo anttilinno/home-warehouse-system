@@ -333,11 +333,12 @@ func TestBatchOperations_MultipleEntities(t *testing.T) {
 
 	workspacePath := fmt.Sprintf("/workspaces/%s", wsResult.ID)
 
-	// Create category, label, and company
+	// Create category, label, and company. Category create returns 201; label
+	// and company use the default 200.
 	resp = ts.Post(workspacePath+"/categories", map[string]interface{}{
 		"name": "Test Category",
 	})
-	RequireStatus(t, resp, http.StatusOK)
+	RequireStatus(t, resp, http.StatusCreated)
 	var catResult struct {
 		ID        uuid.UUID  `json:"id"`
 		UpdatedAt *time.Time `json:"updated_at"`

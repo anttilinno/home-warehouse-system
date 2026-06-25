@@ -74,7 +74,7 @@ func TestConcurrentItemUpdates_SingleItemMultipleGoroutines(t *testing.T) {
 				"name": fmt.Sprintf("Updated Item %d", index),
 			}
 
-			resp := ts.Put(itemPath, updateData)
+			resp := ts.Patch(itemPath, updateData)
 			if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusConflict {
 				errors <- fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 			}
@@ -171,7 +171,7 @@ func TestConcurrentItemUpdates_MultipleItemsMultipleGoroutines(t *testing.T) {
 				"name": fmt.Sprintf("Updated by goroutine %d", index),
 			}
 
-			resp := ts.Put(itemPath, updateData)
+			resp := ts.Patch(itemPath, updateData)
 			if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusConflict {
 				errors <- fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 			} else {
@@ -273,7 +273,7 @@ func TestConcurrentItemUpdates_ReadAndWriteOperations(t *testing.T) {
 					"name": fmt.Sprintf("Updated %d", index),
 				}
 
-				resp := ts.Put(itemPath, updateData)
+				resp := ts.Patch(itemPath, updateData)
 				if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusConflict {
 					writeErrors <- fmt.Errorf("write failed: %d", resp.StatusCode)
 				}
@@ -349,7 +349,7 @@ func TestConcurrentItemUpdates_RaceCondition_ConflictDetection(t *testing.T) {
 				"name": fmt.Sprintf("Conflict Update %d", index),
 			}
 
-			resp := ts.Put(itemPath, updateData)
+			resp := ts.Patch(itemPath, updateData)
 
 			if resp.StatusCode == http.StatusConflict {
 				conflictCount <- 1
@@ -440,7 +440,7 @@ func TestConcurrentItemUpdates_StressTest_HighConcurrency(t *testing.T) {
 					"name": fmt.Sprintf("Update g%d-op%d", goroutineID, op),
 				}
 
-				resp := ts.Put(itemPath, updateData)
+				resp := ts.Patch(itemPath, updateData)
 
 				if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusConflict {
 					successCount <- 1
@@ -525,7 +525,7 @@ func TestConcurrentItemUpdates_SequentialConsistency(t *testing.T) {
 			"name": fmt.Sprintf("Update %d", updateIdx),
 		}
 
-		resp := ts.Put(itemPath, updateData)
+		resp := ts.Patch(itemPath, updateData)
 		require.True(t, resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusConflict)
 
 		// Verify with concurrent reads

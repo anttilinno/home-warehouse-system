@@ -645,16 +645,16 @@ func setupLoanTestDataForRedis(t *testing.T, pool *pgxpool.Pool) (workspaceID, b
 
 	// Insert location
 	_, err = pool.Exec(ctx, `
-		INSERT INTO warehouse.locations (id, workspace_id, name, created_at, updated_at)
-		VALUES ($1, $2, 'Redis Test Location', NOW(), NOW())
-	`, locationID, workspaceID)
+		INSERT INTO warehouse.locations (id, workspace_id, name, short_code, created_at, updated_at)
+		VALUES ($1, $2, 'Redis Test Location', $3, NOW(), NOW())
+	`, locationID, workspaceID, "L"+uuid.New().String()[:7])
 	require.NoError(t, err)
 
 	// Insert item with unique SKU
 	_, err = pool.Exec(ctx, `
-		INSERT INTO warehouse.items (id, workspace_id, name, sku, min_stock_level, created_at, updated_at)
-		VALUES ($1, $2, 'Redis Test Item', $3, 0, NOW(), NOW())
-	`, itemID, workspaceID, "REDIS-SKU-"+uuid.New().String()[:8])
+		INSERT INTO warehouse.items (id, workspace_id, name, sku, short_code, min_stock_level, created_at, updated_at)
+		VALUES ($1, $2, 'Redis Test Item', $3, $4, 0, NOW(), NOW())
+	`, itemID, workspaceID, "REDIS-SKU-"+uuid.New().String()[:8], "I"+uuid.New().String()[:7])
 	require.NoError(t, err)
 
 	// Insert inventory

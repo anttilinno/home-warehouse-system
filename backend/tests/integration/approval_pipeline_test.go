@@ -92,7 +92,7 @@ func TestApprovalPipeline_CompleteWorkflow_CreateRejectVerify(t *testing.T) {
 
 	// Owner rejects the change
 	ts.SetToken(ownerToken)
-	resp = ts.Post(fmt.Sprintf("/pending-changes/%s/reject", pendingResp.PendingChangeID), map[string]interface{}{
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/reject", ws.ID, pendingResp.PendingChangeID), map[string]interface{}{
 		"reason": "Item not needed at this time",
 	})
 	RequireStatus(t, resp, http.StatusOK)
@@ -167,19 +167,19 @@ func TestApprovalPipeline_Authorization_NonAdminCannotApprove(t *testing.T) {
 
 	// Member2 tries to approve (should fail)
 	ts.SetToken(member2Token)
-	resp = ts.Post(fmt.Sprintf("/pending-changes/%s/approve", pendingResp.PendingChangeID), nil)
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/approve", ws.ID, pendingResp.PendingChangeID), nil)
 	RequireStatus(t, resp, http.StatusForbidden)
 	resp.Body.Close()
 
 	// Member1 tries to approve their own change (should fail)
 	ts.SetToken(member1Token)
-	resp = ts.Post(fmt.Sprintf("/pending-changes/%s/approve", pendingResp.PendingChangeID), nil)
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/approve", ws.ID, pendingResp.PendingChangeID), nil)
 	RequireStatus(t, resp, http.StatusForbidden)
 	resp.Body.Close()
 
 	// Owner can approve
 	ts.SetToken(ownerToken)
-	resp = ts.Post(fmt.Sprintf("/pending-changes/%s/approve", pendingResp.PendingChangeID), nil)
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/approve", ws.ID, pendingResp.PendingChangeID), nil)
 	RequireStatus(t, resp, http.StatusOK)
 	resp.Body.Close()
 }
@@ -258,7 +258,7 @@ func TestApprovalPipeline_AdminCreatesItemBypassesPending(t *testing.T) {
 		"sku":             "ADM-001",
 		"min_stock_level": 0,
 	})
-	RequireStatus(t, resp, http.StatusCreated)
+	RequireStatus(t, resp, http.StatusOK)
 
 	// Verify no pending_change_id in response
 	var result map[string]interface{}
@@ -311,7 +311,7 @@ func TestApprovalPipeline_Items(t *testing.T) {
 
 	// Owner approves
 	ts.SetToken(ownerToken)
-	resp = ts.Post(fmt.Sprintf("/pending-changes/%s/approve", pendingResp.PendingChangeID), nil)
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/approve", ws.ID, pendingResp.PendingChangeID), nil)
 	RequireStatus(t, resp, http.StatusOK)
 	resp.Body.Close()
 
@@ -362,7 +362,7 @@ func TestApprovalPipeline_Locations(t *testing.T) {
 
 	// Owner approves
 	ts.SetToken(ownerToken)
-	resp = ts.Post(fmt.Sprintf("/pending-changes/%s/approve", pendingResp.PendingChangeID), nil)
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/approve", ws.ID, pendingResp.PendingChangeID), nil)
 	RequireStatus(t, resp, http.StatusOK)
 	resp.Body.Close()
 
@@ -405,7 +405,7 @@ func TestApprovalPipeline_Containers(t *testing.T) {
 	resp = ts.Post(fmt.Sprintf("/workspaces/%s/locations", ws.ID), map[string]interface{}{
 		"name": "Test Location",
 	})
-	RequireStatus(t, resp, http.StatusCreated)
+	RequireStatus(t, resp, http.StatusOK)
 	location := ParseResponse[struct {
 		ID uuid.UUID `json:"id"`
 	}](t, resp)
@@ -423,7 +423,7 @@ func TestApprovalPipeline_Containers(t *testing.T) {
 
 	// Owner approves
 	ts.SetToken(ownerToken)
-	resp = ts.Post(fmt.Sprintf("/pending-changes/%s/approve", pendingResp.PendingChangeID), nil)
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/approve", ws.ID, pendingResp.PendingChangeID), nil)
 	RequireStatus(t, resp, http.StatusOK)
 	resp.Body.Close()
 
@@ -474,17 +474,18 @@ func TestApprovalPipeline_Categories(t *testing.T) {
 
 	// Owner approves
 	ts.SetToken(ownerToken)
-	resp = ts.Post(fmt.Sprintf("/pending-changes/%s/approve", pendingResp.PendingChangeID), nil)
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/approve", ws.ID, pendingResp.PendingChangeID), nil)
 	RequireStatus(t, resp, http.StatusOK)
 	resp.Body.Close()
 
-	// Verify category exists
+	// Verify category exists. The category list response is an items envelope
+	// with no top-level total field.
 	resp = ts.Get(fmt.Sprintf("/workspaces/%s/categories", ws.ID))
 	RequireStatus(t, resp, http.StatusOK)
 	categories := ParseResponse[struct {
-		Total int `json:"total"`
+		Items []map[string]interface{} `json:"items"`
 	}](t, resp)
-	assert.Equal(t, 1, categories.Total)
+	assert.Equal(t, 1, len(categories.Items))
 }
 
 func TestApprovalPipeline_Borrowers(t *testing.T) {
@@ -526,17 +527,18 @@ func TestApprovalPipeline_Borrowers(t *testing.T) {
 
 	// Owner approves
 	ts.SetToken(ownerToken)
-	resp = ts.Post(fmt.Sprintf("/pending-changes/%s/approve", pendingResp.PendingChangeID), nil)
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/approve", ws.ID, pendingResp.PendingChangeID), nil)
 	RequireStatus(t, resp, http.StatusOK)
 	resp.Body.Close()
 
-	// Verify borrower exists
+	// Verify borrower exists. The borrower list response is an items envelope
+	// with no top-level total field.
 	resp = ts.Get(fmt.Sprintf("/workspaces/%s/borrowers", ws.ID))
 	RequireStatus(t, resp, http.StatusOK)
 	borrowers := ParseResponse[struct {
-		Total int `json:"total"`
+		Items []map[string]interface{} `json:"items"`
 	}](t, resp)
-	assert.Equal(t, 1, borrowers.Total)
+	assert.Equal(t, 1, len(borrowers.Items))
 }
 
 // =============================================================================
@@ -557,11 +559,13 @@ func TestApprovalPipeline_EdgeCase_ApproveNonExistent(t *testing.T) {
 		"is_personal": false,
 	})
 	RequireStatus(t, resp, http.StatusOK)
-	resp.Body.Close()
+	ws := ParseResponse[struct {
+		ID uuid.UUID `json:"id"`
+	}](t, resp)
 
 	// Try to approve non-existent change
 	fakeID := uuid.New()
-	resp = ts.Post(fmt.Sprintf("/pending-changes/%s/approve", fakeID), nil)
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/approve", ws.ID, fakeID), nil)
 	RequireStatus(t, resp, http.StatusNotFound)
 	resp.Body.Close()
 }
@@ -606,14 +610,27 @@ func TestApprovalPipeline_EdgeCase_ApproveAlreadyApproved(t *testing.T) {
 
 	// Owner approves
 	ts.SetToken(ownerToken)
-	resp = ts.Post(fmt.Sprintf("/pending-changes/%s/approve", pendingResp.PendingChangeID), nil)
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/approve", ws.ID, pendingResp.PendingChangeID), nil)
 	RequireStatus(t, resp, http.StatusOK)
 	resp.Body.Close()
 
-	// Try to approve again
-	resp = ts.Post(fmt.Sprintf("/pending-changes/%s/approve", pendingResp.PendingChangeID), nil)
-	RequireStatus(t, resp, http.StatusBadRequest)
-	resp.Body.Close()
+	// Re-approving an already-approved change is idempotent: it short-circuits
+	// without re-applying (no duplicate entity) and returns 200 rather than an
+	// error.
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/approve", ws.ID, pendingResp.PendingChangeID), nil)
+	RequireStatus(t, resp, http.StatusOK)
+	approved := ParseResponse[struct {
+		Status string `json:"status"`
+	}](t, resp)
+	assert.Equal(t, "approved", approved.Status)
+
+	// And exactly one item exists, not two.
+	resp = ts.Get(fmt.Sprintf("/workspaces/%s/items", ws.ID))
+	RequireStatus(t, resp, http.StatusOK)
+	items := ParseResponse[struct {
+		Total int `json:"total"`
+	}](t, resp)
+	assert.Equal(t, 1, items.Total)
 }
 
 func TestApprovalPipeline_EdgeCase_RejectAlreadyRejected(t *testing.T) {
@@ -656,14 +673,14 @@ func TestApprovalPipeline_EdgeCase_RejectAlreadyRejected(t *testing.T) {
 
 	// Owner rejects
 	ts.SetToken(ownerToken)
-	resp = ts.Post(fmt.Sprintf("/pending-changes/%s/reject", pendingResp.PendingChangeID), map[string]interface{}{
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/reject", ws.ID, pendingResp.PendingChangeID), map[string]interface{}{
 		"reason": "First rejection",
 	})
 	RequireStatus(t, resp, http.StatusOK)
 	resp.Body.Close()
 
 	// Try to reject again
-	resp = ts.Post(fmt.Sprintf("/pending-changes/%s/reject", pendingResp.PendingChangeID), map[string]interface{}{
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/reject", ws.ID, pendingResp.PendingChangeID), map[string]interface{}{
 		"reason": "Second rejection",
 	})
 	RequireStatus(t, resp, http.StatusBadRequest)
@@ -724,7 +741,7 @@ func TestApprovalPipeline_EdgeCase_CrossWorkspaceApproval(t *testing.T) {
 
 	// Owner2 (not member of workspace 1) tries to approve
 	ts.SetToken(owner2Token)
-	resp = ts.Post(fmt.Sprintf("/pending-changes/%s/approve", pendingResp.PendingChangeID), nil)
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/approve", ws1.ID, pendingResp.PendingChangeID), nil)
 	// Should be forbidden or not found
 	require.True(t, resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusNotFound)
 	resp.Body.Close()
@@ -788,7 +805,7 @@ func TestApprovalPipeline_Performance_BatchApproval(t *testing.T) {
 	ts.SetToken(ownerToken)
 	start = time.Now()
 	for _, pendingID := range pendingIDs {
-		resp = ts.Post(fmt.Sprintf("/pending-changes/%s/approve", pendingID), nil)
+		resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/approve", ws.ID, pendingID), nil)
 		RequireStatus(t, resp, http.StatusOK)
 		resp.Body.Close()
 	}
@@ -846,24 +863,17 @@ func TestApprovalPipeline_Pagination(t *testing.T) {
 		resp.Body.Close()
 	}
 
-	// Test pagination
+	// The workspace-scoped list endpoint returns every pending change for the
+	// workspace (no server-side limit/offset pagination), with Total matching
+	// the number of entries returned.
 	ts.SetToken(ownerToken)
-	resp = ts.Get("/pending-changes?limit=10")
+	resp = ts.Get(fmt.Sprintf("/workspaces/%s/pending-changes", ws.ID))
 	RequireStatus(t, resp, http.StatusOK)
-	page1 := ParseResponse[struct {
+	list := ParseResponse[struct {
 		Changes []map[string]interface{} `json:"changes"`
 		Total   int                      `json:"total"`
 	}](t, resp)
 
-	assert.GreaterOrEqual(t, page1.Total, 25)
-	assert.LessOrEqual(t, len(page1.Changes), 10)
-
-	// Get second page
-	resp = ts.Get("/pending-changes?limit=10&offset=10")
-	RequireStatus(t, resp, http.StatusOK)
-	page2 := ParseResponse[struct {
-		Changes []map[string]interface{} `json:"changes"`
-	}](t, resp)
-
-	assert.LessOrEqual(t, len(page2.Changes), 10)
+	assert.GreaterOrEqual(t, list.Total, 25)
+	assert.Equal(t, list.Total, len(list.Changes))
 }

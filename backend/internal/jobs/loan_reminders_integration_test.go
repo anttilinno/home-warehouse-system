@@ -85,16 +85,16 @@ func setupLoanTestData(t *testing.T, pool *pgxpool.Pool) (workspaceID, borrowerI
 
 	// Insert location
 	_, err = pool.Exec(ctx, `
-		INSERT INTO warehouse.locations (id, workspace_id, name, created_at, updated_at)
-		VALUES ($1, $2, 'Test Location', NOW(), NOW())
-	`, locationID, workspaceID)
+		INSERT INTO warehouse.locations (id, workspace_id, name, short_code, created_at, updated_at)
+		VALUES ($1, $2, 'Test Location', $3, NOW(), NOW())
+	`, locationID, workspaceID, "L"+uuid.New().String()[:7])
 	require.NoError(t, err)
 
 	// Insert item
 	_, err = pool.Exec(ctx, `
-		INSERT INTO warehouse.items (id, workspace_id, name, sku, min_stock_level, created_at, updated_at)
-		VALUES ($1, $2, 'Test Item', 'TEST-SKU', 0, NOW(), NOW())
-	`, itemID, workspaceID)
+		INSERT INTO warehouse.items (id, workspace_id, name, sku, short_code, min_stock_level, created_at, updated_at)
+		VALUES ($1, $2, 'Test Item', 'TEST-SKU', $3, 0, NOW(), NOW())
+	`, itemID, workspaceID, "I"+uuid.New().String()[:7])
 	require.NoError(t, err)
 
 	// Insert inventory
@@ -207,16 +207,16 @@ func TestLoanReminderScheduler_IgnoresLoansWithoutEmail(t *testing.T) {
 
 	// Insert location
 	_, err = pool.Exec(ctx, `
-		INSERT INTO warehouse.locations (id, workspace_id, name, created_at, updated_at)
-		VALUES ($1, $2, 'No Email Location', NOW(), NOW())
-	`, locationID, workspaceID)
+		INSERT INTO warehouse.locations (id, workspace_id, name, short_code, created_at, updated_at)
+		VALUES ($1, $2, 'No Email Location', $3, NOW(), NOW())
+	`, locationID, workspaceID, "L"+uuid.New().String()[:7])
 	require.NoError(t, err)
 
 	// Insert item
 	_, err = pool.Exec(ctx, `
-		INSERT INTO warehouse.items (id, workspace_id, name, sku, min_stock_level, created_at, updated_at)
-		VALUES ($1, $2, 'No Email Item', $3, 0, NOW(), NOW())
-	`, itemID, workspaceID, "NOEMAIL-SKU-"+uuid.New().String()[:8])
+		INSERT INTO warehouse.items (id, workspace_id, name, sku, short_code, min_stock_level, created_at, updated_at)
+		VALUES ($1, $2, 'No Email Item', $3, $4, 0, NOW(), NOW())
+	`, itemID, workspaceID, "NOEMAIL-SKU-"+uuid.New().String()[:8], "I"+uuid.New().String()[:7])
 	require.NoError(t, err)
 
 	// Insert inventory

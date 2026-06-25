@@ -578,7 +578,7 @@ func TestMultiUserWorkflow(t *testing.T) {
 
 	// Get user2's ID
 	ts.SetToken(token2)
-	resp = ts.Get("/auth/me")
+	resp = ts.Get("/users/me")
 	RequireStatusCreated(t, resp)
 
 	var user2 struct {
@@ -617,25 +617,29 @@ func TestMultiUserWorkflow(t *testing.T) {
 
 	t.Log("✓ Member can see items in shared workspace")
 
-	// User 2 can update the item
-	resp = ts.Put(workspacePath+"/items/"+item.ID.String(), map[string]interface{}{
+	// A member's update does not apply directly — it goes through the approval
+	// pipeline and comes back as a pending change (202) for an owner/admin to
+	// review.
+	resp = ts.Patch(workspacePath+"/items/"+item.ID.String(), map[string]interface{}{
 		"name": "Shared Tool (Updated by Member)",
 	})
-	RequireStatusCreated(t, resp)
+	RequireStatus(t, resp, http.StatusAccepted)
 
-	var updatedItem struct {
-		Name string `json:"name"`
-	}
-	updatedItem = ParseResponse[struct {
-		Name string `json:"name"`
+	pending := ParseResponse[struct {
+		PendingChangeID uuid.UUID `json:"pending_change_id"`
 	}](t, resp)
 
-	assert.Equal(t, "Shared Tool (Updated by Member)", updatedItem.Name)
+	t.Log("✓ Member's update queued as a pending change")
 
-	t.Log("✓ Member can update items in shared workspace")
-
-	// Owner can see the update
+	// Owner approves the pending change, applying the member's update.
 	ts.SetToken(token1)
+	resp = ts.Post(fmt.Sprintf("%s/pending-changes/%s/approve", workspacePath, pending.PendingChangeID), nil)
+	RequireStatus(t, resp, http.StatusOK)
+	resp.Body.Close()
+
+	t.Log("✓ Owner approved member's update")
+
+	// Owner can see the applied update
 	resp = ts.Get(workspacePath + "/items/" + item.ID.String())
 	RequireStatusCreated(t, resp)
 

@@ -489,14 +489,23 @@ func TestPendingChangeHandler_ApproveChange(t *testing.T) {
 		assert.Equal(t, http.StatusForbidden, resp.Code)
 	})
 
-	t.Run("cannot approve already reviewed change", func(t *testing.T) {
+	t.Run("re-approving an already-approved change is idempotent", func(t *testing.T) {
+		// `change` was approved in the first subtest. Re-approving short-circuits
+		// in-transaction (status no longer pending) and returns the already-approved
+		// change unchanged — deliberate idempotency so the loser of a concurrent
+		// approve race does not see a spurious error.
 		req := httptest.NewRequest(http.MethodPost, "/pending-changes/"+change.ID().String()+"/approve", nil)
 		req = req.WithContext(addAuthContext(ctx, workspaceID, users.ownerID, "owner"))
 
 		resp := httptest.NewRecorder()
 		api.Adapter().ServeHTTP(resp, req)
 
-		assert.Equal(t, http.StatusBadRequest, resp.Code)
+		assert.Equal(t, http.StatusOK, resp.Code)
+
+		var result pendingchange.PendingChangeResponse
+		err := json.NewDecoder(resp.Body).Decode(&result)
+		require.NoError(t, err)
+		assert.Equal(t, "approved", result.Status)
 	})
 }
 

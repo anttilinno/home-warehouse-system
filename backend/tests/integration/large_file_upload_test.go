@@ -6,9 +6,14 @@ package integration
 import (
 	"bytes"
 	"fmt"
+	"image"
+	"image/color"
+	"image/png"
 	"io"
+	"math/rand"
 	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"testing"
 
 	"github.com/google/uuid"
@@ -60,12 +65,12 @@ func TestLargeFileUpload_SmallImage_Success(t *testing.T) {
 
 	itemPath := fmt.Sprintf("%s/items/%s", workspacePath, itemResult.ID)
 
-	// Upload a small file (1KB)
-	fileData := bytes.Repeat([]byte("x"), 1024)
-	body, contentType := createMultipartFormData("photo", "test.jpg", fileData)
+	// Upload a small valid image
+	fileData := validPNG(120, 120)
+	body, contentType := createImageMultipartFormData("photo", "test.png", fileData)
 
 	uploadResp := ts.PostRaw(itemPath+"/photos", body, contentType)
-	RequireStatus(t, uploadResp, http.StatusOK)
+	RequireStatus(t, uploadResp, http.StatusCreated)
 }
 
 func TestLargeFileUpload_MediumImage_Success(t *testing.T) {
@@ -109,12 +114,12 @@ func TestLargeFileUpload_MediumImage_Success(t *testing.T) {
 
 	itemPath := fmt.Sprintf("%s/items/%s", workspacePath, itemResult.ID)
 
-	// Upload a medium file (5MB)
-	fileData := bytes.Repeat([]byte("x"), 5*1024*1024)
-	body, contentType := createMultipartFormData("photo", "medium.jpg", fileData)
+	// Upload a medium valid image (~several MB of incompressible PNG data)
+	fileData := validPNG(1000, 1000)
+	body, contentType := createImageMultipartFormData("photo", "medium.png", fileData)
 
 	uploadResp := ts.PostRaw(itemPath+"/photos", body, contentType)
-	RequireStatus(t, uploadResp, http.StatusOK)
+	RequireStatus(t, uploadResp, http.StatusCreated)
 }
 
 func TestLargeFileUpload_LargeImage_Success(t *testing.T) {
@@ -158,12 +163,17 @@ func TestLargeFileUpload_LargeImage_Success(t *testing.T) {
 
 	itemPath := fmt.Sprintf("%s/items/%s", workspacePath, itemResult.ID)
 
-	// Upload a large file (20MB)
-	fileData := bytes.Repeat([]byte("x"), 20*1024*1024)
-	body, contentType := createMultipartFormData("photo", "large.jpg", fileData)
+	// Upload a large valid image near (but under) the 10MB cap. The cap is the
+	// product's intended maximum, so this exercises the high end of the accepted
+	// range rather than an over-limit upload.
+	fileData := validPNG(1400, 1400)
+	if len(fileData) >= 10*1024*1024 {
+		t.Fatalf("test image %d bytes is not under the 10MB cap", len(fileData))
+	}
+	body, contentType := createImageMultipartFormData("photo", "large.png", fileData)
 
 	uploadResp := ts.PostRaw(itemPath+"/photos", body, contentType)
-	RequireStatus(t, uploadResp, http.StatusOK)
+	RequireStatus(t, uploadResp, http.StatusCreated)
 }
 
 func TestLargeFileUpload_ExceedsLimit_Rejected(t *testing.T) {
@@ -262,11 +272,11 @@ func TestLargeFileUpload_MultipleFiles_Success(t *testing.T) {
 	// Upload multiple files
 	numFiles := 3
 	for i := 0; i < numFiles; i++ {
-		fileData := bytes.Repeat([]byte("x"), 2*1024*1024)
-		body, contentType := createMultipartFormData("photo", fmt.Sprintf("photo%d.jpg", i), fileData)
+		fileData := validPNG(700, 700)
+		body, contentType := createImageMultipartFormData("photo", fmt.Sprintf("photo%d.png", i), fileData)
 
 		uploadResp := ts.PostRaw(itemPath+"/photos", body, contentType)
-		RequireStatus(t, uploadResp, http.StatusOK)
+		RequireStatus(t, uploadResp, http.StatusCreated)
 	}
 
 	// Verify all files were uploaded
@@ -434,13 +444,12 @@ func TestLargeFileUpload_StreamingUpload_Success(t *testing.T) {
 
 	itemPath := fmt.Sprintf("%s/items/%s", workspacePath, itemResult.ID)
 
-	// Upload a large file in chunks
-	fileSize := 10 * 1024 * 1024 // 10MB
-	fileData := bytes.Repeat([]byte("x"), fileSize)
-	body, contentType := createMultipartFormData("photo", "stream.jpg", fileData)
+	// Upload a sizable valid image (well under the 10MB cap).
+	fileData := validPNG(1200, 1200)
+	body, contentType := createImageMultipartFormData("photo", "stream.png", fileData)
 
 	uploadResp := ts.PostRaw(itemPath+"/photos", body, contentType)
-	RequireStatus(t, uploadResp, http.StatusOK)
+	RequireStatus(t, uploadResp, http.StatusCreated)
 }
 
 func TestLargeFileUpload_PerformanceTest_LargeFile(t *testing.T) {
@@ -484,13 +493,16 @@ func TestLargeFileUpload_PerformanceTest_LargeFile(t *testing.T) {
 
 	itemPath := fmt.Sprintf("%s/items/%s", workspacePath, itemResult.ID)
 
-	// Upload a very large file (50MB)
-	fileSize := 50 * 1024 * 1024
-	fileData := bytes.Repeat([]byte("x"), fileSize)
-	body, contentType := createMultipartFormData("photo", "perf.jpg", fileData)
+	// Upload a valid image near (but under) the 10MB cap — the largest the
+	// product accepts — to exercise the performance path at the size ceiling.
+	fileData := validPNG(1400, 1400)
+	if len(fileData) >= 10*1024*1024 {
+		t.Fatalf("test image %d bytes is not under the 10MB cap", len(fileData))
+	}
+	body, contentType := createImageMultipartFormData("photo", "perf.png", fileData)
 
 	uploadResp := ts.PostRaw(itemPath+"/photos", body, contentType)
-	RequireStatus(t, uploadResp, http.StatusOK)
+	RequireStatus(t, uploadResp, http.StatusCreated)
 }
 
 // =============================================================================
@@ -529,4 +541,56 @@ func createEmptyMultipartForm() (*bytes.Buffer, string) {
 	}
 
 	return body, writer.FormDataContentType()
+}
+
+// createImageMultipartFormData builds a multipart form whose file part carries
+// an explicit image/png Content-Type. The upload handler validates the part's
+// Content-Type header (must be JPEG/PNG/WebP) AND re-decodes the bytes, so the
+// part header and the body must agree — multipart.CreateFormFile would default
+// the part to application/octet-stream and be rejected.
+func createImageMultipartFormData(fieldName, fileName string, fileData []byte) (*bytes.Buffer, string) {
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, fieldName, fileName))
+	h.Set("Content-Type", "image/png")
+
+	part, err := writer.CreatePart(h)
+	if err != nil {
+		panic(err)
+	}
+	if _, err = io.Copy(part, bytes.NewReader(fileData)); err != nil {
+		panic(err)
+	}
+	if err = writer.Close(); err != nil {
+		panic(err)
+	}
+
+	return body, writer.FormDataContentType()
+}
+
+// validPNG returns the bytes of a real, decodable PNG of the given dimensions.
+// Pixels are random so the encoded output resists compression — useful when a
+// test wants an image of a meaningful (near-limit) on-disk size. Dimensions
+// must satisfy the processor's 100x100 minimum.
+func validPNG(width, height int) []byte {
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
+	rng := rand.New(rand.NewSource(int64(width*1_000_000 + height)))
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			img.Set(x, y, color.RGBA{
+				R: uint8(rng.Intn(256)),
+				G: uint8(rng.Intn(256)),
+				B: uint8(rng.Intn(256)),
+				A: 255,
+			})
+		}
+	}
+
+	buf := &bytes.Buffer{}
+	if err := png.Encode(buf, img); err != nil {
+		panic(err)
+	}
+	return buf.Bytes()
 }

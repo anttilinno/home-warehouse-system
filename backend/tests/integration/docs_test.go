@@ -49,15 +49,15 @@ func TestOpenAPIEndpoint(t *testing.T) {
 	require.True(t, ok)
 	assert.Greater(t, len(paths), 0)
 
-	// Verify some key endpoints exist
+	// Verify some key endpoints exist. The public OpenAPI document only covers
+	// routes registered on the default Huma instance. Auth routes
+	// (/auth/register, /auth/login, ...) live on a separate, rate-limited Huma
+	// instance with OpenAPI disabled, so they are intentionally absent here.
 	_, hasHealth := paths["/health"]
 	assert.True(t, hasHealth, "should have /health endpoint")
 
-	_, hasAuthRegister := paths["/auth/register"]
-	assert.True(t, hasAuthRegister, "should have /auth/register endpoint")
-
-	_, hasAuthLogin := paths["/auth/login"]
-	assert.True(t, hasAuthLogin, "should have /auth/login endpoint")
+	_, hasBarcode := paths["/barcode/{barcode}"]
+	assert.True(t, hasBarcode, "should have /barcode/{barcode} endpoint")
 }
 
 func TestDocsEndpoint(t *testing.T) {
@@ -116,14 +116,13 @@ func TestOpenAPIContainsAllEndpoints(t *testing.T) {
 	paths, ok := openAPI["paths"].(map[string]interface{})
 	require.True(t, ok)
 
-	// List of expected public endpoint patterns (not exhaustive)
-	// Note: Protected routes (/users/me, /workspaces) are on separate Huma API instances
-	// and are not included in the public OpenAPI spec
+	// List of expected public endpoint patterns (not exhaustive).
+	// Note: protected routes (/users/me, /workspaces) AND the rate-limited auth
+	// routes (/auth/register, /auth/login, /auth/refresh) are registered on
+	// separate Huma API instances with OpenAPI disabled, so they are not part of
+	// the public OpenAPI spec.
 	expectedEndpoints := []string{
 		"/health",
-		"/auth/register",
-		"/auth/login",
-		"/auth/refresh",
 		"/barcode/{barcode}",
 	}
 

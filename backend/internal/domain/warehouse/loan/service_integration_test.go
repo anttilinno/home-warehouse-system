@@ -53,6 +53,7 @@ func TestLoanCreate_FailedSaveRollsBackInventoryStatus(t *testing.T) {
 	// Seed item -> location -> inventory -> borrower.
 	itm, err := item.NewItem(workspaceID, "WR01 Drill", "WR01-SKU-1", 0)
 	require.NoError(t, err)
+	itm.SetShortCode("WR01I")
 	require.NoError(t, itemRepo.Save(ctx, itm))
 
 	loc, err := location.NewLocation(workspaceID, "WR01 Garage", nil, nil, "WR01L")
