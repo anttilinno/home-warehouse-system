@@ -35,6 +35,39 @@ func NewPendingChangeRepository(pool *pgxpool.Pool) *PendingChangeRepository {
 // For new changes, this inserts a row. For existing changes being approved/rejected, this updates the row.
 // Uses an upsert pattern to handle both cases.
 func (r *PendingChangeRepository) Save(ctx context.Context, change *pendingchange.PendingChange) error {
+	// Save is an upsert. Branch on row existence, not status: a new row must be
+	// INSERTed (CreatePendingChange) while an existing one is UPDATEd
+	// (UpdatePendingChangeStatus persists the review). Branching on status alone
+	// breaks when a change is approved before its first save — non-pending yet
+	// no row exists, so the UPDATE finds nothing. (Mirrors CategoryRepository.Save.)
+	_, getErr := r.queries.GetPendingChangeByID(ctx, queries.GetPendingChangeByIDParams{
+		ID:          change.ID(),
+		WorkspaceID: change.WorkspaceID(),
+	})
+	if getErr != nil && !errors.Is(getErr, pgx.ErrNoRows) {
+		return getErr
+	}
+
+	if getErr == nil {
+		var reviewedBy pgtype.UUID
+		if change.ReviewedBy() != nil {
+			reviewedBy = pgtype.UUID{Bytes: *change.ReviewedBy(), Valid: true}
+		}
+		var reviewedAt pgtype.Timestamptz
+		if change.ReviewedAt() != nil {
+			reviewedAt = pgtype.Timestamptz{Time: *change.ReviewedAt(), Valid: true}
+		}
+		_, err := r.queries.UpdatePendingChangeStatus(ctx, queries.UpdatePendingChangeStatusParams{
+			ID:              change.ID(),
+			Status:          statusToSqlc(change.Status()),
+			ReviewedBy:      reviewedBy,
+			ReviewedAt:      reviewedAt,
+			RejectionReason: change.RejectionReason(),
+			WorkspaceID:     change.WorkspaceID(),
+		})
+		return err
+	}
+
 	var entityID pgtype.UUID
 	if change.EntityID() != nil {
 		entityID = pgtype.UUID{Bytes: *change.EntityID(), Valid: true}

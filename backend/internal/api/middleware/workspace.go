@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"net/http"
+	"reflect"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -67,19 +68,17 @@ func getRoleString(obj any) string {
 	if obj == nil {
 		return ""
 	}
-	// Try to call Role() method via interface
-	type roleGetter interface {
-		Role() string
-	}
-	if rg, ok := obj.(roleGetter); ok {
+	// Fast path: Role() returns a plain string.
+	if rg, ok := obj.(interface{ Role() string }); ok {
 		return rg.Role()
 	}
-	// Try role() string method
-	type roleStringMethod interface {
-		Role() string
-	}
-	if rsm, ok := obj.(roleStringMethod); ok {
-		return rsm.Role()
+	// Role() commonly returns a named string type (e.g. member.Role) that does
+	// NOT satisfy interface{ Role() string }. Call it reflectively and read the
+	// underlying string — without this, every role resolves to "" and the
+	// approval pipeline + owner/admin authz checks silently fail.
+	m := reflect.ValueOf(obj).MethodByName("Role")
+	if m.IsValid() && m.Type().NumIn() == 0 && m.Type().NumOut() == 1 && m.Type().Out(0).Kind() == reflect.String {
+		return m.Call(nil)[0].String()
 	}
 	return ""
 }

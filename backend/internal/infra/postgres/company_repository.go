@@ -26,7 +26,43 @@ func NewCompanyRepository(pool *pgxpool.Pool) *CompanyRepository {
 }
 
 func (r *CompanyRepository) Save(ctx context.Context, c *company.Company) error {
-	_, err := r.queries.CreateCompany(ctx, queries.CreateCompanyParams{
+	// Check if the company already exists (mirror CategoryRepository.Save):
+	// Save is an upsert, so an existing row must be UPDATEd rather than
+	// re-INSERTed (which would violate companies_pkey).
+	existing, err := r.queries.GetCompany(ctx, queries.GetCompanyParams{
+		ID:          c.ID(),
+		WorkspaceID: c.WorkspaceID(),
+	})
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return err
+	}
+
+	if existing.ID != uuid.Nil {
+		// Handle archive/restore state transitions.
+		if c.IsArchived() && !existing.IsArchived {
+			return r.queries.ArchiveCompany(ctx, queries.ArchiveCompanyParams{
+				ID:          c.ID(),
+				WorkspaceID: c.WorkspaceID(),
+			})
+		}
+		if !c.IsArchived() && existing.IsArchived {
+			return r.queries.RestoreCompany(ctx, queries.RestoreCompanyParams{
+				ID:          c.ID(),
+				WorkspaceID: c.WorkspaceID(),
+			})
+		}
+
+		_, err = r.queries.UpdateCompany(ctx, queries.UpdateCompanyParams{
+			ID:          c.ID(),
+			WorkspaceID: c.WorkspaceID(),
+			Name:        c.Name(),
+			Website:     c.Website(),
+			Notes:       c.Notes(),
+		})
+		return err
+	}
+
+	_, err = r.queries.CreateCompany(ctx, queries.CreateCompanyParams{
 		ID:          c.ID(),
 		WorkspaceID: c.WorkspaceID(),
 		Name:        c.Name(),

@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
@@ -216,31 +215,26 @@ func extractEntityType(r *http.Request) string {
 	}
 }
 
-// extractEntityID extracts the entity ID from URL parameters for update/delete operations.
-// Returns nil for create operations or if no valid UUID is found in the path.
-// Attempts to match common URL parameter patterns like {id}, {item_id}, {category_id}, etc.
+// extractEntityID extracts the entity ID from the URL path for update/delete
+// operations. Returns nil for create operations or if no valid UUID is found.
+//
+// This parses r.URL.Path directly (like extractEntityType) rather than reading
+// chi.URLParam: this middleware runs on the /workspaces/{workspace_id} chi
+// group, BEFORE the per-resource Huma router has matched the {id} segment, so
+// chi.URLParam(r, "id") is empty here. The entity id is the 4th path segment:
+// /workspaces/{workspace_id}/{entity_type}/{entity_id}[/sub-resource].
 func extractEntityID(r *http.Request, action string) *uuid.UUID {
 	// Only update and delete operations need entity_id
 	if action != "update" && action != "delete" {
 		return nil
 	}
 
-	// Try to get ID from URL parameter (Chi router pattern)
-	// Common patterns: {id}, {item_id}, {category_id}, etc.
-	idStr := chi.URLParam(r, "id")
-	if idStr == "" {
-		// Try entity-specific patterns
-		entityType := extractEntityType(r)
-		if entityType != "" {
-			idStr = chi.URLParam(r, entityType+"_id")
-		}
-	}
-
-	if idStr == "" {
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	if len(parts) < 4 {
 		return nil
 	}
 
-	id, err := uuid.Parse(idStr)
+	id, err := uuid.Parse(parts[3])
 	if err != nil {
 		return nil
 	}

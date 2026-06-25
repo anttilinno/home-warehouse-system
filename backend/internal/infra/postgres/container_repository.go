@@ -26,7 +26,44 @@ func NewContainerRepository(pool *pgxpool.Pool) *ContainerRepository {
 }
 
 func (r *ContainerRepository) Save(ctx context.Context, c *container.Container) error {
-	_, err := r.queries.CreateContainer(ctx, queries.CreateContainerParams{
+	// Check if the container already exists (mirror CategoryRepository.Save):
+	// Save is an upsert, so an existing row must be UPDATEd rather than
+	// re-INSERTed (which would violate containers_pkey).
+	existing, err := r.queries.GetContainer(ctx, queries.GetContainerParams{
+		ID:          c.ID(),
+		WorkspaceID: c.WorkspaceID(),
+	})
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return err
+	}
+
+	if existing.ID != uuid.Nil {
+		// Handle archive/restore state transitions.
+		if c.IsArchived() && !existing.IsArchived {
+			return r.queries.ArchiveContainer(ctx, queries.ArchiveContainerParams{
+				ID:          c.ID(),
+				WorkspaceID: c.WorkspaceID(),
+			})
+		}
+		if !c.IsArchived() && existing.IsArchived {
+			return r.queries.RestoreContainer(ctx, queries.RestoreContainerParams{
+				ID:          c.ID(),
+				WorkspaceID: c.WorkspaceID(),
+			})
+		}
+
+		_, err = r.queries.UpdateContainer(ctx, queries.UpdateContainerParams{
+			ID:          c.ID(),
+			WorkspaceID: c.WorkspaceID(),
+			Name:        c.Name(),
+			LocationID:  c.LocationID(),
+			Description: c.Description(),
+			Capacity:    c.Capacity(),
+		})
+		return err
+	}
+
+	_, err = r.queries.CreateContainer(ctx, queries.CreateContainerParams{
 		ID:          c.ID(),
 		WorkspaceID: c.WorkspaceID(),
 		Name:        c.Name(),

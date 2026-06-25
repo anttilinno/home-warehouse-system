@@ -32,7 +32,43 @@ func (r *LocationRepository) Save(ctx context.Context, l *location.Location) err
 		parentLocation = pgtype.UUID{Bytes: *l.ParentLocation(), Valid: true}
 	}
 
-	_, err := r.queries.CreateLocation(ctx, queries.CreateLocationParams{
+	// Check if the location already exists (mirror CategoryRepository.Save):
+	// Save is an upsert, so an existing row must be UPDATEd rather than
+	// re-INSERTed (which would violate locations_pkey).
+	existing, err := r.queries.GetLocation(ctx, queries.GetLocationParams{
+		ID:          l.ID(),
+		WorkspaceID: l.WorkspaceID(),
+	})
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return err
+	}
+
+	if existing.ID != uuid.Nil {
+		// Handle archive/restore state transitions.
+		if l.IsArchived() && !existing.IsArchived {
+			return r.queries.ArchiveLocation(ctx, queries.ArchiveLocationParams{
+				ID:          l.ID(),
+				WorkspaceID: l.WorkspaceID(),
+			})
+		}
+		if !l.IsArchived() && existing.IsArchived {
+			return r.queries.RestoreLocation(ctx, queries.RestoreLocationParams{
+				ID:          l.ID(),
+				WorkspaceID: l.WorkspaceID(),
+			})
+		}
+
+		_, err = r.queries.UpdateLocation(ctx, queries.UpdateLocationParams{
+			ID:             l.ID(),
+			WorkspaceID:    l.WorkspaceID(),
+			Name:           l.Name(),
+			ParentLocation: parentLocation,
+			Description:    l.Description(),
+		})
+		return err
+	}
+
+	_, err = r.queries.CreateLocation(ctx, queries.CreateLocationParams{
 		ID:             l.ID(),
 		WorkspaceID:    l.WorkspaceID(),
 		Name:           l.Name(),
