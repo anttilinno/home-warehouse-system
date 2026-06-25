@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import tailwindcss from "@tailwindcss/vite";
 import { lingui } from "@lingui/vite-plugin";
+import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
 
 // Phase 1 scaffold (v3.0). Lingui v6 + @lingui/swc-plugin pinned EXACT
@@ -16,6 +17,31 @@ export default defineConfig({
     react({ plugins: [["@lingui/swc-plugin", {}]] }),
     tailwindcss(),
     lingui(),
+    // PWA: installable on Android home screen (WebAPK). Auto-injects the
+    // manifest link + SW registration into index.html at build; precaches
+    // static assets. Icons live in public/ (icon-192/512.png). Requires
+    // HTTPS in production (localhost is exempt) or the SW won't register.
+    VitePWA({
+      registerType: "autoUpdate",
+      manifest: {
+        name: "Home Warehouse",
+        short_name: "Warehouse",
+        start_url: "/",
+        display: "standalone",
+        background_color: "#fdf6ec",
+        theme_color: "#fdf6ec",
+        icons: [
+          { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+          { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
+          {
+            src: "/icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
+        ],
+      },
+    }),
   ],
   resolve: {
     alias: {
