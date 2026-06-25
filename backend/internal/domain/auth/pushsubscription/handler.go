@@ -13,7 +13,7 @@ import (
 const msgAuthenticationRequired = "authentication required"
 
 // RegisterRoutes registers push subscription routes.
-func RegisterRoutes(api huma.API, svc ServiceInterface) {
+func RegisterRoutes(api huma.API, svc *Service) {
 	// Subscribe to push notifications
 	huma.Post(api, "/push/subscribe", func(ctx context.Context, input *SubscribeRequest) (*SubscribeResponse, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)

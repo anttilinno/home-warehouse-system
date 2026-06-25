@@ -6,16 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// ServiceInterface defines the push subscription service operations.
-type ServiceInterface interface {
-	Subscribe(ctx context.Context, input SubscribeInput) (*PushSubscription, error)
-	Unsubscribe(ctx context.Context, userID uuid.UUID, endpoint string) error
-	UnsubscribeAll(ctx context.Context, userID uuid.UUID) error
-	GetUserSubscriptions(ctx context.Context, userID uuid.UUID) ([]*PushSubscription, error)
-	GetAllSubscriptions(ctx context.Context) ([]*PushSubscription, error)
-	HasSubscription(ctx context.Context, userID uuid.UUID) (bool, error)
-}
-
 // Service handles push subscription business logic.
 type Service struct {
 	repo Repository

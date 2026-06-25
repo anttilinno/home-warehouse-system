@@ -24,14 +24,6 @@ type FileVerifier interface {
 	GetFileByID(ctx context.Context, fileID, workspaceID uuid.UUID) (*attachment.File, error)
 }
 
-// ServiceInterface defines the repair attachment service operations.
-type ServiceInterface interface {
-	Create(ctx context.Context, repairLogID, workspaceID, fileID uuid.UUID, attachmentType attachment.AttachmentType, title *string) (*RepairAttachment, error)
-	GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*RepairAttachment, error)
-	ListByRepairLog(ctx context.Context, repairLogID, workspaceID uuid.UUID) ([]*RepairAttachmentWithFile, error)
-	Delete(ctx context.Context, id, workspaceID uuid.UUID) error
-}
-
 // Service provides repair attachment operations.
 type Service struct {
 	repo         Repository

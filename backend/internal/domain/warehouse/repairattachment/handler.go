@@ -19,7 +19,7 @@ const msgWorkspaceContextRequired = "workspace context required"
 // RegisterRoutes registers repair attachment routes under /repairs/{repairLogId}/attachments.
 // Each handler is a package factory func (see below) so this stays a flat list
 // of registrations rather than a single god-function of inline closures.
-func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
+func RegisterRoutes(api huma.API, svc *Service, broadcaster *events.Broadcaster) {
 	// List attachments for a repair log
 	huma.Get(api, "/repairs/{repairLogId}/attachments", listAttachments(svc))
 	// Link existing file to repair as attachment
@@ -29,7 +29,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 }
 
 // listAttachments lists attachments for a repair log.
-func listAttachments(svc ServiceInterface) func(context.Context, *ListAttachmentsInput) (*ListAttachmentsOutput, error) {
+func listAttachments(svc *Service) func(context.Context, *ListAttachmentsInput) (*ListAttachmentsOutput, error) {
 	return func(ctx context.Context, input *ListAttachmentsInput) (*ListAttachmentsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
@@ -56,7 +56,7 @@ func listAttachments(svc ServiceInterface) func(context.Context, *ListAttachment
 }
 
 // createAttachment links an existing file to a repair as an attachment.
-func createAttachment(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *CreateAttachmentInput) (*CreateAttachmentOutput, error) {
+func createAttachment(svc *Service, broadcaster *events.Broadcaster) func(context.Context, *CreateAttachmentInput) (*CreateAttachmentOutput, error) {
 	return func(ctx context.Context, input *CreateAttachmentInput) (*CreateAttachmentOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
@@ -97,7 +97,7 @@ func createAttachment(svc ServiceInterface, broadcaster *events.Broadcaster) fun
 }
 
 // deleteAttachment unlinks an attachment from a repair.
-func deleteAttachment(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *DeleteAttachmentInput) (*struct{}, error) {
+func deleteAttachment(svc *Service, broadcaster *events.Broadcaster) func(context.Context, *DeleteAttachmentInput) (*struct{}, error) {
 	return func(ctx context.Context, input *DeleteAttachmentInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {

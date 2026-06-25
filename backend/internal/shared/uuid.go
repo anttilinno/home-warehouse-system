@@ -19,12 +19,6 @@ func ParseUUID(s string) (uuid.UUID, error) {
 	return id, nil
 }
 
-// MustParseUUID parses a string into a UUID and panics if invalid
-// Use only for compile-time constants or in tests
-func MustParseUUID(s string) uuid.UUID {
-	return uuid.MustParse(s)
-}
-
 // NewUUID generates a new UUIDv7 (time-ordered)
 // Falls back to UUIDv4 if v7 generation fails
 func NewUUID() uuid.UUID {
@@ -37,14 +31,9 @@ func NewUUID() uuid.UUID {
 	return id
 }
 
-// IsNilUUID checks if a UUID is nil (all zeros)
-func IsNilUUID(id uuid.UUID) bool {
-	return id == uuid.Nil
-}
-
 // ValidateUUID validates that a UUID is not nil
 func ValidateUUID(id uuid.UUID, fieldName string) error {
-	if IsNilUUID(id) {
+	if id == uuid.Nil {
 		return apierror.ValidationError(
 			apierror.ErrCodeRequiredField,
 			fieldName,

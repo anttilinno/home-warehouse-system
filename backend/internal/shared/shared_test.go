@@ -254,19 +254,6 @@ func TestParseUUID_Empty(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestMustParseUUID_Valid(t *testing.T) {
-	validUUID := "550e8400-e29b-41d4-a716-446655440000"
-	id := MustParseUUID(validUUID)
-
-	assert.Equal(t, validUUID, id.String())
-}
-
-func TestMustParseUUID_Invalid(t *testing.T) {
-	assert.Panics(t, func() {
-		MustParseUUID("not-a-uuid")
-	})
-}
-
 func TestNewUUID(t *testing.T) {
 	id := NewUUID()
 
@@ -283,15 +270,6 @@ func TestNewUUID_Unique(t *testing.T) {
 	id2 := NewUUID()
 
 	assert.NotEqual(t, id1, id2)
-}
-
-func TestIsNilUUID_True(t *testing.T) {
-	assert.True(t, IsNilUUID(uuid.Nil))
-}
-
-func TestIsNilUUID_False(t *testing.T) {
-	id := uuid.New()
-	assert.False(t, IsNilUUID(id))
 }
 
 func TestValidateUUID_Valid(t *testing.T) {

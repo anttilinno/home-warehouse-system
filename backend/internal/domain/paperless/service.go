@@ -57,15 +57,6 @@ type DocumentDetails struct {
 	WebURL           string
 }
 
-// ServiceInterface defines the Paperless integration operations.
-type ServiceInterface interface {
-	GetSettings(ctx context.Context, workspaceID uuid.UUID) (*Settings, error)
-	SaveSettings(ctx context.Context, workspaceID uuid.UUID, input SaveSettingsInput) (*Settings, error)
-	DeleteSettings(ctx context.Context, workspaceID uuid.UUID) error
-	Search(ctx context.Context, workspaceID uuid.UUID, query string, page, pageSize int) (*infrapaperless.SearchResult, error)
-	ResolveDocument(ctx context.Context, workspaceID uuid.UUID, documentID int) (*DocumentDetails, error)
-}
-
 type Service struct {
 	repo      Repository
 	client    DocumentClient
