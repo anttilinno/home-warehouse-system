@@ -2,7 +2,6 @@
 // Design-system guard: blocks NEW arbitrary typography utilities in *.tsx so
 // the token scale in src/styles/tokens.css stays the single source of truth.
 // Bans  text-[<n>px]  and  tracking-[<n>em]  — use text-12 / tracking-8 etc.
-// (See scripts/codemod-type-tokens.mjs for the original migration.)
 // Exits 1 with the offender list; 0 if clean.
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
