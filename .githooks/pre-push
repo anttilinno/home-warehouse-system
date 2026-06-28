@@ -27,11 +27,18 @@ CHANGED="$(git diff --name-only "$BASE"...HEAD)"
 fail=0
 
 if grep -q '^backend/' <<<"$CHANGED"; then
-  echo "pre-push: backend changed — golangci-lint (new code) + go build…"
+  echo "pre-push: backend changed — golangci-lint (new code) + go build + govulncheck…"
   (
     cd backend || exit 1
     golangci-lint run --new-from-merge-base="$REMOTE_BASE" ./... || exit 1
     go build ./... || exit 1
+    # Block pushing a known-exploitable dependency. Fast (reachability-pruned);
+    # skipped with a notice if govulncheck isn't installed locally.
+    if command -v govulncheck >/dev/null 2>&1; then
+      govulncheck ./... || exit 1
+    else
+      echo "  (govulncheck not installed — skipping; install: go install golang.org/x/vuln/cmd/govulncheck@latest)"
+    fi
   ) || fail=1
 fi
 

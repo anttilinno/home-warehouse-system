@@ -1,0 +1,79 @@
+name: security-backend
+
+# Backend security gate. Mirrors the local audit (docs/audit/) so dependency
+# CVEs, SAST regressions, and leaked secrets are caught in CI rather than by
+# hand. Runs only when backend code or this workflow changes.
+
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/security-backend.yml"
+  push:
+    branches: [master]
+    paths:
+      - "backend/**"
+      - ".github/workflows/security-backend.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  govulncheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+      - name: govulncheck (reachable CVEs)
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          cd backend && govulncheck ./...
+
+  osv-scanner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: osv-scanner (lockfile)
+        uses: google/osv-scanner-action/osv-scanner-action@v2.2.4
+        with:
+          scan-args: |-
+            --lockfile=backend/go.mod
+
+  gosec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+      - name: gosec (SAST)
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          cd backend && gosec -quiet -severity medium -confidence medium ./...
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks (secret scan)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+
+  trivy-fs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: backend
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: "true"

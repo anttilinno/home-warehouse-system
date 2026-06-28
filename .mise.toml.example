@@ -147,7 +147,24 @@ run = "cd backend && go test -v ./internal/domain/..."
 [tasks.test-integration]
 description = "Run Go backend integration tests"
 depends = ["dc-up"]
-run = "cd backend && go test -v ./tests/integration/..."
+# -tags=integration is REQUIRED: every file in tests/integration/ is behind a
+# //go:build integration tag, so without it `go test` reports "no test files"
+# and the whole suite silently never runs.
+run = "cd backend && go test -tags=integration -count=1 -v ./tests/integration/..."
+
+[tasks.audit-sec]
+description = "Backend security audit: dependency CVEs, SAST, secret scan"
+run = """
+cd backend
+echo '==> govulncheck'; govulncheck ./...
+echo '==> gosec';       gosec -quiet -severity medium ./... || true
+echo '==> gitleaks';    gitleaks detect --source . --no-banner || true
+"""
+
+[tasks.loadtest]
+description = "k6 load test of the dashboard/inventory read path (set WS=<workspace-uuid>)"
+depends = ["dc-up"]
+run = "k6 run backend/tests/load/dashboard.js"
 
 [tasks.test-cover]
 description = "Run Go backend tests with coverage"
@@ -196,9 +213,10 @@ run = "cd frontend && bun run lint:imports && bun run lint:tsc"
 
 # Database Seeder
 [tasks.seed]
-description = "Seed database with test data (expiring|warranty|low-stock|overdue-loans|locations|all)"
+description = "Seed database with test data (expiring|warranty|low-stock|overdue-loans|locations|all|volume [N])"
 depends = ["dc-up"]
-run = "cd backend && go run cmd/seed/main.go {{ arg(name='type', default='all') }}"
+# var=true forwards extra positionals (e.g. the count for `seed volume 50000`).
+run = "cd backend && go run cmd/seed/main.go {{ arg(name='args', default='all', var=true) }}"
 
 # Photo Admin Tools
 [tasks.photo-admin]

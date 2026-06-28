@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"os/signal"
 	"strconv"
@@ -54,6 +55,26 @@ func main() {
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 0, // Disabled: SSE requires long-lived writes; per-route timeouts handled by middleware
 		IdleTimeout:  60 * time.Second,
+	}
+
+	// Optional pprof endpoint for profiling under load. Off unless PPROF_ADDR
+	// is set (e.g. "localhost:6060"), so it is never exposed in production by
+	// default. Handlers are registered on a private mux — not DefaultServeMux —
+	// so importing pprof has no global side effect.
+	if pprofAddr := os.Getenv("PPROF_ADDR"); pprofAddr != "" {
+		go func() {
+			pprofMux := http.NewServeMux()
+			pprofMux.HandleFunc("/debug/pprof/", pprof.Index)
+			pprofMux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+			pprofMux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+			pprofMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+			pprofMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+			fmt.Printf("pprof listening on http://%s/debug/pprof/\n", pprofAddr)
+			pprofSrv := &http.Server{Addr: pprofAddr, Handler: pprofMux, ReadHeaderTimeout: 5 * time.Second}
+			if err := pprofSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.Printf("pprof server error: %v", err)
+			}
+		}()
 	}
 
 	// Start server in goroutine

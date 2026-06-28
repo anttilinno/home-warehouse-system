@@ -7,6 +7,9 @@ services:
   postgres-dev:
     image: postgres:18
     container_name: warehouse-postgres-dev
+    # pg_stat_statements: dev-only query profiling for the perf audit
+    # (`mise run loadtest`). Harmless in dev; do not copy to postgres-prod.
+    command: ["postgres", "-c", "shared_preload_libraries=pg_stat_statements"]
     environment:
       POSTGRES_USER: wh
       POSTGRES_PASSWORD: wh

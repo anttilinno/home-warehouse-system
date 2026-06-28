@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -24,9 +25,15 @@ const (
 	SeedConditions   = "conditions"
 	SeedChanges      = "changes"
 	SeedAll          = "all"
+	SeedVolume       = "volume"
 )
 
-var validSeedTypes = []string{SeedExpiring, SeedWarranty, SeedLowStock, SeedOverdueLoans, SeedLocations, SeedConditions, SeedChanges, SeedAll}
+// defaultVolumeCount is the realistic upper-bound item count for a single
+// workspace — large enough to flip the planner from seq-scan to index-scan and
+// expose missing indexes / bad aggregates, without seeding an unrealistic load.
+const defaultVolumeCount = 50000
+
+var validSeedTypes = []string{SeedExpiring, SeedWarranty, SeedLowStock, SeedOverdueLoans, SeedLocations, SeedConditions, SeedChanges, SeedAll, SeedVolume}
 
 // Sample data for realistic seeding
 var (
@@ -198,6 +205,17 @@ func main() {
 			fmt.Printf("Error seeding changes: %v\n", err)
 			os.Exit(1)
 		}
+	case SeedVolume:
+		count := defaultVolumeCount
+		if len(os.Args) > 2 {
+			if n, perr := strconv.Atoi(os.Args[2]); perr == nil && n > 0 {
+				count = n
+			}
+		}
+		if err := seeder.seedVolume(ctx, count); err != nil {
+			fmt.Printf("Error seeding volume: %v\n", err)
+			os.Exit(1)
+		}
 	}
 
 	fmt.Println("\nSeeding completed successfully!")
@@ -217,8 +235,10 @@ func printUsage() {
 	fmt.Println("  conditions    - Items with all conditions and statuses")
 	fmt.Println("  changes       - Pending change requests (all statuses and actions)")
 	fmt.Println("  all           - Run all seed types")
+	fmt.Printf("  volume [N]    - Bulk-load N items+inventory for perf testing (default %d)\n", defaultVolumeCount)
 	fmt.Println()
 	fmt.Println("Example: mise run seed expiring")
+	fmt.Println("Example: mise run seed volume 100000")
 }
 
 func isValidSeedType(seedType string) bool {
@@ -540,6 +560,112 @@ func (s *Seeder) seedConditions(ctx context.Context) error {
 
 	fmt.Println("  Conditions and statuses seeding complete")
 	return nil
+}
+
+// seedVolume bulk-loads count items (each with one inventory row) into the test
+// workspace via COPY, for the perf-audit "proportional" dataset. Items get a
+// random real category so the categories-analytics aggregate stays non-trivial.
+//
+// ponytail: not idempotent — each run appends a fresh salted batch (unique
+// sku/short_code prefix), so re-running accumulates. `mise run db-reset` for a
+// clean count. Capped at ~1M because short_code is varchar(8) (3-hex salt +
+// 5-hex counter) and 1M is already past any realistic single-workspace size.
+func (s *Seeder) seedVolume(ctx context.Context, count int) error {
+	if count > 0xFFFFF {
+		return fmt.Errorf("count %d exceeds the seeder's realistic ceiling (%d); seeding millions is testing a load this app will never see", count, 0xFFFFF)
+	}
+	fmt.Printf("\n--- Volume seeding %d items into workspace %s ---\n", count, s.workspaceID)
+
+	// Categories + locations must exist (idempotent).
+	if err := s.seedCategories(ctx); err != nil {
+		return err
+	}
+	if err := s.seedLocations(ctx); err != nil {
+		return err
+	}
+	categoryIDs, err := s.fetchIDs(ctx, `SELECT id FROM warehouse.categories WHERE workspace_id=$1 AND parent_category_id IS NOT NULL`)
+	if err != nil {
+		return fmt.Errorf("fetch categories: %w", err)
+	}
+	locationIDs, err := s.fetchIDs(ctx, `SELECT id FROM warehouse.locations WHERE workspace_id=$1`)
+	if err != nil {
+		return fmt.Errorf("fetch locations: %w", err)
+	}
+	if len(categoryIDs) == 0 || len(locationIDs) == 0 {
+		return fmt.Errorf("need >=1 category and location, got %d/%d", len(categoryIDs), len(locationIDs))
+	}
+
+	// short_code is a GLOBAL primary key (varchar(8)): a 3-hex per-run salt plus a
+	// 5-hex counter guarantees uniqueness within a run and makes cross-run / vs
+	// existing-seed collisions unlikely (1/4096 per re-run).
+	salt := s.rng.Intn(0x1000)
+
+	itemRows := make([][]any, count)
+	invRows := make([][]any, count)
+	for i := 0; i < count; i++ {
+		id := uuid.New()
+		itemRows[i] = []any{
+			id, s.workspaceID,
+			fmt.Sprintf("VOL-%03x-%05x", salt, i),  // sku (unique per workspace)
+			fmt.Sprintf("Volume Item %03x-%d", salt, i),
+			fmt.Sprintf("%03x%05x", salt, i),        // short_code (8 chars, global-unique)
+			categoryIDs[s.rng.Intn(len(categoryIDs))],
+		}
+		// Int31n returns int32 natively — no conversion, so no overflow path.
+		invRows[i] = []any{
+			s.workspaceID, id, locationIDs[s.rng.Intn(len(locationIDs))], s.rng.Int31n(20) + 1,
+		}
+	}
+
+	itemsN, err := s.pool.CopyFrom(ctx,
+		pgx.Identifier{"warehouse", "items"},
+		[]string{"id", "workspace_id", "sku", "name", "short_code", "category_id"},
+		pgx.CopyFromRows(itemRows))
+	if err != nil {
+		return fmt.Errorf("copy items: %w", err)
+	}
+	// status defaults to AVAILABLE; condition is set below. Both are enums and are
+	// kept out of COPY to avoid binary enum encoding — assigned in SQL instead.
+	invN, err := s.pool.CopyFrom(ctx,
+		pgx.Identifier{"warehouse", "inventory"},
+		[]string{"workspace_id", "item_id", "location_id", "quantity"},
+		pgx.CopyFromRows(invRows))
+	if err != nil {
+		return fmt.Errorf("copy inventory: %w", err)
+	}
+
+	// Spread conditions in SQL (the enum cast happens server-side) so the
+	// condition-breakdown analytics has real cardinality.
+	if _, err := s.pool.Exec(ctx, `
+		UPDATE warehouse.inventory
+		SET condition = (ARRAY['NEW','EXCELLENT','GOOD','FAIR','POOR','DAMAGED','FOR_REPAIR']::warehouse.item_condition_enum[])[1 + floor(random()*7)::int]
+		WHERE workspace_id = $1 AND condition IS NULL`, s.workspaceID); err != nil {
+		return fmt.Errorf("set conditions: %w", err)
+	}
+
+	// Refresh planner stats so EXPLAIN reflects the new volume immediately.
+	if _, err := s.pool.Exec(ctx, "ANALYZE warehouse.items, warehouse.inventory"); err != nil {
+		return fmt.Errorf("analyze: %w", err)
+	}
+	fmt.Printf("  Copied %d items + %d inventory rows; conditions spread; ANALYZE done.\n", itemsN, invN)
+	return nil
+}
+
+func (s *Seeder) fetchIDs(ctx context.Context, query string) ([]uuid.UUID, error) {
+	rows, err := s.pool.Query(ctx, query, s.workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var ids []uuid.UUID
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
 }
 
 func (s *Seeder) seedChanges(ctx context.Context) error {
@@ -950,20 +1076,18 @@ func (s *Seeder) createItemWithBrand(ctx context.Context, name, sku, brand strin
 	// Get a random company
 	companyID := s.getRandomCompany(ctx)
 
-	_, err := s.pool.Exec(ctx, `
+	// Scan the RETURNING id: on ON CONFLICT DO UPDATE the existing row keeps its
+	// original id, which differs from the freshly generated itemID. Trusting the
+	// generated uuid here returns a phantom id that fails the inventory FK on any
+	// re-seed (the sku already exists). QueryRow returns the real row id either way.
+	err := s.pool.QueryRow(ctx, `
 		INSERT INTO warehouse.items (id, workspace_id, sku, name, brand, short_code, category_id, purchased_from)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		ON CONFLICT (workspace_id, sku) DO UPDATE SET name = EXCLUDED.name
 		RETURNING id
-	`, itemID, s.workspaceID, sku, name, brandPtr, shortCode, categoryID, companyID)
+	`, itemID, s.workspaceID, sku, name, brandPtr, shortCode, categoryID, companyID).Scan(&itemID)
 	if err != nil {
-		// If conflict, get the existing item
-		err = s.pool.QueryRow(ctx, `
-			SELECT id FROM warehouse.items WHERE workspace_id = $1 AND sku = $2
-		`, s.workspaceID, sku).Scan(&itemID)
-		if err != nil {
-			return uuid.Nil, fmt.Errorf("getting existing item: %w", err)
-		}
+		return uuid.Nil, fmt.Errorf("creating item %s: %w", sku, err)
 	}
 
 	// Add random labels to item
@@ -976,20 +1100,16 @@ func (s *Seeder) createItemWithMinStock(ctx context.Context, name, sku string, m
 	itemID := uuid.New()
 	shortCode := s.generateShortCode()
 
-	_, err := s.pool.Exec(ctx, `
+	// Scan RETURNING id — see createItemWithBrand: ON CONFLICT DO UPDATE keeps the
+	// existing row's id, so the pre-generated itemID would be a phantom on re-seed.
+	err := s.pool.QueryRow(ctx, `
 		INSERT INTO warehouse.items (id, workspace_id, sku, name, short_code, min_stock_level)
 		VALUES ($1, $2, $3, $4, $5, $6)
 		ON CONFLICT (workspace_id, sku) DO UPDATE SET name = EXCLUDED.name, min_stock_level = EXCLUDED.min_stock_level
 		RETURNING id
-	`, itemID, s.workspaceID, sku, name, shortCode, minStock)
+	`, itemID, s.workspaceID, sku, name, shortCode, minStock).Scan(&itemID)
 	if err != nil {
-		// If conflict, get the existing item
-		err = s.pool.QueryRow(ctx, `
-			SELECT id FROM warehouse.items WHERE workspace_id = $1 AND sku = $2
-		`, s.workspaceID, sku).Scan(&itemID)
-		if err != nil {
-			return uuid.Nil, fmt.Errorf("getting existing item: %w", err)
-		}
+		return uuid.Nil, fmt.Errorf("creating item %s: %w", sku, err)
 	}
 
 	return itemID, nil
