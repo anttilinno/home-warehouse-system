@@ -110,12 +110,11 @@ For detailed CSV format requirements and usage instructions, see the [Import Use
 
 ## Documentation
 
-- [CLAUDE.md](.claude/CLAUDE.md) - Developer setup and common commands
-- [Roadmap](docs/ROADMAP.md) - Feature roadmap and planned improvements
-- [Database Schema](docs/DATABASE.md) - Complete database documentation
-- [Approval Pipeline](docs/APPROVAL_PIPELINE.md) - Role-based change approval system
-- [Import User Guide](docs/IMPORT_USER_GUIDE.md) - CSV bulk import instructions
-- [Item Photos](docs/ITEM_PHOTOS.md) - Photo management feature documentation
+- [CLAUDE.md](CLAUDE.md) - Contributor notes and quality gates
+- [Roadmap](.planning/ROADMAP.md) - Milestone roadmap
+- [Import Testing Checklist](docs/IMPORT_TESTING_CHECKLIST.md) - CSV import test matrix
+- [Label Printing](docs/LABEL-PRINT.md) - Label print runbook
+- [PWA Install](docs/PWA-INSTALL.md) - Android PWA install runbook
 
 ## Tech Stack
 

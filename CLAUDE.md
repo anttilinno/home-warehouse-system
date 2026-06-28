@@ -113,7 +113,6 @@ reaches master. `mise run setup` enables it; otherwise run once:
   `@lingui/swc-plugin`, `rollup-plugin-visualizer`) are in `ignoreDependencies`
   (knip can't see CSS/vite usage).
 - Runs only for the changed side of the tree. Bypass: `git push --no-verify`.
-- Rationale + the full SonarQube remediation context: `docs/sonarqube/`.
 
 ## Skills auto-loaded for this project
 

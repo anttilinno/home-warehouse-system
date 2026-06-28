@@ -8,7 +8,7 @@
 // warehouse.attachments.external_doc_id (dms_type = 'paperless').
 //
 // NOTE: warehouse labels <-> Paperless tags sync is a deliberate later step
-// (see docs/ROADMAP.md "DMS Migration"); sync_tags_enabled is stored but not
+// (see .planning/ROADMAP.md "DMS Migration"); sync_tags_enabled is stored but not
 // yet consumed.
 package paperless
 

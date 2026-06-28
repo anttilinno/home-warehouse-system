@@ -2,7 +2,7 @@
 // API (token auth, /api/documents/). It covers exactly what the warehouse
 // needs today: resolve a document by id and fulltext search. There is no
 // ingest/write path — the ingest direction is deliberately deferred (see
-// docs/ROADMAP.md "DMS Migration").
+// .planning/ROADMAP.md "DMS Migration").
 package paperless
 
 import (
