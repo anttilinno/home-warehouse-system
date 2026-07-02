@@ -96,12 +96,22 @@ export function ScanResultBanner({
           </button>
         )}
         {status === "not-found" && (
-          <Link
-            to={`/items/new?barcode=${encodeURIComponent(code)}`}
-            className={BEVEL_BTN}
-          >
-            ⊕ <Trans>CREATE WITH CODE</Trans>
-          </Link>
+          <span className="flex flex-wrap items-center gap-sp-2">
+            {/* Unknown code → let the user register it as an item (code →
+                barcode) or a container (code → short_code). */}
+            <Link
+              to={`/items/new?barcode=${encodeURIComponent(code)}`}
+              className={BEVEL_BTN}
+            >
+              ⊕ <Trans>ITEM</Trans>
+            </Link>
+            <Link
+              to={`/taxonomy?tab=containers&new_code=${encodeURIComponent(code)}`}
+              className={BEVEL_BTN}
+            >
+              ◇ <Trans>CONTAINER</Trans>
+            </Link>
+          </span>
         )}
         {status === "error" && (
           <button type="button" className={BEVEL_BTN} onClick={onRetry}>

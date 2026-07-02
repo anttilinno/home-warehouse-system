@@ -38,6 +38,13 @@ export interface ContainerFormDialogProps {
   open: boolean;
   /** Edit mode: the container being edited. Create mode: undefined. */
   container?: Container;
+  /**
+   * Create mode only: seed the short_code with a scanned QR label (the
+   * scan/claim "create container with this code" flow) instead of a freshly
+   * generated one. A scanned code longer than 8 chars trips the short_code
+   * rule — the field surfaces the error and the user trims it.
+   */
+  initialShortCode?: string;
   onClose: () => void;
 }
 
@@ -60,6 +67,7 @@ function containerToDefaults(c: Container): ContainerFormInput {
 export function ContainerFormDialog({
   open,
   container,
+  initialShortCode,
   onClose,
 }: Readonly<ContainerFormDialogProps>) {
   const { t } = useLingui();
@@ -94,10 +102,14 @@ export function ContainerFormDialog({
   useEffect(() => {
     if (!open) return;
     if (container) reset(containerToDefaults(container));
-    // Pre-fill a generated short code on create (editable; cleared/overwritten
-    // if the user scans an existing label). Fresh code per open.
-    else reset({ ...EMPTY_DEFAULTS, short_code: generateShortCode() });
-  }, [open, container, reset]);
+    // Pre-fill the short code on create (editable). A scanned QR label
+    // (initialShortCode) wins; otherwise a fresh generated code per open.
+    else
+      reset({
+        ...EMPTY_DEFAULTS,
+        short_code: initialShortCode || generateShortCode(),
+      });
+  }, [open, container, initialShortCode, reset]);
 
   const locationValue = watch("location_id") ?? "";
 

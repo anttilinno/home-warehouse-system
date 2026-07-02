@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   BevelButton,
@@ -45,6 +46,8 @@ interface GroupBucket {
 interface FormState {
   open: boolean;
   container?: Container;
+  /** Create mode: a scanned QR code to seed short_code (scan/claim flow). */
+  initialShortCode?: string;
 }
 
 export function ContainersTab() {
@@ -108,6 +111,24 @@ export function ContainersTab() {
   const openCreate = () => setForm({ open: true });
   const openEdit = (c: Container) => setForm({ open: true, container: c });
   const closeForm = () => setForm({ open: false });
+
+  // Scan/claim "create container with this code" deep-link: /taxonomy?tab=
+  // containers&new_code=<code> opens the create dialog once with short_code
+  // seeded, then strips the param so a refresh/back doesn't re-open it.
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    const code = searchParams.get("new_code");
+    if (!code) return;
+    setForm({ open: true, initialShortCode: code });
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("new_code");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [searchParams, setSearchParams]);
 
   const openDelete = (c: Container) => openDeleteTarget(c.id, c.name);
 
@@ -241,6 +262,7 @@ export function ContainersTab() {
         <ContainerFormDialog
           open={form.open}
           container={form.container}
+          initialShortCode={form.initialShortCode}
           onClose={closeForm}
         />
       </div>

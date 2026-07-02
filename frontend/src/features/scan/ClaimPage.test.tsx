@@ -118,14 +118,19 @@ describe("ClaimPage (/claim/:code — PORT LEGACY create-entity, SCAN-12)", () =
     expect(screen.getByText("ITEM DETAIL")).toBeInTheDocument();
   });
 
-  it("404 → UNRESOLVABLE: offers CREATE ITEM WITH THIS CODE → /items/new?barcode=<encoded>", async () => {
+  it("404 → UNRESOLVABLE: offers CREATE ITEM + CREATE CONTAINER with encoded code", async () => {
     installHandlers({ status: 404 });
     renderClaim("AB/CD 12");
-    const link = await screen.findByRole("link", {
-      name: /create item with this code/i,
-    });
     // encodeURIComponent("AB/CD 12") === "AB%2FCD%2012"
-    expect(link).toHaveAttribute("href", "/items/new?barcode=AB%2FCD%2012");
+    const itemLink = await screen.findByRole("link", { name: /create item/i });
+    expect(itemLink).toHaveAttribute("href", "/items/new?barcode=AB%2FCD%2012");
+    const containerLink = screen.getByRole("link", {
+      name: /create container/i,
+    });
+    expect(containerLink).toHaveAttribute(
+      "href",
+      "/taxonomy?tab=containers&new_code=AB%2FCD%2012",
+    );
   });
 
   it("404 → also renders a CODE NOT FOUND empty-state with BACK TO SCAN → /scan", async () => {
@@ -143,7 +148,7 @@ describe("ClaimPage (/claim/:code — PORT LEGACY create-entity, SCAN-12)", () =
     installHandlers({ status: 404 });
     renderClaim("..%2Fetc");
     const link = await screen.findByRole("link", {
-      name: /create item with this code/i,
+      name: /create item/i,
     });
     const href = link.getAttribute("href") ?? "";
     // No raw slash from the decoded ../etc may leak into the create URL.

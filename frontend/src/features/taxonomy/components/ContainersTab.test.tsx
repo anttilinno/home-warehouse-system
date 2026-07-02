@@ -3,6 +3,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MemoryRouter } from "react-router";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@/lib/i18n";
 import { server } from "@/test/msw/server";
@@ -25,20 +26,22 @@ function setWsId(currentWorkspaceId: string | null) {
   });
 }
 
-function renderTab() {
+function renderTab(initialEntries: string[] = ["/taxonomy?tab=containers"]) {
   setWsId("ws-1");
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   return render(
-    <I18nProvider i18n={i18n}>
-      <QueryClientProvider client={client}>
-        <ModalStackProvider>
-          <RetroToaster />
-          <ContainersTab />
-        </ModalStackProvider>
-      </QueryClientProvider>
-    </I18nProvider>,
+    <MemoryRouter initialEntries={initialEntries}>
+      <I18nProvider i18n={i18n}>
+        <QueryClientProvider client={client}>
+          <ModalStackProvider>
+            <RetroToaster />
+            <ContainersTab />
+          </ModalStackProvider>
+        </QueryClientProvider>
+      </I18nProvider>
+    </MemoryRouter>,
   );
 }
 
@@ -106,6 +109,13 @@ describe("ContainersTab", () => {
     await screen.findByText("Toolbox A");
     await user.click(screen.getByRole("button", { name: /add container/i }));
     expect(await screen.findByText(/NEW CONTAINER/i)).toBeInTheDocument();
+  });
+
+  it("?new_code deep-link (scan/claim) auto-opens create with short_code seeded", async () => {
+    renderTab(["/taxonomy?tab=containers&new_code=BOX9"]);
+    // Dialog opens without an Add click, short_code prefilled from the scan.
+    expect(await screen.findByText(/NEW CONTAINER/i)).toBeInTheDocument();
+    expect(screen.getByDisplayValue("BOX9")).toBeInTheDocument();
   });
 
   it("deleting a container WITH items shows the cascade count copy then bare-deletes", async () => {

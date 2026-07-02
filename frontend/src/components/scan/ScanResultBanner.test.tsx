@@ -49,16 +49,22 @@ describe("ScanResultBanner", () => {
     expect(onOpenActions).toHaveBeenCalledOnce();
   });
 
-  it("NOT-FOUND renders the word, ✕ and an encoded CREATE WITH CODE link", () => {
+  it("NOT-FOUND renders the word, ✕ and encoded ITEM + CONTAINER create links", () => {
     renderBanner(<ScanResultBanner status="not-found" code="abc/../x?y=1" />);
     expect(screen.getByText("NOT FOUND")).toBeInTheDocument();
-    const link = screen.getByRole("link", { name: /CREATE WITH CODE/ });
+    const encoded = encodeURIComponent("abc/../x?y=1");
+
+    const itemLink = screen.getByRole("link", { name: /ITEM/ });
     // encodeURIComponent — Pitfall 5 / T-11-08: the code is escaped, no raw slash.
-    expect(link).toHaveAttribute(
+    expect(itemLink).toHaveAttribute("href", `/items/new?barcode=${encoded}`);
+    expect(itemLink.getAttribute("href")).not.toContain("abc/../x");
+
+    const containerLink = screen.getByRole("link", { name: /CONTAINER/ });
+    expect(containerLink).toHaveAttribute(
       "href",
-      `/items/new?barcode=${encodeURIComponent("abc/../x?y=1")}`,
+      `/taxonomy?tab=containers&new_code=${encoded}`,
     );
-    expect(link.getAttribute("href")).not.toContain("abc/../x");
+    expect(containerLink.getAttribute("href")).not.toContain("abc/../x");
   });
 
   it("ERROR renders the word, an error sentence and a TRY AGAIN button", async () => {
