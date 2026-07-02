@@ -23,6 +23,17 @@ export default defineConfig({
     // HTTPS in production (localhost is exempt) or the SW won't register.
     VitePWA({
       registerType: "autoUpdate",
+      workbox: {
+        // OAuth/SSO initiate paths are FULL-PAGE navigations that must reach
+        // the network → ingress (Google/GitHub via /api, Authelia via the bare
+        // ingress path). Without this denylist the SW's index.html navigation
+        // fallback swallows them and serves the SPA shell — the app renders the
+        // "v3.0 placeholder shell" wildcard instead of redirecting to the
+        // provider. PWA-only bug (a plain tab has no SW interception).
+        // /auth/callback is intentionally NOT denylisted — it is a real SPA
+        // route that the shell must render.
+        navigateFallbackDenylist: [/^\/api\//, /^\/auth\/authelia\//],
+      },
       manifest: {
         name: "Home Warehouse",
         short_name: "Warehouse",
