@@ -135,7 +135,10 @@ export function LocationFormDialog({
     const body: CreateLocationBody = { name: values.name };
     if (values.parent_location) body.parent_location = values.parent_location;
     if (values.description) body.description = values.description;
-    if (values.short_code) body.short_code = values.short_code;
+    // short_code is create-only — the PATCH endpoint has no short_code field
+    // (immutable; editing it would orphan printed QR labels), so sending it on
+    // update trips Huma's additionalProperties → 422.
+    if (!isEdit && values.short_code) body.short_code = values.short_code;
 
     try {
       if (isEdit && location) {
@@ -190,6 +193,7 @@ export function LocationFormDialog({
       <ShortCodeField
         register={register("short_code")}
         error={errors.short_code?.message}
+        disabled={isEdit}
       />
     </TaxonomyDialogForm>
   );

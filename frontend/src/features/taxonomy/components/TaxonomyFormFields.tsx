@@ -44,19 +44,32 @@ export function DescriptionField({
 }
 
 // ShortCodeField — the optional short-code input with its auto-generate hint.
+// The short_code is immutable after create (the update endpoints reject it —
+// changing a QR code would orphan printed labels), so on edit it renders
+// read-only: still visible to reprint a label, but not editable/submittable.
 export function ShortCodeField({
   register,
   error,
-}: Readonly<{ register: UseFormRegisterReturn; error?: string }>) {
+  disabled = false,
+}: Readonly<{
+  register: UseFormRegisterReturn;
+  error?: string;
+  disabled?: boolean;
+}>) {
   return (
     <div className="flex flex-col gap-sp-2">
       <RetroInput
         label={<Trans>Short code</Trans>}
         error={error}
+        disabled={disabled}
         {...register}
       />
       <p className="text-12 text-fg-muted">
-        <Trans>Optional — auto-generated if left blank.</Trans>
+        {disabled ? (
+          <Trans>Set when created — can't be changed.</Trans>
+        ) : (
+          <Trans>Optional — auto-generated if left blank.</Trans>
+        )}
       </p>
     </div>
   );

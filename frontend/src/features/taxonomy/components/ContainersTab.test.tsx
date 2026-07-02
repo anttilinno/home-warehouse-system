@@ -118,6 +118,28 @@ describe("ContainersTab", () => {
     expect(screen.getByDisplayValue("BOX9")).toBeInTheDocument();
   });
 
+  it("editing a container does NOT send short_code (immutable — would 422)", async () => {
+    const user = userEvent.setup();
+    const updateSpy = vi
+      .spyOn(containerApi, "update")
+      .mockResolvedValue({} as never);
+    renderTab();
+    const row = (await screen.findByText("Toolbox A")).closest(
+      "tr",
+    ) as HTMLElement;
+    await user.click(within(row).getByRole("button", { name: /^edit$/i }));
+    const dialog = await screen.findByRole("dialog");
+    // short_code is read-only on edit (still visible to reprint, not editable).
+    expect(within(dialog).getByDisplayValue("TBXA")).toBeDisabled();
+    await user.click(
+      within(dialog).getByRole("button", { name: /save changes/i }),
+    );
+    await waitFor(() => expect(updateSpy).toHaveBeenCalled());
+    const body = updateSpy.mock.calls[0][2];
+    expect(body).not.toHaveProperty("short_code");
+    expect(body).toMatchObject({ name: "Toolbox A", location_id: "loc-1" });
+  });
+
   it("deleting a container WITH items shows the cascade count copy then bare-deletes", async () => {
     const user = userEvent.setup();
     // Surface a non-zero usage count for the inventory?container_id read.
