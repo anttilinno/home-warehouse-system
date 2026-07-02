@@ -1,6 +1,9 @@
 # ---- Builder ----
 FROM golang:1.25-alpine AS builder
 
+# Base image pins GOTOOLCHAIN=local; allow fetching the go.mod-required toolchain.
+ENV GOTOOLCHAIN=auto
+
 RUN apk add --no-cache build-base libwebp-dev
 
 WORKDIR /src
