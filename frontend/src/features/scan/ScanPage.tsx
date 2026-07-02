@@ -12,6 +12,7 @@ import {
 import { BarcodeScanner } from "@/components/scan/BarcodeScanner";
 import { ScanViewfinderOverlay } from "@/components/scan/ScanViewfinderOverlay";
 import { ScanTorchToggle } from "@/components/scan/ScanTorchToggle";
+import { normalizeScanCode } from "./normalizeScanCode";
 import { useScanResolve } from "./useScanResolve";
 import { useScanFeedback } from "./useScanFeedback";
 import { useTorch } from "./useTorch";
@@ -86,7 +87,11 @@ export function ScanPage() {
   // History tab reflects the newest scan immediately. `addToScanHistory` de-dupes
   // by code, so the funnel's own write + this `add` collapse to one entry.
   const resolve = useCallback(
-    (code: string, format: string) => {
+    (rawCode: string, format: string) => {
+      // A camera-decoded QR label carries the whole `s.go/<code>` URL — strip
+      // it to the bare short_code here, before the fork, so the lookup and the
+      // lib/useScanHistory writes all key off the same normalized code.
+      const code = normalizeScanCode(rawCode);
       handleResolveCode(code, format);
       if (code) history.add({ code, format, entityType: "unknown" });
     },
