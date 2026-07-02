@@ -15,6 +15,7 @@ import {
   type UpdateContainerArg,
 } from "../hooks/useContainerMutations";
 import { generateShortCode } from "../generateShortCode";
+import { locationPickerOptions } from "../lib/locationOptions";
 import { SearchPicker } from "./SearchPicker";
 import { TaxonomyDialogForm } from "./TaxonomyDialogForm";
 import {
@@ -77,7 +78,7 @@ export function ContainerFormDialog({
   const noLocations = locationRows.length === 0;
 
   const locationOptions = useMemo<RetroComboboxOption[]>(
-    () => locationRows.map((l) => ({ value: l.id, label: l.name })),
+    () => locationPickerOptions(locationRows),
     [locationRows],
   );
 
