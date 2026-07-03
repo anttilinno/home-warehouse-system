@@ -14,6 +14,7 @@ import { WorkspaceProvider } from "@/features/workspace/WorkspaceProvider";
 import { useLogout } from "@/features/auth/useLogout";
 import { settingsApi } from "@/lib/api/settings";
 import { SSEProvider, useSSEStatus } from "@/features/sse";
+import { useResumeOnReconnect } from "@/lib/offline/useResumeOnReconnect";
 // Import the chord hook from its OWN module (not the feature barrel): the
 // barrel re-exports the default CommandPalette body, so a static barrel import
 // here would drag the whole palette source graph (recentActions/useEntitySearch
@@ -74,6 +75,11 @@ function formatLastSync(at: Date | null): string | undefined {
 // SSEProvider: a component cannot read a context it also renders, so the
 // useSSEStatus() reader must sit below the provider it reads from.
 export function AppShell() {
+  // Offline-first PWA Phase 2: authed-only mount point, same lifetime as the
+  // rest of the authed chrome — probes the session on offline→online and
+  // drains the paused-mutation queue (see hook doc for the 401 handoff).
+  useResumeOnReconnect();
+
   return (
     <WorkspaceProvider>
       <SSEProvider>
@@ -130,9 +136,10 @@ function ShellChrome() {
 
   // Live SSE status (read once here, threaded into the chrome). The split STATUS
   // context (Plan 06-01) re-renders this ONLY on connected/lastEventAt change —
-  // never on event fan-out (Pitfall 5). TopBar's ONLINE dot + sse-slot bind to
-  // `connected`; PageHeader LAST SYNC binds to the formatted `lastEventAt`.
-  const { connected, lastEventAt } = useSSEStatus();
+  // never on event fan-out (Pitfall 5). TopBar reads useSSEStatus() itself now
+  // for the sse-slot (Phase 4 — the ONLINE dot no longer binds to `connected`);
+  // this shell only needs `lastEventAt` for PageHeader's LAST SYNC readout.
+  const { lastEventAt } = useSSEStatus();
   const lastSync = formatLastSync(lastEventAt);
 
   // Real logout (AUTH-12 frontend half): POST /auth/logout (server-side revoke)
@@ -156,8 +163,9 @@ function ShellChrome() {
       </a>
 
       <div className="app-topbar">
+        {/* No `online` prop — TopBar defaults its ONLINE chip to the real
+            network state (useIsOnline(), Phase 4), not SSE `connected`. */}
         <TopBar
-          online={connected}
           onToggleDrawer={() => setDrawerOpen((v) => !v)}
           onOpenSearch={() => setPaletteOpen(true)}
         />

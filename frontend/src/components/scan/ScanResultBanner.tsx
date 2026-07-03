@@ -4,10 +4,22 @@ import { Link } from "react-router";
 import { StatusPill, type StatusPillVariant } from "@/components/retro";
 import type { Item } from "@/lib/types";
 
-// SCAN-08 — the 4-state result banner. PRESENTATIONAL: it takes the resolved
-// status (from 11-03's useScanResolve query) + the scanned code + the matched
-// item, and renders the matching state. It owns NO query.
-export type ScanBannerStatus = "loading" | "match" | "not-found" | "error";
+// SCAN-08 — the 5-state result banner. PRESENTATIONAL: it takes the resolved
+// status (from 11-03's useScanResolve query, offline-aware since Phase 4) +
+// the scanned code + the matched item, and renders the matching state. It owns
+// NO query.
+//
+// "offline" (Phase 4): a new/uncached code can't be resolved because the
+// device has no network — distinct from "error" (a real request failed while
+// online, e.g. a 500). Offers the SAME two add-anyway actions as "not-found"
+// (a code cached from a prior online scan still resolves to match/not-found
+// from the persisted query cache, even offline — see ScanPage's bannerStatus).
+export type ScanBannerStatus =
+  | "loading"
+  | "match"
+  | "not-found"
+  | "error"
+  | "offline";
 
 export interface ScanResultBannerProps {
   status: ScanBannerStatus;
@@ -31,6 +43,7 @@ const STATE: Record<
   match: { pill: "ok", glyph: "✓", tint: "bg-titlebar-mint" },
   "not-found": { pill: "warn", glyph: "✕", tint: "bg-titlebar-butter" },
   error: { pill: "danger", glyph: "✕", tint: "bg-danger-bg" },
+  offline: { pill: "warn", glyph: "⚠", tint: "bg-bg-panel-2" },
 };
 
 const BEVEL_BTN =
@@ -56,6 +69,12 @@ export function ScanResultBanner({
         <Trans>Couldn't look up that code.</Trans>
       </span>
     );
+  } else if (status === "offline") {
+    headline = (
+      <span className="font-body text-14 text-fg-ink">
+        <Trans>Can't verify offline. Add anyway?</Trans>
+      </span>
+    );
   }
 
   return (
@@ -69,6 +88,7 @@ export function ScanResultBanner({
           {status === "match" && <Trans>MATCH</Trans>}
           {status === "not-found" && <Trans>NOT FOUND</Trans>}
           {status === "error" && <Trans>ERROR</Trans>}
+          {status === "offline" && <Trans>OFFLINE</Trans>}
         </StatusPill>
         <span aria-hidden="true" className="text-14 text-fg-ink">
           {s.glyph}
@@ -95,10 +115,12 @@ export function ScanResultBanner({
             ▸ <Trans>ACTIONS</Trans>
           </button>
         )}
-        {status === "not-found" && (
+        {(status === "not-found" || status === "offline") && (
           <span className="flex flex-wrap items-center gap-sp-2">
-            {/* Unknown code → let the user register it as an item (code →
-                barcode) or a container (code → short_code). */}
+            {/* Unknown (or unverifiable-offline) code → let the user register
+                it as an item (code → barcode) or a container (code →
+                short_code). Offline, the create becomes a queued write
+                (Phase 3/4 offline mutations) that replays on reconnect. */}
             <Link
               to={`/items/new?barcode=${encodeURIComponent(code)}`}
               className={BEVEL_BTN}

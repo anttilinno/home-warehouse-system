@@ -1,3 +1,8 @@
+// jsdom ships no IndexedDB; the offline query-cache persister (idb-keyval) needs
+// it, so any test that mounts App/auth flows or hits purgePersistedCache() throws
+// "indexedDB is not defined" without this. fake-indexeddb/auto installs a spec
+// implementation on the global before anything imports the persister.
+import "fake-indexeddb/auto";
 import { afterAll, afterEach, beforeAll } from "vitest";
 import { server } from "./msw/server";
 

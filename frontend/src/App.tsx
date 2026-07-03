@@ -1,17 +1,20 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter } from "react-router";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@/lib/i18n";
 import { ThemeProvider } from "@/lib/useTheme";
 import { queryClient } from "@/lib/queryClient";
+import { persister, CACHE_BUSTER } from "@/lib/offline/persister";
+import { registerMutationDefaults } from "@/lib/offline/mutationDefaults";
 import { ShortcutsProvider } from "@/components/shortcuts";
 import { ModalStackProvider } from "@/components/modal";
 import { RetroToaster } from "@/components/retro";
 import { AppRoutes } from "@/routes";
 
 // SUBSET of v2.1's full provider stack. FINAL canonical tree (PROV-01, Phase 6):
-//   I18nProvider > BrowserRouter > QueryClientProvider
+//   I18nProvider > BrowserRouter > PersistQueryClientProvider (offline-first
+//   PWA Phase 1; same slot the plain QueryClientProvider occupied)
 //     ├─ ShortcutsProvider > ModalStackProvider > AppRoutes
 //     │     (and, deep inside an authed route: WorkspaceProvider > SSEProvider
 //     │      in AppShell — SSE needs a wsId + an authed session, so it CANNOT
@@ -38,12 +41,30 @@ const ReactQueryDevtoolsLazy = lazy(() =>
   })),
 );
 
+// Offline write queue (Phase 3): registers the itemCreate mutationFn/scope/
+// onSettled on the singleton queryClient BEFORE any mutation can fire — module
+// scope runs once, on first import of App.tsx, ahead of render.
+registerMutationDefaults();
+
 export default function App() {
   return (
     <I18nProvider i18n={i18n}>
       <ThemeProvider>
         <BrowserRouter>
-          <QueryClientProvider client={queryClient}>
+          <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{
+              persister,
+              buster: CACHE_BUSTER,
+              maxAge: 7 * 24 * 60 * 60 * 1000,
+              dehydrateOptions: {
+                shouldDehydrateMutation: (m) => m.state.isPaused,
+              },
+            }}
+            onSuccess={() => {
+              queryClient.resumePausedMutations();
+            }}
+          >
             <ShortcutsProvider>
               <ModalStackProvider>
                 <AppRoutes />
@@ -57,7 +78,7 @@ export default function App() {
                 <ReactQueryDevtoolsLazy initialIsOpen={false} />
               </Suspense>
             )}
-          </QueryClientProvider>
+          </PersistQueryClientProvider>
         </BrowserRouter>
       </ThemeProvider>
     </I18nProvider>

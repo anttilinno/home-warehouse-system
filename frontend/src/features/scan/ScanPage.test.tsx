@@ -3,7 +3,11 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { I18nProvider } from "@lingui/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  onlineManager,
+} from "@tanstack/react-query";
 import { MemoryRouter, Routes, Route } from "react-router";
 import { i18n } from "@/lib/i18n";
 import { server } from "@/test/msw/server";
@@ -137,6 +141,7 @@ afterEach(() => {
   resetScannerMock();
   localStorage.clear();
   vi.clearAllMocks();
+  onlineManager.setOnline(true); // restore the default for later tests
 });
 
 describe("ScanPage — persistent scanner + single funnel", () => {
@@ -223,6 +228,28 @@ describe("ScanPage — persistent scanner + single funnel", () => {
 
     // Manual entry is now usable.
     expect(screen.getByLabelText(/enter code/i)).toBeInTheDocument();
+  });
+
+  it("offline (Phase 4): a new/uncached code renders OFFLINE — can't verify, add anyway (not ERROR)", async () => {
+    // No lookup handler installed — the assertion is that TanStack's
+    // networkMode:"online" pause never even calls the queryFn while offline,
+    // so nothing hits MSW; onUnhandledRequest:"error" would fail this test if
+    // a request were attempted.
+    await renderScan();
+    onlineManager.setOnline(false);
+
+    triggerDecode("NEW-CODE-1", "ean_13");
+
+    expect(await screen.findByText(/^offline$/i)).toBeInTheDocument();
+    expect(screen.getByText(/Can't verify offline/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /ITEM/ })).toHaveAttribute(
+      "href",
+      "/items/new?barcode=NEW-CODE-1",
+    );
+    expect(screen.getByRole("link", { name: /CONTAINER/ })).toHaveAttribute(
+      "href",
+      "/taxonomy?tab=containers&new_code=NEW-CODE-1",
+    );
   });
 
   it("torch toggle renders only when useTorch.supported", async () => {

@@ -144,10 +144,15 @@ export function get<T>(endpoint: string): Promise<T> {
   return request<T>(endpoint, { method: "GET" });
 }
 
-export function post<T>(endpoint: string, data?: unknown): Promise<T> {
+export function post<T>(
+  endpoint: string,
+  data?: unknown,
+  headers?: Record<string, string>,
+): Promise<T> {
   return request<T>(endpoint, {
     method: "POST",
     body: data === undefined ? undefined : JSON.stringify(data),
+    headers,
   });
 }
 
@@ -155,10 +160,15 @@ export function postMultipart<T>(endpoint: string, form: FormData): Promise<T> {
   return request<T>(endpoint, { method: "POST", body: form });
 }
 
-export function patch<T>(endpoint: string, data: unknown): Promise<T> {
+export function patch<T>(
+  endpoint: string,
+  data: unknown,
+  headers?: Record<string, string>,
+): Promise<T> {
   return request<T>(endpoint, {
     method: "PATCH",
     body: JSON.stringify(data),
+    headers,
   });
 }
 

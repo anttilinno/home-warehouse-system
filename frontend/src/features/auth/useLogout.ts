@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { post, setRefreshToken } from "@/lib/api";
+import { purgePersistedCache } from "@/lib/offline/persister";
 
 // useLogout — the AUTH-12 frontend half (05-RESEARCH Pattern 3). Logout that
 // ACTUALLY revokes: it POSTs /auth/logout (the backend reads the refresh_token
@@ -34,6 +35,10 @@ export function useLogout(): () => Promise<void> {
       setRefreshToken(null);
       localStorage.removeItem(WS_KEY);
       queryClient.clear();
+      // Also wipe the persisted IndexedDB cache — queryClient.clear() only
+      // clears in-memory state, so without this the next user on the device
+      // would still see the prior user's data restored from disk.
+      await purgePersistedCache();
       navigate("/login", { replace: true });
     }
   }, [navigate, queryClient]);

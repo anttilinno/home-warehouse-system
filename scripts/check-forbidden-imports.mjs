@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-// D-05 guard: blocks offline/sync/idb/serwist imports under frontend/src/**.
+// D-05 guard: blocks a second service-worker framework (serwist) under
+// frontend/src/**. Offline/sync/idb are no longer forbidden (v3.0 reverses
+// the ONLINE-ONLY stance — see offline-first PWA plan).
 // Exits 1 with a list of offenders; 0 if clean.
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
@@ -18,10 +20,9 @@ try { statSync(SCAN_ROOT); } catch {
 }
 
 // Match only module specifiers inside `from '...'`, `from "..."`, `import('...')`, or `import("...")`
-// Forbidden: exact `idb`, exact `serwist` / `@serwist/*`, or any specifier containing `offline` or `sync` (case-insensitive).
+// Forbidden: exact `serwist` / `@serwist/*` (a second SW framework alongside vite-plugin-pwa).
 const SPECIFIER_RE = /(?:from|import)\s*\(?\s*["']([^"']+)["']/g;
-const FORBIDDEN_EXACT = /^(?:idb|serwist|@serwist\/.+)$/i;
-const FORBIDDEN_SUBSTR = /(offline|sync)/i;
+const FORBIDDEN_EXACT = /^(?:serwist|@serwist\/.+)$/i;
 
 function* walk(dir) {
   let entries;
@@ -41,14 +42,14 @@ for (const file of walk(SCAN_ROOT)) {
   let m;
   while ((m = SPECIFIER_RE.exec(src))) {
     const spec = m[1];
-    if (FORBIDDEN_EXACT.test(spec) || FORBIDDEN_SUBSTR.test(spec)) {
+    if (FORBIDDEN_EXACT.test(spec)) {
       offenders.push(`${file}: imports "${spec}"`);
     }
   }
 }
 
 if (offenders.length) {
-  console.error("Forbidden imports detected (Phase 56 D-05 — no offline/sync in v2.1):");
+  console.error("Forbidden imports detected (Phase 56 D-05 — no second SW framework):");
   for (const o of offenders) console.error("  - " + o);
   process.exit(1);
 }

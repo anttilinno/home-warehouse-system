@@ -43,12 +43,26 @@ vi.mock("@/features/workspace/useWorkspace", () => ({
   useWorkspace: () => wsContext,
 }));
 
-// TopBar reads useSSEStatus() for the sse-slot RetroStatusDot (and as the
-// default for its `online` dot). Mock the feature so the banner renders without
-// a live SSEProvider; `sseStatus` is mutable per-test to flip connected.
+// TopBar reads useSSEStatus() for the sse-slot RetroStatusDot ONLY (Phase 4 —
+// the ONLINE dot no longer defaults from it). Mock the feature so the banner
+// renders without a live SSEProvider; `sseStatus` is mutable per-test.
 let sseStatus = { connected: true, lastEventAt: null as Date | null };
 vi.mock("@/features/sse", () => ({
   useSSEStatus: () => sseStatus,
+}));
+
+// TopBar's ONLINE dot defaults to useIsOnline() (real network state, Phase 4)
+// when no `online` prop is passed. Mock it so this suite doesn't depend on
+// jsdom's navigator.onLine; `isOnlineMock`/`pendingWritesMock` are mutable
+// per-test.
+let isOnlineMock = true;
+vi.mock("@/lib/offline/useIsOnline", () => ({
+  useIsOnline: () => isOnlineMock,
+}));
+
+let pendingWritesMock = 0;
+vi.mock("@/lib/offline/usePendingWrites", () => ({
+  usePendingWrites: () => pendingWritesMock,
 }));
 
 import { TopBar } from "./TopBar";
@@ -81,6 +95,9 @@ describe("TopBar", () => {
   beforeEach(() => {
     // Default each test to a connected stream; SSE-slot tests flip this.
     sseStatus = { connected: true, lastEventAt: null };
+    // Default each test to online with no queued writes; individual tests flip these.
+    isOnlineMock = true;
+    pendingWritesMock = 0;
     // The live NotificationsBell polls /api/notifications/unread/count on mount;
     // register the user-scoped handlers so onUnhandledRequest:"error" stays quiet.
     server.use(...notificationHandlers);
@@ -120,11 +137,28 @@ describe("TopBar", () => {
     expect(screen.getByText("OFFLINE")).toBeInTheDocument();
   });
 
-  it("defaults the ONLINE dot from useSSEStatus().connected when no online prop", () => {
-    sseStatus = { connected: false, lastEventAt: null };
+  it("defaults the ONLINE dot from useIsOnline() when no online prop (Phase 4 — not SSE)", () => {
+    isOnlineMock = false;
+    sseStatus = { connected: true, lastEventAt: null }; // SSE fine; network isn't
     renderTopBar(<TopBar />);
-    // No explicit online prop → falls back to the live SSE status (disconnected).
+    // No explicit online prop → falls back to real network state, NOT SSE.
     expect(screen.getByText("OFFLINE")).toBeInTheDocument();
+  });
+
+  it("renders a pending-writes badge when queued offline writes exist", () => {
+    pendingWritesMock = 2;
+    renderTopBar(<TopBar />);
+    expect(screen.getByTestId("pending-writes-badge")).toHaveTextContent(
+      "2 pending",
+    );
+  });
+
+  it("renders no pending-writes badge when the queue is empty", () => {
+    pendingWritesMock = 0;
+    renderTopBar(<TopBar />);
+    expect(
+      screen.queryByTestId("pending-writes-badge"),
+    ).not.toBeInTheDocument();
   });
 
   it("renders the live notifications bell at the stable bell-slot testid (Phase 13)", () => {

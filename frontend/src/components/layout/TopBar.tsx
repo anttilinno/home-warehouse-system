@@ -1,23 +1,30 @@
 import { Trans } from "@lingui/react/macro";
 import { BrandMark } from "@/components/BrandMark";
-import { RetroStatusDot } from "@/components/retro";
+import { RetroStatusDot, StatusPill } from "@/components/retro";
 import { useTheme } from "@/lib/useTheme";
 import { useSSEStatus } from "@/features/sse";
+import { useIsOnline } from "@/lib/offline/useIsOnline";
+import { usePendingWrites } from "@/lib/offline/usePendingWrites";
 import { NotificationsBell } from "@/features/notifications/components/NotificationsBell";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
 // TopBar (SHELL-03): the slim 40px banner every authenticated route renders.
 // Brand + the live WorkspaceSwitcher pill (AUTH-06; reads the D-12 SSOT) +
-// ONLINE dot + sse-slot RetroStatusDot (both bound to live SSE — Phase 6) +
-// live notifications bell (Phase 13). The account menu (Profile / Settings /
-// confirm-before Log out) lives in the Sidebar/MobileDrawer user menu now — the
-// redundant TopBar account pill was removed.
+// ONLINE dot + sse-slot RetroStatusDot + live notifications bell (Phase 13).
+// The account menu (Profile / Settings / confirm-before Log out) lives in the
+// Sidebar/MobileDrawer user menu now — the redundant TopBar account pill was
+// removed.
 //
 // SSE binding (PROV-01, design choice): TopBar reads `useSSEStatus()` directly
 // and feeds the DUMB RetroStatusDot atom its `state` (Pitfall 6 — the atom never
-// imports SSE; we feed it). The `online?: boolean` prop is KEPT for test
-// injectability and is threaded by AppShell, but DEFAULTS to the live
-// `connected` when omitted, so a TopBar mounted under SSEProvider needs no prop.
+// imports SSE; we feed it) for the sse-slot ONLY.
+//
+// ONLINE dot rebinding (offline-first PWA Phase 4): the ONLINE/OFFLINE chip now
+// reads real browser network state via `useIsOnline()` (TanStack's
+// `onlineManager`), NOT SSE `connected` — a dropped SSE stream on a healthy
+// network used to falsely read OFFLINE. The `online?: boolean` prop is KEPT for
+// test injectability and DEFAULTS to `useIsOnline()` when omitted. A "N pending"
+// badge (paused/queued offline writes, `usePendingWrites()`) renders next to it.
 
 const FOCUS_RING =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
@@ -31,7 +38,8 @@ const SEARCH_HINT = IS_APPLE ? "⌘K" : "Ctrl K";
 export interface TopBarProps {
   /**
    * Live connectivity for the ONLINE dot. Optional: defaults to
-   * `useSSEStatus().connected` when omitted (AppShell passes it explicitly).
+   * `useIsOnline()` (real network state) when omitted — tests pass this to
+   * force a state without touching `navigator.onLine`.
    */
   online?: boolean;
   /** Mobile hamburger toggle for the Navigator drawer (wired in Plan 06). */
@@ -45,10 +53,13 @@ export function TopBar({
   onToggleDrawer,
   onOpenSearch,
 }: Readonly<TopBarProps>) {
-  // Live SSE connection status — drives BOTH the ONLINE dot (when no explicit
-  // `online` prop) AND the sse-slot RetroStatusDot.
+  // Live SSE connection status — drives ONLY the sse-slot RetroStatusDot now.
   const { connected } = useSSEStatus();
-  const isOnline = online ?? connected;
+  // Real network state (Phase 4) — drives the ONLINE dot when no explicit
+  // `online` prop is passed.
+  const networkOnline = useIsOnline();
+  const isOnline = online ?? networkOnline;
+  const pendingWrites = usePendingWrites();
 
   // Quick theme toggle: flip to the OPPOSITE of what's currently painted (a
   // `system` pref resolves to one of the two, so the click always lands on a
@@ -95,6 +106,16 @@ export function TopBar({
           {isOnline ? <Trans>ONLINE</Trans> : <Trans>OFFLINE</Trans>}
         </span>
       </span>
+
+      {/* Pending-writes badge (Phase 4) — paused offline mutations queued for
+          the next reconnect drain. Hidden entirely at 0 (no empty chip). */}
+      {pendingWrites > 0 && (
+        <span data-testid="pending-writes-badge" className="flex-none">
+          <StatusPill variant="warn">
+            <Trans>{pendingWrites} pending</Trans>
+          </StatusPill>
+        </span>
+      )}
 
       {/* Global search trigger — opens the command palette (⌘K / Ctrl+K / F2).
           The visible counterpart to the keyboard-only chord; styled as a faux

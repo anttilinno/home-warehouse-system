@@ -86,8 +86,7 @@ export function LocationFormDialog({
 
   const { rows } = useLocationsQuery();
 
-  const { create, update } = useLocationMutations();
-  const createLocation = create.mutateAsync;
+  const { createLocation, update } = useLocationMutations();
   const updateLocation = update.mutateAsync;
 
   const {

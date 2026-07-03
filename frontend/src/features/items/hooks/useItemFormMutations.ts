@@ -1,16 +1,26 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { QueryKey } from "@tanstack/react-query";
 import { useLingui } from "@lingui/react/macro";
 import { itemsApi } from "@/lib/api/items";
 import { retroToast } from "@/components/retro";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
-import type { Item } from "@/lib/types";
+import { MK } from "@/lib/offline/mutationKeys";
+import { newIdemKey } from "@/lib/offline/idempotency";
+import { generateShortCode } from "@/lib/offline/shortCode";
+import type { ItemCreateVars } from "@/lib/offline/mutationDefaults";
+import type { Item, ItemListResponse } from "@/lib/types";
 import type { ItemFormValues } from "../schema";
 
 // Phase 7 Plan 05 — create/edit mutations for the item form.
 //
-// createMutation → itemsApi.create then invalidate the ["items", wsId] PREFIX
-// (no exact:true — prefix covers list + every detail key, per the SSE
-// invalidation contract).
+// createMutation (Phase 3a offline rewrite): mutationFn lives in the
+// centrally-registered default (mutationDefaults.ts) so a paused offline
+// create survives a page reload — the hook only supplies mutationKey +
+// optimistic onMutate/onError/onSuccess (re-registered on mount; not needed
+// for a resumed replay, see mutationDefaults.ts doc comment). Callers keep
+// calling `createItem(values)` (wraps `create.mutateAsync` with the
+// wsId/idemKey/short_code variables); `create` itself is exposed for
+// isPending/isError.
 //
 // updateMutation → itemsApi.update then invalidate BOTH the ["items", wsId]
 // prefix AND the explicit detail key ["items", wsId, "detail", id] so a stale
@@ -80,15 +90,74 @@ export function useItemFormMutations() {
     queryClient.invalidateQueries({ queryKey: ["items", wsId as string] });
   }
 
-  const create = useMutation({
-    mutationFn: (values: ItemFormValues): Promise<Item> =>
-      itemsApi.create(wsId as string, buildCreateBody(values)),
-    onSuccess: () => {
-      invalidatePrefix();
-      retroToast.success(t`Item saved.`);
+  // Snapshot every ["items", wsId] cache entry so onError can restore it
+  // (mirrors useLoanMutations' optimisticPatch/restore pattern).
+  interface CreateContext {
+    snapshots: [QueryKey, unknown][];
+  }
+
+  const create = useMutation<Item, Error, ItemCreateVars, CreateContext>({
+    mutationKey: MK.itemCreate,
+    // No mutationFn here — resolved from the mutationDefaults.ts registration
+    // so a resumed-after-reload replay still has a request to run.
+    onMutate: async (vars) => {
+      const prefix: QueryKey = ["items", vars.wsId];
+      await queryClient.cancelQueries({ queryKey: prefix });
+      const snapshots = queryClient.getQueriesData({ queryKey: prefix });
+      const now = new Date().toISOString();
+      const tempItem: Item = {
+        id: crypto.randomUUID(),
+        workspace_id: vars.wsId,
+        sku: (vars.body.sku as string | undefined) ?? "",
+        name: (vars.body.name as string | undefined) ?? "",
+        description: vars.body.description as string | undefined,
+        barcode: vars.body.barcode as string | undefined,
+        min_stock_level: (vars.body.min_stock_level as number | undefined) ?? 0,
+        short_code: vars.body.short_code as string,
+        created_at: now,
+        updated_at: now,
+      };
+      // ponytail: patches every cached ["items", wsId, params] list regardless
+      // of its own filter/sort/page, so the temp row can appear on a
+      // page/search it wouldn't actually match once real. Acceptable for v1 —
+      // the reconnect invalidate (mutationDefaults onSettled) replaces it with
+      // the real, correctly-filtered set.
+      queryClient.setQueriesData<ItemListResponse>(
+        { queryKey: prefix },
+        (old) => {
+          if (!old || !Array.isArray(old.items)) return old;
+          return {
+            ...old,
+            items: [tempItem, ...old.items],
+            total: old.total + 1,
+          };
+        },
+      );
+      return { snapshots };
     },
-    onError: () => retroToast.error(t`Couldn't save this item.`),
+    onError: (_err, _vars, ctx) => {
+      ctx?.snapshots.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
+      retroToast.error(t`Couldn't save this item.`);
+    },
+    // onSettled (the real invalidate) lives in mutationDefaults.ts so a
+    // resumed replay (no hook mounted) still refetches. This onSuccess is
+    // cosmetic-only — it fires when the hook happens to be mounted at resolve
+    // time.
+    onSuccess: () => retroToast.success(t`Item saved.`),
   });
+
+  // Wraps `create.mutateAsync` so callers keep passing bare ItemFormValues —
+  // wsId, the idempotency key, and the client-generated short_code (final at
+  // creation, printed on the label — never remapped) are minted here.
+  function createItem(values: ItemFormValues): Promise<Item> {
+    return create.mutateAsync({
+      wsId: wsId as string,
+      idemKey: newIdemKey(),
+      body: { ...buildCreateBody(values), short_code: generateShortCode() },
+    });
+  }
 
   const update = useMutation({
     mutationFn: ({
@@ -113,5 +182,5 @@ export function useItemFormMutations() {
     onError: () => retroToast.error(t`Couldn't save this item.`),
   });
 
-  return { create, update };
+  return { create, createItem, update };
 }
