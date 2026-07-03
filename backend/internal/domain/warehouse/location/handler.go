@@ -103,6 +103,7 @@ func createLocation(svc ServiceInterface, broadcaster *events.Broadcaster) func(
 			ParentLocation: input.Body.ParentLocation,
 			Description:    input.Body.Description,
 			ShortCode:      shortCode,
+			IdempotencyKey: input.IdempotencyKey,
 		})
 		if err != nil {
 			if errors.Is(err, ErrShortCodeTaken) {
@@ -362,7 +363,11 @@ type GetLocationOutput struct {
 }
 
 type CreateLocationInput struct {
-	Body struct {
+	// IdempotencyKey lets a replayed create (offline-queued PWA write whose
+	// original response was lost) return the ORIGINAL location instead of a
+	// duplicate. Optional — a request without it always creates.
+	IdempotencyKey string `header:"Idempotency-Key" doc:"Client-generated key; a repeated create with the same key returns the original entity instead of creating a duplicate"`
+	Body           struct {
 		Name           string     `json:"name" minLength:"1" maxLength:"255" doc:"Location name"`
 		ParentLocation *uuid.UUID `json:"parent_location,omitempty" doc:"Parent location ID for hierarchical locations"`
 		Description    *string    `json:"description,omitempty" doc:"Location description"`

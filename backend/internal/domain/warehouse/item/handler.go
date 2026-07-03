@@ -353,6 +353,7 @@ func createItem(svc ServiceInterface, broadcaster *events.Broadcaster, photoURLG
 			ObsidianVaultPath: input.Body.ObsidianVaultPath,
 			ObsidianNotePath:  input.Body.ObsidianNotePath,
 			NeedsReview:       input.Body.NeedsReview,
+			IdempotencyKey:    input.IdempotencyKey,
 		})
 		if err != nil {
 			if errors.Is(err, ErrSKUTaken) {
@@ -768,7 +769,11 @@ type ListItemsByCategoryInput struct {
 }
 
 type CreateItemInput struct {
-	Body struct {
+	// IdempotencyKey lets a replayed create (offline-queued PWA write whose
+	// original response was lost) return the ORIGINAL item instead of a
+	// duplicate. Optional — a request without it always creates.
+	IdempotencyKey string `header:"Idempotency-Key" doc:"Client-generated key; a repeated create with the same key returns the original entity instead of creating a duplicate"`
+	Body           struct {
 		SKU               string     `json:"sku" minLength:"1" maxLength:"255" doc:"Stock Keeping Unit"`
 		Name              string     `json:"name" minLength:"1" maxLength:"255" doc:"Item name"`
 		Description       *string    `json:"description,omitempty" doc:"Item description"`

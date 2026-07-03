@@ -197,6 +197,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	categoryRepo := postgres.NewCategoryRepository(pool)
 	locationRepo := postgres.NewLocationRepository(pool)
 	containerRepo := postgres.NewContainerRepository(pool)
+	idempotencyRepo := postgres.NewIdempotencyRepository(pool)
 	// Phase 2 repositories
 	companyRepo := postgres.NewCompanyRepository(pool)
 	labelRepo := postgres.NewLabelRepository(pool)
@@ -260,6 +261,14 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	labelSvc := label.NewService(labelRepo)
 	// Phase 3 services
 	itemSvc := item.NewService(itemRepo, categoryRepo)
+
+	// Offline-first PWA: dedup replayed CREATE requests (Idempotency-Key
+	// header) so a lost-response retry returns the original entity instead
+	// of a duplicate. item/container/location CREATE only (see
+	// internal/domain/warehouse/idempotency).
+	locationSvc.SetIdempotencyStore(idempotencyRepo)
+	containerSvc.SetIdempotencyStore(idempotencyRepo)
+	itemSvc.SetIdempotencyStore(idempotencyRepo)
 
 	// Initialize storage and image processor for item photos
 	uploadDir := getUploadDir()

@@ -101,6 +101,7 @@ func CleanupTestDB(t *testing.T, pool *pgxpool.Pool) {
 		// short_codes_sync triggers, so registry rows must be cleared
 		// explicitly or stale codes would collide across test runs.
 		"warehouse.short_codes",
+		"warehouse.idempotency_keys",
 		"warehouse.activity_log",
 		"warehouse.deleted_records",
 		"warehouse.favorites",
