@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Trans } from "@lingui/react/macro";
+import { queryClient } from "@/lib/queryClient";
 import { post, setRefreshToken } from "@/lib/api";
 import type { AuthTokenResponse } from "@/lib/types";
 import { BevelButton, Window } from "@/components/retro";
@@ -52,6 +53,9 @@ export function CallbackPage() {
     post<AuthTokenResponse>("/auth/oauth/exchange", { code })
       .then((data) => {
         setRefreshToken(data.refresh_token);
+        // Offline-first PWA Phase 2: drain any paused-mutation queue that
+        // survived a reload-with-dead-session (see LoginPage's identical call).
+        queryClient.resumePausedMutations();
         // Replace so the consumed ?code never sits in history.
         navigate("/", { replace: true });
       })

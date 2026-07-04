@@ -106,10 +106,11 @@ export function ItemFormPage() {
   });
 
   const queryClient = useQueryClient();
-  const { create, update } = useItemFormMutations();
+  // createItem wraps create.mutateAsync with the offline wsId/idemKey/
+  // short_code variables (Phase 3) — callers still just pass ItemFormValues.
+  const { createItem, update } = useItemFormMutations();
   // RQ v5 returns a fresh mutation object per render; the .mutateAsync identity
-  // is stable. Destructure the stable fns (DemoPage/ItemsListPage pattern).
-  const createItem = create.mutateAsync;
+  // is stable. Destructure the stable fn (DemoPage/ItemsListPage pattern).
   const updateItem = update.mutateAsync;
 
   const defaultValues = useMemo<ItemFormInput>(

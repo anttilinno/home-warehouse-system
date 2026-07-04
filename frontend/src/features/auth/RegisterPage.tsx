@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { queryClient } from "@/lib/queryClient";
 import { post, setRefreshToken } from "@/lib/api";
 import type { AuthTokenResponse } from "@/lib/types";
 import { BrandMark } from "@/components/BrandMark";
@@ -53,6 +54,9 @@ export function RegisterPage() {
         password: values.password,
       });
       setRefreshToken(data.refresh_token);
+      // Offline-first PWA Phase 2: drain any paused-mutation queue that
+      // survived a reload-with-dead-session (see LoginPage's identical call).
+      queryClient.resumePausedMutations();
       retroToast.success(t`Account created — welcome.`);
       navigate("/");
     } catch {

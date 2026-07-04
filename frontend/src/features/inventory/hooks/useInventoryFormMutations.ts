@@ -1,9 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { QueryKey } from "@tanstack/react-query";
 import { useLingui } from "@lingui/react/macro";
 import { inventoryApi } from "@/lib/api/inventory";
 import { retroToast } from "@/components/retro";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
-import type { Inventory } from "@/lib/types";
+import { MK } from "@/lib/offline/mutationKeys";
+import { newIdemKey } from "@/lib/offline/idempotency";
+import { isOfflineTempId } from "@/lib/offline/tempId";
+import type { InventoryCreateVars } from "@/lib/offline/mutationDefaults";
+import type { Condition, Inventory, InventoryStatus } from "@/lib/types";
 import type { InventoryFormValues } from "../schema";
 
 // Phase 7b Plan 03 — create/edit mutations for the inventory entry form.
@@ -101,15 +106,90 @@ export function useInventoryFormMutations() {
     queryClient.invalidateQueries({ queryKey: ["inventory", wsId as string] });
   }
 
-  const create = useMutation({
-    mutationFn: (values: InventoryFormValues): Promise<Inventory> =>
-      inventoryApi.create(wsId as string, buildCreateBody(values)),
-    onSuccess: () => {
-      invalidatePrefix();
-      retroToast.success(t`Entry saved.`);
+  // Offline-capable (C-create): mutationFn + onSettled invalidate live in the
+  // registered default (mutationDefaults.ts) so a paused create survives a
+  // reload and replays with no hook mounted. The hook supplies the optimistic
+  // list insert + revert-on-error for the online/hook-mounted path.
+  interface CreateContext {
+    snapshots: [QueryKey, unknown][];
+  }
+  type InventoryListLike = { items: Inventory[]; total?: number } & Record<
+    string,
+    unknown
+  >;
+
+  const create = useMutation<
+    Inventory,
+    Error,
+    InventoryCreateVars,
+    CreateContext
+  >({
+    mutationKey: MK.inventoryCreate,
+    onMutate: async (vars) => {
+      const prefix: QueryKey = ["inventory", vars.wsId];
+      await queryClient.cancelQueries({ queryKey: prefix });
+      const snapshots = queryClient.getQueriesData({ queryKey: prefix });
+      const now = new Date().toISOString();
+      const b = vars.body;
+      const tempEntry: Inventory = {
+        id: crypto.randomUUID(),
+        workspace_id: vars.wsId,
+        item_id: b.item_id as string,
+        location_id: b.location_id as string,
+        container_id: b.container_id as string | undefined,
+        quantity: (b.quantity as number | undefined) ?? 0,
+        condition: b.condition as Condition,
+        status: b.status as InventoryStatus,
+        date_acquired: b.date_acquired as string | undefined,
+        warranty_expires: b.warranty_expires as string | undefined,
+        expiration_date: b.expiration_date as string | undefined,
+        notes: b.notes as string | undefined,
+        is_archived: false,
+        created_at: now,
+        updated_at: now,
+      };
+      queryClient.setQueriesData<InventoryListLike>(
+        { queryKey: prefix },
+        (old) => {
+          if (!old || !Array.isArray(old.items)) return old;
+          return {
+            ...old,
+            items: [tempEntry, ...old.items],
+            total: (old.total ?? old.items.length) + 1,
+          };
+        },
+      );
+      return { snapshots };
     },
-    onError: () => retroToast.error(t`Couldn't save this entry.`),
+    onError: (_err, _vars, ctx) => {
+      ctx?.snapshots.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
+      retroToast.error(t`Couldn't save this entry.`);
+    },
+    // onSettled (the real invalidate) lives in mutationDefaults.ts so a resumed
+    // replay refetches even with no hook mounted. This onSuccess is cosmetic.
+    onSuccess: () => retroToast.success(t`Entry saved.`),
   });
+
+  // Wraps create.mutateAsync so callers keep passing bare InventoryFormValues —
+  // wsId + the idempotency key are minted here.
+  function createEntry(values: InventoryFormValues): Promise<Inventory> {
+    // Dependent-write guard (option a): a stock entry against an item created
+    // offline carries a temp item_id with no server row, so it can never sync —
+    // the backend would 404. Block it at the single write chokepoint rather than
+    // at each caller (ADD button / ?item= prefill / direct URL all land here).
+    if (isOfflineTempId(values.item_id)) {
+      // ponytail: nearly-never-seen defensive toast, en-only — no i18n extract.
+      retroToast.error("Finish syncing this item before adding stock to it.");
+      return Promise.reject(new Error("dependent write against unsynced item"));
+    }
+    return create.mutateAsync({
+      wsId: wsId as string,
+      idemKey: newIdemKey(),
+      body: buildCreateBody(values),
+    });
+  }
 
   const update = useMutation({
     mutationFn: ({
@@ -134,5 +214,5 @@ export function useInventoryFormMutations() {
     onError: () => retroToast.error(t`Couldn't save this entry.`),
   });
 
-  return { create, update };
+  return { create, createEntry, update };
 }

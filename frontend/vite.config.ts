@@ -33,6 +33,28 @@ export default defineConfig({
         // /auth/callback is intentionally NOT denylisted — it is a real SPA
         // route that the shell must render.
         navigateFallbackDenylist: [/^\/api\//, /^\/auth\/authelia\//],
+        // Precache the IBM Plex woff2 files too, not just JS/CSS/HTML/icons —
+        // otherwise every lazy route works offline after one visit but text
+        // renders in a fallback font (woff2-only: legacy .woff is never
+        // requested by a woff2-capable browser; ~1MB/30 files, each file is
+        // under the workbox 2MB per-file cap).
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // Thumbnails are auth-cookie-gated at fetch time but served from this
+        // cache without auth afterwards on repeat visits — CacheFirst is fine
+        // offline-first, but see useLogout.ts: the cache is wiped on logout so
+        // it can't leak a photo to the next device user. Full-size photos and
+        // offline photo upload stay out of scope (v2 thumbnails-only).
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => /\/photos\/[^/]+\/thumbnail$/.test(url.pathname),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "hws-thumbs",
+              expiration: { maxEntries: 500, maxAgeSeconds: 7 * 24 * 3600, purgeOnQuotaError: true },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
       manifest: {
         name: "Home Warehouse",
@@ -69,6 +91,21 @@ export default defineConfig({
         // Backend routes live at root (/auth/login, /workspaces/…) — the
         // /api prefix is frontend-only. Rewrite restored from the pre-wipe
         // v2.2 config (the Phase 1 scaffold dropped it by accident).
+        rewrite: (path: string) => path.replace(/^\/api/, ""),
+      },
+    },
+  },
+  // `vite preview` needs the SAME /api proxy as the dev server — the SW only
+  // registers in a real build, so the offline-replay E2E (which reloads while
+  // offline and needs the SW to serve the shell) runs against `preview`, not
+  // `dev`. Same rewrite contract as `server.proxy`.
+  preview: {
+    port: 5173,
+    proxy: {
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        secure: false,
         rewrite: (path: string) => path.replace(/^\/api/, ""),
       },
     },

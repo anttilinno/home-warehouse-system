@@ -17,6 +17,8 @@ import { useScanResolve } from "./useScanResolve";
 import { useScanFeedback } from "./useScanFeedback";
 import { useTorch } from "./useTorch";
 import { useScanHistory } from "./useScanHistory";
+import { useIsOnline } from "@/lib/offline/useIsOnline";
+import { useOfflineBarcodeHit } from "@/lib/offline/localBarcodeLookup";
 
 // Phase 11 Plan 06 — the /scan route orchestration (RESEARCH Pattern 2 / binding
 // override 1). THE non-negotiable architecture decision lives here:
@@ -40,13 +42,29 @@ function isScanTab(value: string | null): value is ScanTab {
   return value !== null && (VALID_TABS as string[]).includes(value);
 }
 
-/** Map the useScanResolve lookup query state → the banner's 4-state status. */
+/**
+ * Map the useScanResolve lookup query state → the banner's 5-state status.
+ *
+ * A code cached from a prior online scan still resolves `status:"success"`
+ * (served from the persisted query cache) even offline — that stays
+ * MATCH/NOT-FOUND, unchanged. A NEW/uncached code can't reach the network
+ * offline: TanStack's default `networkMode:"online"` never calls the queryFn,
+ * so it sits at `status:"pending"`/`fetchStatus:"paused"` forever (not
+ * "error") — that's the offline branch below. A genuine in-flight failure
+ * while offline (connection dropped mid-request) lands in `status:"error"`
+ * too; either way, offline + can't-resolve → the OFFLINE banner, not ERROR.
+ */
 function bannerStatus(
   status: "pending" | "success" | "error",
   data: unknown,
+  isOnline: boolean,
+  fetchStatus: "fetching" | "paused" | "idle",
 ): ScanBannerStatus {
-  if (status === "error") return "error";
   if (status === "success") return data ? "match" : "not-found";
+  if (!isOnline && (status === "error" || fetchStatus === "paused")) {
+    return "offline";
+  }
+  if (status === "error") return "error";
   return "loading";
 }
 
@@ -110,8 +128,17 @@ export function ScanPage() {
     setCameraBlocked(true);
   }, []);
 
-  // ── Derived banner status. The banner only renders once a code is in flight.
-  const status = bannerStatus(lookup.status, lookup.data);
+  // ── Derived banner status (offline-aware, Phase 4). The banner only renders
+  // once a code is in flight.
+  const isOnline = useIsOnline();
+  // Phase B: a code already sitting in a persisted items-list cache resolves
+  // locally while offline (no network round trip needed) — checked only when
+  // offline so an online lookup always takes precedence.
+  const offlineHit = useOfflineBarcodeHit(isOnline, banner?.code);
+  const effectiveItem = lookup.data ?? offlineHit;
+  const status = offlineHit
+    ? "match"
+    : bannerStatus(lookup.status, lookup.data, isOnline, lookup.fetchStatus);
   const showBanner = banner !== null;
 
   // Opening the quick-action menu (MATCH only). Closing it = Back to Scan.
@@ -220,7 +247,7 @@ export function ScanPage() {
               <ScanResultBanner
                 status={status}
                 code={banner.code}
-                item={lookup.data}
+                item={effectiveItem}
                 onOpenActions={openActions}
                 onRetry={retry}
               />
@@ -236,8 +263,8 @@ export function ScanPage() {
       </Window>
 
       {/* Quick-action overlay (RetroDialog) — MATCH only, camera stays mounted. */}
-      {status === "match" && actionsOpen && lookup.data && (
-        <QuickActionMenu item={lookup.data} onClose={closeActions} />
+      {status === "match" && actionsOpen && effectiveItem && (
+        <QuickActionMenu item={effectiveItem} onClose={closeActions} />
       )}
     </div>
   );

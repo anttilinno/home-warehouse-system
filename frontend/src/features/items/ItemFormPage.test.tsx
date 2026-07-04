@@ -7,6 +7,7 @@ import { I18nProvider } from "@lingui/react";
 import { MemoryRouter, Routes, Route, useLocation } from "react-router";
 import { i18n } from "@/lib/i18n";
 import { server } from "@/test/msw/server";
+import { registerMutationDefaults } from "@/lib/offline/mutationDefaults";
 import { ModalStackProvider } from "@/components/modal";
 import { RetroToaster } from "@/components/retro";
 import { ItemFormPage } from "./ItemFormPage";
@@ -37,6 +38,10 @@ function renderForm(initialEntries: string[]) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
+  // create's mutationFn now resolves from the centrally-registered default
+  // (mutationDefaults.ts) instead of an inline mutationFn — register it on
+  // this test's own client, mirroring the boot-time call in App.tsx.
+  registerMutationDefaults(client);
   return render(
     <I18nProvider i18n={i18n}>
       <QueryClientProvider client={client}>

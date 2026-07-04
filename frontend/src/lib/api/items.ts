@@ -58,8 +58,15 @@ export const itemsApi = {
     return get<Item>(`/workspaces/${wsId}/items/${id}`).then(mapItem);
   },
 
-  create(wsId: string, data: Record<string, unknown>): Promise<Item> {
-    return post<Item>(`/workspaces/${wsId}/items`, data).then(mapItem);
+  // headers: optional 3rd arg so offline-queued creates can carry the
+  // Idempotency-Key header (Phase 3 mutationDefaults.ts) without a second
+  // create() overload.
+  create(
+    wsId: string,
+    data: Record<string, unknown>,
+    headers?: Record<string, string>,
+  ): Promise<Item> {
+    return post<Item>(`/workspaces/${wsId}/items`, data, headers).then(mapItem);
   },
 
   // PATCH: omitted keys = unchanged, "" = clear string fields (Pitfall 4). The

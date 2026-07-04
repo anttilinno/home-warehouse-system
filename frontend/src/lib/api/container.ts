@@ -60,8 +60,13 @@ export const containerApi = {
     ).then((r) => r.items),
   get: (ws: string, id: string) =>
     get<Container>(`/workspaces/${ws}/containers/${id}`),
-  create: (ws: string, body: CreateContainerBody) =>
-    post<Container>(`/workspaces/${ws}/containers`, body),
+  // headers: optional 3rd arg so offline-queued creates can carry the
+  // Idempotency-Key header (Phase 3b mutationDefaults.ts).
+  create: (
+    ws: string,
+    body: CreateContainerBody,
+    headers?: Record<string, string>,
+  ) => post<Container>(`/workspaces/${ws}/containers`, body, headers),
   update: (ws: string, id: string, body: UpdateContainerBody) =>
     patch<Container>(`/workspaces/${ws}/containers/${id}`, body),
   archive: (ws: string, id: string) =>

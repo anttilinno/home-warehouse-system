@@ -1,18 +1,34 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { QueryKey } from "@tanstack/react-query";
 import { useLingui } from "@lingui/react/macro";
 import {
   locationApi,
+  type Location,
   type CreateLocationBody,
   type UpdateLocationBody,
 } from "@/lib/api/location";
 import { retroToast } from "@/components/retro";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
+import { MK } from "@/lib/offline/mutationKeys";
+import { newIdemKey } from "@/lib/offline/idempotency";
+import { generateShortCode } from "@/lib/offline/shortCode";
+import type { LocationCreateVars } from "@/lib/offline/mutationDefaults";
 
 // Phase 10 Plan 03 — the location write surface (TAX-03 create/edit, TAX-04
-// archive + restore). MIRRORS useCategoryMutations for shape; every mutation
-// PREFIX-invalidates ["locations", wsId] (NO exact:true — T-10-03, so the prefix
-// covers the list query + any detail key). Toast copy is the UI-SPEC §Toasts
-// authoritative set.
+// archive + restore). MIRRORS useCategoryMutations for shape; update/archive/
+// restore PREFIX-invalidate ["locations", wsId] (NO exact:true — T-10-03, so
+// the prefix covers the list query + any detail key). Toast copy is the
+// UI-SPEC §Toasts authoritative set.
+//
+// create (Phase 3b offline rewrite): MIRRORS useItemFormMutations.ts /
+// useContainerMutations.ts exactly — mutationFn lives in the
+// centrally-registered default (mutationDefaults.ts) so a paused offline
+// create survives a page reload; the hook only supplies mutationKey +
+// optimistic onMutate/onError/onSuccess. Callers keep calling
+// `createLocation(body)` (wraps `create.mutateAsync` with the
+// wsId/idemKey/short_code variables); `create` itself is exposed for
+// isPending/isError. create's invalidate lives in mutationDefaults.ts
+// onSettled.
 //
 // ⚠ ARCHIVE-ONLY (TAX-04 / OQ6 / T-10-07): there is deliberately NO `del`
 // exposed. Location hard-delete is dangerous (CASCADE/RESTRICT on inventory &
@@ -41,15 +57,74 @@ export function useLocationMutations() {
   const invalidate = () =>
     qc.invalidateQueries({ queryKey: ["locations", wsId as string] });
 
-  const create = useMutation({
-    mutationFn: (b: CreateLocationBody) =>
-      locationApi.create(wsId as string, b),
-    onSuccess: (loc) => {
-      invalidate();
-      retroToast.success(t`${loc.name} created.`);
+  // Snapshot every ["locations", wsId] cache entry so onError can restore it
+  // (mirrors useItemFormMutations.ts / useContainerMutations.ts create's
+  // onMutate/onError pattern).
+  interface CreateContext {
+    snapshots: [QueryKey, unknown][];
+  }
+
+  const create = useMutation<
+    Location,
+    Error,
+    LocationCreateVars,
+    CreateContext
+  >({
+    mutationKey: MK.locationCreate,
+    // No mutationFn here — resolved from the mutationDefaults.ts registration
+    // so a resumed-after-reload replay still has a request to run.
+    onMutate: async (vars) => {
+      const prefix: QueryKey = ["locations", vars.wsId];
+      await qc.cancelQueries({ queryKey: prefix });
+      const snapshots = qc.getQueriesData({ queryKey: prefix });
+      const now = new Date().toISOString();
+      const tempLocation: Location = {
+        id: crypto.randomUUID(),
+        workspace_id: vars.wsId,
+        name: vars.body.name,
+        parent_location: vars.body.parent_location,
+        description: vars.body.description,
+        short_code: vars.body.short_code,
+        is_archived: false,
+        created_at: now,
+        updated_at: now,
+      };
+      // The locations list cache is a PLAIN Location[] (useTaxonomyListQuery
+      // unwraps the paginated envelope in the queryFn), unlike items'
+      // {items,total} envelope — patch the array directly.
+      // ponytail: patches every cached ["locations", wsId, ...] entry
+      // regardless of its own filter — acceptable for v1, the reconnect
+      // invalidate (mutationDefaults onSettled) replaces it with the real set.
+      qc.setQueriesData<Location[]>({ queryKey: prefix }, (old) => {
+        if (!Array.isArray(old)) return old;
+        return [tempLocation, ...old];
+      });
+      return { snapshots };
     },
-    onError: () => retroToast.error(t`Couldn't save this location.`),
+    onError: (_err, _vars, ctx) => {
+      ctx?.snapshots.forEach(([key, data]) => {
+        qc.setQueryData(key, data);
+      });
+      retroToast.error(t`Couldn't save this location.`);
+    },
+    // onSettled (the real invalidate) lives in mutationDefaults.ts so a
+    // resumed replay (no hook mounted) still refetches. This onSuccess is
+    // cosmetic-only.
+    onSuccess: (loc) => retroToast.success(t`${loc.name} created.`),
   });
+
+  // Wraps `create.mutateAsync` so callers keep passing a bare
+  // CreateLocationBody — wsId, the idempotency key, and the short_code
+  // (final at creation, printed on the label — never remapped) are minted
+  // here. A short_code already set by the caller (form pre-fill / scanned QR
+  // label) wins; only a missing one is generated.
+  function createLocation(body: CreateLocationBody): Promise<Location> {
+    return create.mutateAsync({
+      wsId: wsId as string,
+      idemKey: newIdemKey(),
+      body: { ...body, short_code: body.short_code ?? generateShortCode() },
+    });
+  }
 
   const update = useMutation({
     mutationFn: (a: UpdateLocationArg) =>
@@ -82,5 +157,5 @@ export function useLocationMutations() {
   });
 
   // NOTE: NO `del` (TAX-04 archive-only; location hard-delete is dangerous).
-  return { create, update, archive, restore };
+  return { create, createLocation, update, archive, restore };
 }

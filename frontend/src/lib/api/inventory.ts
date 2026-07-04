@@ -59,8 +59,15 @@ export const inventoryApi = {
     );
   },
 
-  create(wsId: string, data: Record<string, unknown>): Promise<Inventory> {
-    return post<Inventory>(`/workspaces/${wsId}/inventory`, data);
+  // headers: optional 3rd arg so an offline-queued create can carry the
+  // Idempotency-Key header (C-create mutationDefaults.ts) — same shape as
+  // itemsApi.create.
+  create(
+    wsId: string,
+    data: Record<string, unknown>,
+    headers?: Record<string, string>,
+  ): Promise<Inventory> {
+    return post<Inventory>(`/workspaces/${wsId}/inventory`, data, headers);
   },
 
   // Full PATCH. Condition rides here; status does NOT (Pitfall 6 — status is

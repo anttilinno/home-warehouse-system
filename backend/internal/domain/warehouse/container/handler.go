@@ -97,12 +97,13 @@ func createContainer(svc ServiceInterface, broadcaster *events.Broadcaster) func
 		}
 
 		container, err := svc.Create(ctx, CreateInput{
-			WorkspaceID: workspaceID,
-			LocationID:  input.Body.LocationID,
-			Name:        input.Body.Name,
-			Description: input.Body.Description,
-			Capacity:    input.Body.Capacity,
-			ShortCode:   shortCode,
+			WorkspaceID:    workspaceID,
+			LocationID:     input.Body.LocationID,
+			Name:           input.Body.Name,
+			Description:    input.Body.Description,
+			Capacity:       input.Body.Capacity,
+			ShortCode:      shortCode,
+			IdempotencyKey: input.IdempotencyKey,
 		})
 		if err != nil {
 			if errors.Is(err, ErrShortCodeTaken) {
@@ -337,7 +338,11 @@ type GetContainerOutput struct {
 }
 
 type CreateContainerInput struct {
-	Body struct {
+	// IdempotencyKey lets a replayed create (offline-queued PWA write whose
+	// original response was lost) return the ORIGINAL container instead of a
+	// duplicate. Optional — a request without it always creates.
+	IdempotencyKey string `header:"Idempotency-Key" doc:"Client-generated key; a repeated create with the same key returns the original entity instead of creating a duplicate"`
+	Body           struct {
 		Name        string    `json:"name" minLength:"1" maxLength:"255" doc:"Container name"`
 		LocationID  uuid.UUID `json:"location_id" doc:"Location ID where the container is stored"`
 		Description *string   `json:"description,omitempty" doc:"Container description"`

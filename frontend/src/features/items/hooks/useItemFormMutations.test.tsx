@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@/lib/i18n";
 import { server } from "@/test/msw/server";
+import { registerMutationDefaults } from "@/lib/offline/mutationDefaults";
 import { itemFormSchema, type ItemFormValues } from "../schema";
 import {
   useItemFormMutations,
@@ -31,6 +32,10 @@ function makeHarness() {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
+  // create's mutationFn now lives in the centrally-registered default
+  // (mutationDefaults.ts) rather than inline — register it on this harness's
+  // own client, mirroring the boot-time call in App.tsx.
+  registerMutationDefaults(client);
   const wrapper = ({ children }: { children: ReactNode }) => (
     <I18nProvider i18n={i18n}>
       <QueryClientProvider client={client}>{children}</QueryClientProvider>
@@ -156,11 +161,13 @@ describe("useItemFormMutations", () => {
     );
     const { result } = renderHook(() => useItemFormMutations(), { wrapper });
     await act(async () => {
-      await result.current.create.mutateAsync(
-        resolve({ sku: "SKU-9", name: "Drill" }),
-      );
+      await result.current.createItem(resolve({ sku: "SKU-9", name: "Drill" }));
     });
+    // Also carries a client-generated short_code (Phase 3 — offline label).
     expect(sentBody).toMatchObject({ sku: "SKU-9", name: "Drill" });
+    expect((sentBody as { short_code: string }).short_code).toMatch(
+      /^[A-Za-z0-9]{8}$/,
+    );
   });
 
   it("create invalidates the ['items', wsId] prefix", async () => {
@@ -170,7 +177,7 @@ describe("useItemFormMutations", () => {
 
     const { result } = renderHook(() => useItemFormMutations(), { wrapper });
     await act(async () => {
-      await result.current.create.mutateAsync(resolve({ name: "Drill" }));
+      await result.current.createItem(resolve({ name: "Drill" }));
     });
 
     expect(spy).toHaveBeenCalledWith({ queryKey: ["items", "ws-A"] });
@@ -231,8 +238,8 @@ describe("useItemFormMutations", () => {
     );
     const { result } = renderHook(() => useItemFormMutations(), { wrapper });
     await act(async () => {
-      await result.current.create
-        .mutateAsync(resolve({ name: "Drill" }))
+      await result.current
+        .createItem(resolve({ name: "Drill" }))
         .catch(() => undefined);
     });
     expect(result.current.create.isError).toBe(true);

@@ -229,7 +229,8 @@ export function InventoryListPage() {
             onMove,
             onArchive: archiveEntry,
             onRestore: restoreEntry,
-            onSetQuantity: (id, quantity) => setQuantity({ id, quantity }),
+            onSetQuantity: (id, quantity) =>
+              setQuantity({ wsId: wsId as string, id, quantity }),
             onSetStatus: (id, status) => setStatus({ id, status }),
             onSetCondition: (e, condition) =>
               setCondition({

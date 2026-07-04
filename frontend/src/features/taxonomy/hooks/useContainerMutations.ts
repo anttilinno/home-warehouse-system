@@ -1,13 +1,19 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { QueryKey } from "@tanstack/react-query";
 import { useLingui } from "@lingui/react/macro";
 import {
   containerApi,
+  type Container,
   type CreateContainerBody,
   type UpdateContainerBody,
 } from "@/lib/api/container";
 import { HttpError } from "@/lib/api";
 import { retroToast } from "@/components/retro";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
+import { MK } from "@/lib/offline/mutationKeys";
+import { newIdemKey } from "@/lib/offline/idempotency";
+import { generateShortCode } from "@/lib/offline/shortCode";
+import type { ContainerCreateVars } from "@/lib/offline/mutationDefaults";
 
 // Phase 10 Plan 03 — the container write surface (TAX-05 create/edit, TAX-06
 // DELETE). MIRRORS useCategoryMutations for shape, with two container-specific
@@ -23,8 +29,16 @@ import { useWorkspace } from "@/features/workspace/useWorkspace";
 //  3. del.onError maps a 409 → a conflict toast (defensive backstop; the current
 //     service cascades and can't 409, but the UI is correct if that ever changes).
 //
-// create/update PREFIX-invalidate ["containers", wsId] only. Toast copy is the
-// UI-SPEC §Toasts authoritative set. Consumers destructure the stable `.mutate`.
+// create (Phase 3b offline rewrite): MIRRORS useItemFormMutations.ts exactly —
+// mutationFn lives in the centrally-registered default (mutationDefaults.ts) so
+// a paused offline create survives a page reload; the hook only supplies
+// mutationKey + optimistic onMutate/onError/onSuccess. Callers keep calling
+// `createContainer(body)` (wraps `create.mutateAsync` with the
+// wsId/idemKey/short_code variables); `create` itself is exposed for
+// isPending/isError. update/del PREFIX-invalidate ["containers", wsId] only
+// (create's invalidate lives in mutationDefaults.ts onSettled). Toast copy is
+// the UI-SPEC §Toasts authoritative set. Consumers destructure the stable
+// `.mutate`.
 
 export interface UpdateContainerArg {
   id: string;
@@ -49,15 +63,74 @@ export function useContainerMutations() {
   const invalidateInventory = () =>
     qc.invalidateQueries({ queryKey: ["inventory", wsId as string] });
 
-  const create = useMutation({
-    mutationFn: (b: CreateContainerBody) =>
-      containerApi.create(wsId as string, b),
-    onSuccess: (c) => {
-      invalidateContainers();
-      retroToast.success(t`${c.name} created.`);
+  // Snapshot every ["containers", wsId] cache entry so onError can restore it
+  // (mirrors useItemFormMutations.ts create's onMutate/onError pattern).
+  interface CreateContext {
+    snapshots: [QueryKey, unknown][];
+  }
+
+  const create = useMutation<
+    Container,
+    Error,
+    ContainerCreateVars,
+    CreateContext
+  >({
+    mutationKey: MK.containerCreate,
+    // No mutationFn here — resolved from the mutationDefaults.ts registration
+    // so a resumed-after-reload replay still has a request to run.
+    onMutate: async (vars) => {
+      const prefix: QueryKey = ["containers", vars.wsId];
+      await qc.cancelQueries({ queryKey: prefix });
+      const snapshots = qc.getQueriesData({ queryKey: prefix });
+      const now = new Date().toISOString();
+      const tempContainer: Container = {
+        id: crypto.randomUUID(),
+        workspace_id: vars.wsId,
+        name: vars.body.name,
+        location_id: vars.body.location_id,
+        description: vars.body.description,
+        capacity: vars.body.capacity,
+        short_code: vars.body.short_code,
+        is_archived: false,
+        created_at: now,
+        updated_at: now,
+      };
+      // The containers list cache is a PLAIN Container[] (useTaxonomyListQuery
+      // unwraps the paginated envelope in the queryFn), unlike items'
+      // {items,total} envelope — patch the array directly.
+      // ponytail: patches every cached ["containers", wsId, ...] entry
+      // regardless of its own filter — acceptable for v1, the reconnect
+      // invalidate (mutationDefaults onSettled) replaces it with the real set.
+      qc.setQueriesData<Container[]>({ queryKey: prefix }, (old) => {
+        if (!Array.isArray(old)) return old;
+        return [tempContainer, ...old];
+      });
+      return { snapshots };
     },
-    onError: () => retroToast.error(t`Couldn't save this container.`),
+    onError: (_err, _vars, ctx) => {
+      ctx?.snapshots.forEach(([key, data]) => {
+        qc.setQueryData(key, data);
+      });
+      retroToast.error(t`Couldn't save this container.`);
+    },
+    // onSettled (the real invalidate) lives in mutationDefaults.ts so a
+    // resumed replay (no hook mounted) still refetches. This onSuccess is
+    // cosmetic-only.
+    onSuccess: (c) => retroToast.success(t`${c.name} created.`),
   });
+
+  // Wraps `create.mutateAsync` so callers keep passing a bare
+  // CreateContainerBody — wsId, the idempotency key, and the short_code
+  // (final at creation, printed on the label — never remapped) are minted
+  // here. A short_code already set by the caller (form pre-fill / scanned QR
+  // label) wins; only a missing one is generated.
+  function createContainer(body: CreateContainerBody): Promise<Container> {
+    return create.mutateAsync({
+      wsId: wsId as string,
+      idemKey: newIdemKey(),
+      body: { ...body, short_code: body.short_code ?? generateShortCode() },
+    });
+  }
 
   const update = useMutation({
     mutationFn: (a: UpdateContainerArg) =>
@@ -92,5 +165,5 @@ export function useContainerMutations() {
     },
   });
 
-  return { create, update, del };
+  return { create, createContainer, update, del };
 }

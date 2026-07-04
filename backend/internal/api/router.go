@@ -197,6 +197,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	categoryRepo := postgres.NewCategoryRepository(pool)
 	locationRepo := postgres.NewLocationRepository(pool)
 	containerRepo := postgres.NewContainerRepository(pool)
+	idempotencyRepo := postgres.NewIdempotencyRepository(pool)
 	// Phase 2 repositories
 	companyRepo := postgres.NewCompanyRepository(pool)
 	labelRepo := postgres.NewLabelRepository(pool)
@@ -261,6 +262,14 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	// Phase 3 services
 	itemSvc := item.NewService(itemRepo, categoryRepo)
 
+	// Offline-first PWA: dedup replayed CREATE requests (Idempotency-Key
+	// header) so a lost-response retry returns the original entity instead
+	// of a duplicate. item/container/location CREATE only (see
+	// internal/domain/warehouse/idempotency).
+	locationSvc.SetIdempotencyStore(idempotencyRepo)
+	containerSvc.SetIdempotencyStore(idempotencyRepo)
+	itemSvc.SetIdempotencyStore(idempotencyRepo)
+
 	// Initialize storage and image processor for item photos
 	uploadDir := getUploadDir()
 	photoStorageDir := getPhotoStorageDir()
@@ -276,6 +285,11 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	// Phase 5 services (movement service created before inventory to allow dependency)
 	movementSvc := movement.NewService(movementRepo)
 	inventorySvc := inventory.NewService(inventoryRepo, movementSvc, itemRepo, locationRepo, containerRepo)
+	// Offline-first PWA C-create: inventory (stock) CREATE also dedupes on the
+	// Idempotency-Key so a replayed offline create returns the original entry
+	// (see idempotency package; wired here because inventorySvc is constructed
+	// after the item/container/location block above).
+	inventorySvc.SetIdempotencyStore(idempotencyRepo)
 	// Phase 4 services
 	borrowerSvc := borrower.NewService(borrowerRepo)
 	loanSvc := loan.NewService(loanRepo, inventoryRepo, txManager)

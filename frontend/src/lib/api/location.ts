@@ -58,8 +58,13 @@ export const locationApi = {
     ).then((r) => r.items),
   get: (ws: string, id: string) =>
     get<Location>(`/workspaces/${ws}/locations/${id}`),
-  create: (ws: string, body: CreateLocationBody) =>
-    post<Location>(`/workspaces/${ws}/locations`, body),
+  // headers: optional 3rd arg so offline-queued creates can carry the
+  // Idempotency-Key header (Phase 3b mutationDefaults.ts).
+  create: (
+    ws: string,
+    body: CreateLocationBody,
+    headers?: Record<string, string>,
+  ) => post<Location>(`/workspaces/${ws}/locations`, body, headers),
   update: (ws: string, id: string, body: UpdateLocationBody) =>
     patch<Location>(`/workspaces/${ws}/locations/${id}`, body),
   archive: (ws: string, id: string) =>

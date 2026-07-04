@@ -1,11 +1,16 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { renderHook, act } from "@testing-library/react";
+import { renderHook, act, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { http, HttpResponse } from "msw";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  onlineManager,
+} from "@tanstack/react-query";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@/lib/i18n";
 import { server } from "@/test/msw/server";
+import { registerMutationDefaults } from "@/lib/offline/mutationDefaults";
 import { inventoryFormSchema, type InventoryFormValues } from "../schema";
 import {
   useInventoryFormMutations,
@@ -32,6 +37,9 @@ function makeHarness() {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
+  // create's mutationFn now lives in the registered default (C-create offline
+  // replay), so the harness must register it.
+  registerMutationDefaults(client);
   const wrapper = ({ children }: { children: ReactNode }) => (
     <I18nProvider i18n={i18n}>
       <QueryClientProvider client={client}>{children}</QueryClientProvider>
@@ -56,6 +64,7 @@ function resolve(raw: Record<string, unknown> = {}): InventoryFormValues {
 afterEach(() => {
   server.resetHandlers();
   vi.clearAllMocks();
+  onlineManager.setOnline(true); // a failed offline test must not leak state
 });
 
 beforeAll(() => {
@@ -162,7 +171,7 @@ describe("useInventoryFormMutations", () => {
       wrapper,
     });
     await act(async () => {
-      await result.current.create.mutateAsync(
+      await result.current.createEntry(
         resolve({ date_acquired: "2026-01-15" }),
       );
     });
@@ -212,8 +221,37 @@ describe("useInventoryFormMutations", () => {
       wrapper,
     });
     await act(async () => {
-      await result.current.create.mutateAsync(resolve()).catch(() => undefined);
+      await result.current.createEntry(resolve()).catch(() => undefined);
     });
     expect(result.current.create.isError).toBe(true);
+  });
+
+  it("offline: pauses the create, optimistically inserts the row, drains on reconnect (C-create)", async () => {
+    setWsId("ws-A");
+    const { client, wrapper } = makeHarness();
+    const listKey = ["inventory", "ws-A", { page: 1, limit: 25 }];
+    client.setQueryData(listKey, { items: [], total: 0, page: 1 });
+    server.use(
+      http.post("/api/workspaces/:wsId/inventory", () =>
+        HttpResponse.json({ id: "inv-1" }),
+      ),
+    );
+    const { result } = renderHook(() => useInventoryFormMutations(), {
+      wrapper,
+    });
+
+    onlineManager.setOnline(false);
+    act(() => {
+      void result.current.createEntry(resolve());
+    });
+    await waitFor(() => expect(result.current.create.isPaused).toBe(true));
+    // Optimistic temp row visible offline.
+    const cached = client.getQueryData<{ items: unknown[] }>(listKey);
+    expect(cached?.items).toHaveLength(1);
+
+    onlineManager.setOnline(true);
+    await client.resumePausedMutations();
+    await waitFor(() => expect(result.current.create.isSuccess).toBe(true));
+    onlineManager.setOnline(true);
   });
 });

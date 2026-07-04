@@ -82,8 +82,7 @@ export function ContainerFormDialog({
     [locationRows],
   );
 
-  const { create, update } = useContainerMutations();
-  const createContainer = create.mutateAsync;
+  const { createContainer, update } = useContainerMutations();
   const updateContainer = update.mutateAsync;
 
   const {

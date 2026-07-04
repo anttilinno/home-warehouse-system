@@ -758,6 +758,8 @@ type AuthUser struct {
 	NotificationPreferences []byte             `json:"notification_preferences"`
 	CreatedAt               pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt               pgtype.Timestamptz `json:"updated_at"`
+	// When true, list views (items, inventory) include archived rows. Defaults to false.
+	ShowArchived bool `json:"show_archived"`
 }
 
 // External OAuth provider accounts linked to local users for SSO.
@@ -972,6 +974,16 @@ type WarehouseFile struct {
 	UploadedBy pgtype.UUID        `json:"uploaded_by"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
+}
+
+// Dedup store for offline-queued CREATE requests: (workspace_id, idempotency_key) -> the entity a prior create already produced. A replayed create with the same key returns that entity instead of creating a duplicate.
+type WarehouseIdempotencyKey struct {
+	WorkspaceID    uuid.UUID `json:"workspace_id"`
+	IdempotencyKey string    `json:"idempotency_key"`
+	// Owning entity table: ITEM, LOCATION, or CONTAINER (reuses favorite_type_enum).
+	EntityType WarehouseFavoriteTypeEnum `json:"entity_type"`
+	EntityID   uuid.UUID                 `json:"entity_id"`
+	CreatedAt  time.Time                 `json:"created_at"`
 }
 
 type WarehouseImportError struct {

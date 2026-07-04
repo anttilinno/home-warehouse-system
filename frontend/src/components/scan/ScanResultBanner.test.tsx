@@ -82,6 +82,20 @@ describe("ScanResultBanner", () => {
     expect(onRetry).toHaveBeenCalledOnce();
   });
 
+  it("OFFLINE renders the word, an offline sentence and the SAME add-anyway ITEM + CONTAINER links as NOT-FOUND", () => {
+    renderBanner(<ScanResultBanner status="offline" code="abc123" />);
+    expect(screen.getByText("OFFLINE")).toBeInTheDocument();
+    expect(screen.getByText(/Can't verify offline/)).toBeInTheDocument();
+
+    const itemLink = screen.getByRole("link", { name: /ITEM/ });
+    expect(itemLink).toHaveAttribute("href", "/items/new?barcode=abc123");
+    const containerLink = screen.getByRole("link", { name: /CONTAINER/ });
+    expect(containerLink).toHaveAttribute(
+      "href",
+      "/taxonomy?tab=containers&new_code=abc123",
+    );
+  });
+
   it("non-loading states render no blinking cursor", () => {
     renderBanner(
       <ScanResultBanner status="match" code="0123456789012" item={item} />,

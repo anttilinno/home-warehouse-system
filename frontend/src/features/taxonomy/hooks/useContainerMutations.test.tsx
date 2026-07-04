@@ -6,8 +6,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@/lib/i18n";
 import { server } from "@/test/msw/server";
-import { containerApi } from "@/lib/api/container";
+import { containerApi, type Container } from "@/lib/api/container";
 import { retroToast } from "@/components/retro";
+import { registerMutationDefaults } from "@/lib/offline/mutationDefaults";
 import { useContainerMutations } from "./useContainerMutations";
 
 const useWorkspaceMock = vi.fn();
@@ -28,6 +29,10 @@ function makeHarness() {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
+  // create's mutationFn now lives in the centrally-registered default
+  // (mutationDefaults.ts) rather than inline — register it on this harness's
+  // own client, mirroring the boot-time call in App.tsx.
+  registerMutationDefaults(client);
   const wrapper = ({ children }: { children: ReactNode }) => (
     <I18nProvider i18n={i18n}>
       <QueryClientProvider client={client}>{children}</QueryClientProvider>
@@ -54,7 +59,7 @@ describe("useContainerMutations", () => {
 
     const { result } = renderHook(() => useContainerMutations(), { wrapper });
     await act(async () => {
-      await result.current.create.mutateAsync({
+      await result.current.createContainer({
         name: "Crate",
         location_id: "loc-1",
       });
@@ -62,6 +67,90 @@ describe("useContainerMutations", () => {
 
     await waitFor(() => expect(result.current.create.isSuccess).toBe(true));
     expect(spy).toHaveBeenCalledWith({ queryKey: ["containers", "ws-1"] });
+  });
+
+  it("create POSTs a body that carries a client-generated short_code when none supplied", async () => {
+    setWsId("ws-1");
+    const { wrapper } = makeHarness();
+    let sentBody: unknown;
+    server.use(
+      http.post("/api/workspaces/:wsId/containers", async ({ request }) => {
+        sentBody = await request.json();
+        return HttpResponse.json({
+          id: "cont-9",
+          workspace_id: "ws-1",
+          name: "Crate",
+          location_id: "loc-1",
+          short_code: "abcdefgh",
+          is_archived: false,
+          created_at: "2026-06-13T00:00:00Z",
+          updated_at: "2026-06-13T00:00:00Z",
+        });
+      }),
+    );
+
+    const { result } = renderHook(() => useContainerMutations(), { wrapper });
+    await act(async () => {
+      await result.current.createContainer({
+        name: "Crate",
+        location_id: "loc-1",
+      });
+    });
+
+    expect(sentBody).toMatchObject({ name: "Crate", location_id: "loc-1" });
+    expect((sentBody as { short_code: string }).short_code).toMatch(
+      /^[A-Za-z0-9]{8}$/,
+    );
+  });
+
+  it("create keeps a caller-supplied short_code (scanned QR label) instead of overwriting it", async () => {
+    setWsId("ws-1");
+    const { wrapper } = makeHarness();
+    let sentBody: unknown;
+    server.use(
+      http.post("/api/workspaces/:wsId/containers", async ({ request }) => {
+        sentBody = await request.json();
+        return HttpResponse.json({
+          id: "cont-9",
+          workspace_id: "ws-1",
+          name: "Crate",
+          location_id: "loc-1",
+          short_code: "qr123456",
+          is_archived: false,
+          created_at: "2026-06-13T00:00:00Z",
+          updated_at: "2026-06-13T00:00:00Z",
+        });
+      }),
+    );
+
+    const { result } = renderHook(() => useContainerMutations(), { wrapper });
+    await act(async () => {
+      await result.current.createContainer({
+        name: "Crate",
+        location_id: "loc-1",
+        short_code: "qr123456",
+      });
+    });
+
+    expect((sentBody as { short_code: string }).short_code).toBe("qr123456");
+  });
+
+  it("create's onMutate optimistically inserts a temp row into the ['containers', wsId] cache", async () => {
+    setWsId("ws-1");
+    const { client, wrapper } = makeHarness();
+    client.setQueryData<Container[]>(["containers", "ws-1"], []);
+
+    const { result } = renderHook(() => useContainerMutations(), { wrapper });
+    act(() => {
+      result.current.createContainer({ name: "Crate", location_id: "loc-1" });
+    });
+
+    // Optimistic insert is synchronous in onMutate.
+    await waitFor(() => {
+      const cached = client.getQueryData<Container[]>(["containers", "ws-1"]);
+      expect(cached?.some((c) => c.name === "Crate")).toBe(true);
+    });
+    await waitFor(() => expect(result.current.create.isSuccess).toBe(true));
   });
 
   it("update PREFIX-invalidates ['containers', wsId]", async () => {

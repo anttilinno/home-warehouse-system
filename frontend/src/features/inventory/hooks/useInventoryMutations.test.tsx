@@ -5,7 +5,9 @@ import { http, HttpResponse } from "msw";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@/lib/i18n";
+import { onlineManager } from "@tanstack/react-query";
 import { server } from "@/test/msw/server";
+import { registerMutationDefaults } from "@/lib/offline/mutationDefaults";
 import type { Inventory } from "@/lib/types";
 import { useInventoryMutations } from "./useInventoryMutations";
 
@@ -46,6 +48,9 @@ function makeHarness(seed: Inventory[]) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
+  // updateQuantity's mutationFn now lives in the registered default
+  // (C-quantity offline replay), so the harness must register it.
+  registerMutationDefaults(client);
   client.setQueryData(LIST_KEY, {
     items: seed,
     total: seed.length,
@@ -68,6 +73,7 @@ function cachedQty(client: QueryClient, id: string): number | undefined {
 afterEach(() => {
   server.resetHandlers();
   vi.clearAllMocks();
+  onlineManager.setOnline(true); // a failed offline test must not leak state
 });
 
 describe("useInventoryMutations", () => {
@@ -92,6 +98,7 @@ describe("useInventoryMutations", () => {
 
     await act(async () => {
       await result.current.updateQuantity.mutateAsync({
+        wsId: "ws-A",
         id: "inv-1",
         quantity: 7,
       });
@@ -118,7 +125,7 @@ describe("useInventoryMutations", () => {
 
     await act(async () => {
       await result.current.updateQuantity
-        .mutateAsync({ id: "inv-1", quantity: 99 })
+        .mutateAsync({ wsId: "ws-A", id: "inv-1", quantity: 99 })
         .catch(() => undefined);
     });
 
@@ -127,6 +134,43 @@ describe("useInventoryMutations", () => {
     );
     // Cache restored to the snapshot value — no client-trusted state survives.
     expect(cachedQty(client, "inv-1")).toBe(3);
+  });
+
+  it("offline: pauses the recount, holds the optimistic quantity, drains on reconnect (C-quantity)", async () => {
+    setWsId("ws-A");
+    const { client, wrapper } = makeHarness([
+      makeEntry("inv-1", { quantity: 3 }),
+    ]);
+    server.use(
+      http.patch("/api/workspaces/:wsId/inventory/:id/quantity", () =>
+        HttpResponse.json(makeEntry("inv-1", { quantity: 7 })),
+      ),
+    );
+
+    const { result } = renderHook(() => useInventoryMutations(), { wrapper });
+
+    // Go offline: the mutation pauses (networkMode:"online") but the optimistic
+    // patch is applied synchronously and persists while paused.
+    onlineManager.setOnline(false);
+    act(() => {
+      result.current.updateQuantity.mutate({
+        wsId: "ws-A",
+        id: "inv-1",
+        quantity: 7,
+      });
+    });
+    await waitFor(() =>
+      expect(result.current.updateQuantity.isPaused).toBe(true),
+    );
+    expect(cachedQty(client, "inv-1")).toBe(7); // optimistic value visible offline
+
+    // Reconnect → the paused mutation drains against the registered default.
+    onlineManager.setOnline(true);
+    await client.resumePausedMutations();
+    await waitFor(() =>
+      expect(result.current.updateQuantity.isSuccess).toBe(true),
+    );
+    onlineManager.setOnline(true); // restore default for later tests
   });
 
   it("updateCondition sends the full PATCH with location_id + quantity bundled", async () => {
