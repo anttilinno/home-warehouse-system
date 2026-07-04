@@ -37,8 +37,14 @@ export function useLogout(): () => Promise<void> {
       queryClient.clear();
       // Also wipe the persisted IndexedDB cache — queryClient.clear() only
       // clears in-memory state, so without this the next user on the device
-      // would still see the prior user's data restored from disk.
+      // would still see the prior user's data restored from disk. Same
+      // reasoning for the SW's thumbnail cache: it's auth-cookie-gated at
+      // fetch time but served without auth afterwards, so it must not survive
+      // to the next device user either.
       await purgePersistedCache();
+      if (typeof caches !== "undefined") {
+        await caches.delete("hws-thumbs").catch(() => {});
+      }
       navigate("/login", { replace: true });
     }
   }, [navigate, queryClient]);

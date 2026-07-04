@@ -107,13 +107,14 @@ function setTorch(supported = false, enabled = false, toggle = vi.fn()) {
   useTorchMock.mockReturnValue({ supported, enabled, toggle });
 }
 
-async function renderScan() {
+async function renderScan(configureClient?: (client: QueryClient) => void) {
   setWsId(WS);
   setTorch(false);
   const { ScanPage } = await import("./ScanPage");
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
+  configureClient?.(client);
   return render(
     <I18nProvider i18n={i18n}>
       <QueryClientProvider client={client}>
@@ -250,6 +251,30 @@ describe("ScanPage — persistent scanner + single funnel", () => {
       "href",
       "/taxonomy?tab=containers&new_code=NEW-CODE-1",
     );
+  });
+
+  it("offline (Phase B): a code sitting in a persisted items cache resolves MATCH locally (not the OFFLINE banner)", async () => {
+    // No lookup handler installed — offline networkMode:"online" never calls
+    // the queryFn, so a MATCH here can only come from the local cache scan.
+    const cachedItem = makeItem({
+      name: "Cordless Drill",
+      short_code: "CACHED-1",
+    });
+    await renderScan((client) => {
+      client.setQueryData(["items", WS, {}], {
+        items: [cachedItem],
+        total: 1,
+        page: 1,
+        total_pages: 1,
+      });
+    });
+    onlineManager.setOnline(false);
+
+    triggerDecode("CACHED-1", "ean_13");
+
+    expect(await screen.findByText(/^match$/i)).toBeInTheDocument();
+    expect(screen.getByText("Cordless Drill")).toBeInTheDocument();
+    expect(screen.queryByText(/Can't verify offline/i)).not.toBeInTheDocument();
   });
 
   it("torch toggle renders only when useTorch.supported", async () => {

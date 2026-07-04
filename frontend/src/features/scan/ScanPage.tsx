@@ -18,6 +18,7 @@ import { useScanFeedback } from "./useScanFeedback";
 import { useTorch } from "./useTorch";
 import { useScanHistory } from "./useScanHistory";
 import { useIsOnline } from "@/lib/offline/useIsOnline";
+import { useOfflineBarcodeHit } from "@/lib/offline/localBarcodeLookup";
 
 // Phase 11 Plan 06 — the /scan route orchestration (RESEARCH Pattern 2 / binding
 // override 1). THE non-negotiable architecture decision lives here:
@@ -130,12 +131,14 @@ export function ScanPage() {
   // ── Derived banner status (offline-aware, Phase 4). The banner only renders
   // once a code is in flight.
   const isOnline = useIsOnline();
-  const status = bannerStatus(
-    lookup.status,
-    lookup.data,
-    isOnline,
-    lookup.fetchStatus,
-  );
+  // Phase B: a code already sitting in a persisted items-list cache resolves
+  // locally while offline (no network round trip needed) — checked only when
+  // offline so an online lookup always takes precedence.
+  const offlineHit = useOfflineBarcodeHit(isOnline, banner?.code);
+  const effectiveItem = lookup.data ?? offlineHit;
+  const status = offlineHit
+    ? "match"
+    : bannerStatus(lookup.status, lookup.data, isOnline, lookup.fetchStatus);
   const showBanner = banner !== null;
 
   // Opening the quick-action menu (MATCH only). Closing it = Back to Scan.
@@ -244,7 +247,7 @@ export function ScanPage() {
               <ScanResultBanner
                 status={status}
                 code={banner.code}
-                item={lookup.data}
+                item={effectiveItem}
                 onOpenActions={openActions}
                 onRetry={retry}
               />
@@ -260,8 +263,8 @@ export function ScanPage() {
       </Window>
 
       {/* Quick-action overlay (RetroDialog) — MATCH only, camera stays mounted. */}
-      {status === "match" && actionsOpen && lookup.data && (
-        <QuickActionMenu item={lookup.data} onClose={closeActions} />
+      {status === "match" && actionsOpen && effectiveItem && (
+        <QuickActionMenu item={effectiveItem} onClose={closeActions} />
       )}
     </div>
   );

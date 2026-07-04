@@ -4,6 +4,8 @@ import { useLingui } from "@lingui/react/macro";
 import { inventoryApi } from "@/lib/api/inventory";
 import { retroToast } from "@/components/retro";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
+import { MK } from "@/lib/offline/mutationKeys";
+import type { InventoryQuantityVars } from "@/lib/offline/mutationDefaults";
 import type { Condition, Inventory, InventoryStatus } from "@/lib/types";
 
 // Phase 7b Plan 02 — the inventory write surface for the list page's inline
@@ -27,10 +29,9 @@ interface OptimisticContext {
 /** A single inventory-list cache shape — only `items` is patched. */
 type InventoryListLike = { items: Inventory[] } & Record<string, unknown>;
 
-export interface UpdateQuantityArg {
-  id: string;
-  quantity: number;
-}
+// wsId travels in the arg (not just the hook closure) so an offline-queued
+// recount can replay after a reload with no hook mounted (C-quantity).
+export type UpdateQuantityArg = InventoryQuantityVars;
 export interface UpdateStatusArg {
   id: string;
   status: InventoryStatus;
@@ -84,20 +85,22 @@ export function useInventoryMutations() {
     });
   }
 
+  // Offline-capable (C-quantity): mutationFn + onSettled invalidate live in the
+  // registered default (mutationDefaults.ts) so a paused recount survives a
+  // reload and replays with no hook mounted. The hook keeps the optimistic
+  // patch + revert-on-error for the online/hook-mounted path.
   const updateQuantity = useMutation<
     Inventory,
     Error,
     UpdateQuantityArg,
     OptimisticContext
   >({
-    mutationFn: ({ id, quantity }) =>
-      inventoryApi.updateQuantity(wsId as string, id, quantity),
+    mutationKey: MK.inventoryQuantity,
     onMutate: ({ id, quantity }) => optimisticPatch(id, { quantity }),
     onError: (_err, _arg, ctx) => {
       restore(ctx);
       retroToast.error(t`Couldn't update quantity.`);
     },
-    onSettled: invalidate,
   });
 
   const updateStatus = useMutation<
