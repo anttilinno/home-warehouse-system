@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/container"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/idempotency"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/item"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
@@ -40,6 +41,7 @@ type Service struct {
 	itemRepo      item.Repository
 	locationRepo  location.Repository
 	containerRepo container.Repository
+	idemStore     idempotency.Store
 }
 
 func NewService(repo Repository, movementSvc movement.ServiceInterface, itemRepo item.Repository, locationRepo location.Repository, containerRepo container.Repository) *Service {
@@ -50,6 +52,13 @@ func NewService(repo Repository, movementSvc movement.ServiceInterface, itemRepo
 		locationRepo:  locationRepo,
 		containerRepo: containerRepo,
 	}
+}
+
+// SetIdempotencyStore wires the shared idempotency dedup store used by Create.
+// Optional — if not set (e.g. in unit tests), Create skips the idempotency
+// check, same shape as the item/container/location services.
+func (s *Service) SetIdempotencyStore(store idempotency.Store) {
+	s.idemStore = store
 }
 
 type CreateInput struct {
@@ -66,9 +75,18 @@ type CreateInput struct {
 	WarrantyExpires *time.Time
 	ExpirationDate  *time.Time
 	Notes           *string
+	IdempotencyKey  string // Optional - offline-queued creates dedupe on this (see idempotency package)
 }
 
 func (s *Service) Create(ctx context.Context, input CreateInput) (*Inventory, error) {
+	// Replay check: a queued offline create resent on reconnect returns the
+	// original entry instead of a duplicate.
+	if existing, ok, err := s.findByIdempotencyKey(ctx, input.WorkspaceID, input.IdempotencyKey); err != nil {
+		return nil, err
+	} else if ok {
+		return existing, nil
+	}
+
 	// Validate item belongs to the same workspace
 	if _, err := s.itemRepo.FindByID(ctx, input.ItemID, input.WorkspaceID); err != nil {
 		if shared.IsNotFound(err) {
@@ -120,7 +138,46 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*Inventory, er
 		return nil, err
 	}
 
+	if err := s.saveIdempotencyKey(ctx, input.WorkspaceID, input.IdempotencyKey, inv.ID()); err != nil {
+		return nil, err
+	}
+
 	return inv, nil
+}
+
+// findByIdempotencyKey is the replay check at the top of Create: an empty key
+// or no store configured means "proceed with a normal create" (ok=false). A
+// stored key whose entry has since disappeared falls through to a normal
+// create too (ok=false, err=nil) rather than erroring.
+func (s *Service) findByIdempotencyKey(ctx context.Context, workspaceID uuid.UUID, key string) (*Inventory, bool, error) {
+	if key == "" || s.idemStore == nil {
+		return nil, false, nil
+	}
+	entityID, found, err := s.idemStore.FindByIdempotencyKey(ctx, workspaceID, key)
+	if err != nil {
+		return nil, false, err
+	}
+	if !found {
+		return nil, false, nil
+	}
+	existing, err := s.repo.FindByID(ctx, entityID, workspaceID)
+	if err != nil {
+		if shared.IsNotFound(err) {
+			return nil, false, nil
+		}
+		return nil, false, err
+	}
+	return existing, true, nil
+}
+
+// saveIdempotencyKey records the (workspace, key) -> entry mapping right after
+// a successful create so a replay of the same key returns this entry. No-op
+// when idempotency isn't in play for this request.
+func (s *Service) saveIdempotencyKey(ctx context.Context, workspaceID uuid.UUID, key string, entityID uuid.UUID) error {
+	if key == "" || s.idemStore == nil {
+		return nil
+	}
+	return s.idemStore.SaveIdempotencyKey(ctx, workspaceID, key, idempotency.TypeInventory, entityID)
 }
 
 func (s *Service) GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*Inventory, error) {

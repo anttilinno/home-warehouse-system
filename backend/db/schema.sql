@@ -124,7 +124,8 @@ CREATE TYPE warehouse.attachment_type_enum AS ENUM (
 CREATE TYPE warehouse.favorite_type_enum AS ENUM (
     'ITEM',
     'LOCATION',
-    'CONTAINER'
+    'CONTAINER',
+    'INVENTORY'
 );
 
 
@@ -3724,4 +3725,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('005'),
     ('006'),
     ('007'),
-    ('008');
+    ('008'),
+    ('009');

@@ -285,6 +285,11 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	// Phase 5 services (movement service created before inventory to allow dependency)
 	movementSvc := movement.NewService(movementRepo)
 	inventorySvc := inventory.NewService(inventoryRepo, movementSvc, itemRepo, locationRepo, containerRepo)
+	// Offline-first PWA C-create: inventory (stock) CREATE also dedupes on the
+	// Idempotency-Key so a replayed offline create returns the original entry
+	// (see idempotency package; wired here because inventorySvc is constructed
+	// after the item/container/location block above).
+	inventorySvc.SetIdempotencyStore(idempotencyRepo)
 	// Phase 4 services
 	borrowerSvc := borrower.NewService(borrowerRepo)
 	loanSvc := loan.NewService(loanRepo, inventoryRepo, txManager)

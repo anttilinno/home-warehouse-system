@@ -387,3 +387,16 @@ separate replay spec.
   Spec finalized: robust drain assertion (pending badge clears + search-pinned
   single row) instead of the racy sync toast; run-scoped item name so reruns
   don't 409 on the unique SKU. 2/2 stable.
+- 2026-07-04: **C-create SHIPPED.** Backend: migration 009 adds INVENTORY to
+  favorite_type_enum (idempotency_keys.entity_type); inventory service +
+  handler read Idempotency-Key and check-then-store via the shared
+  idempotency.Store (mirrors item/container/location); router injects the store;
+  integration test (real Postgres) covers replay-dedup, no-key = two rows, and
+  cross-workspace isolation. Frontend: inventoryApi.create takes headers;
+  MK.inventoryCreate default (idem key + FIFO scope + replay toast + invalidate);
+  useInventoryFormMutations create is now keyed with an optimistic list insert
+  + a createEntry(values) wrapper. Dependent-write (offline inventory against an
+  offline-CREATED item — a temp item_id) stays DEFERRED. All gates green;
+  offline-replay E2E re-run green after the shared mutationDefaults change.
+  First commit f150dfe9 (A/B/C-quantity/D/E + fixes); C-create is a follow-up
+  commit.

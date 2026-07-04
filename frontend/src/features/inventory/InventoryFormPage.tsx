@@ -110,8 +110,7 @@ export function InventoryFormPage() {
     enabled: isEdit && Boolean(wsId) && Boolean(id),
   });
 
-  const { create, update } = useInventoryFormMutations();
-  const createEntry = create.mutateAsync;
+  const { createEntry, update } = useInventoryFormMutations();
   const updateEntry = update.mutateAsync;
 
   const defaultValues = useMemo<InventoryFormInput>(

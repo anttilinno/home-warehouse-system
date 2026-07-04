@@ -55,6 +55,16 @@ export interface InventoryQuantityVars {
   quantity: number;
 }
 
+// C-create — offline creation of an inventory (stock) entry. Like the three
+// entity creates it carries an Idempotency-Key (POST creates a row, so a lost-
+// response replay must dedupe server-side; backend migration 009 + the
+// inventory service check-then-store).
+export interface InventoryCreateVars {
+  wsId: string;
+  idemKey: string;
+  body: Record<string, unknown>;
+}
+
 // `client` defaults to the app singleton; tests pass their own QueryClient
 // instance so a locally-mounted hook still has a mutationFn to resolve.
 export function registerMutationDefaults(
@@ -131,6 +141,18 @@ export function registerMutationDefaults(
     // the persisted optimistic patch.
     onError: () =>
       retroToast.error(i18n._(msg`Couldn't sync a stock recount.`)),
+    onSettled: (_data, _err, vars) =>
+      client.invalidateQueries({ queryKey: ["inventory", vars.wsId] }),
+  });
+
+  client.setMutationDefaults(MK.inventoryCreate, {
+    mutationFn: (vars: InventoryCreateVars): Promise<Inventory> =>
+      inventoryApi.create(vars.wsId, vars.body, {
+        "Idempotency-Key": vars.idemKey,
+      }),
+    scope: { id: "offline-writes" },
+    onError: () =>
+      retroToast.error(i18n._(msg`Couldn't sync a new stock entry.`)),
     onSettled: (_data, _err, vars) =>
       client.invalidateQueries({ queryKey: ["inventory", vars.wsId] }),
   });

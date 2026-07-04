@@ -11,4 +11,8 @@ export const MK = {
   // absolute-set PATCH (`{quantity:N}`), so replaying it is naturally
   // idempotent (set to N twice = N).
   inventoryQuantity: ["inventory", "quantity"] as const,
+  // C-create: offline creation of an inventory (stock) entry. Dedupes on an
+  // Idempotency-Key (POST creates a row — not naturally idempotent, unlike the
+  // absolute-set quantity PATCH above).
+  inventoryCreate: ["inventory", "create"] as const,
 };

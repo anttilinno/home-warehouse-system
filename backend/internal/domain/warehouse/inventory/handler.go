@@ -281,6 +281,7 @@ func createInventory(svc ServiceInterface, broadcaster *events.Broadcaster) func
 			WarrantyExpires: input.Body.WarrantyExpires,
 			ExpirationDate:  input.Body.ExpirationDate,
 			Notes:           input.Body.Notes,
+			IdempotencyKey:  input.IdempotencyKey,
 		})
 		if err != nil {
 			if errors.Is(err, ErrInventoryNotFound) {
@@ -528,7 +529,11 @@ type TotalQuantityResponse struct {
 }
 
 type CreateInventoryInput struct {
-	Body struct {
+	// IdempotencyKey lets a replayed create (offline-queued PWA write whose
+	// original response was lost) return the ORIGINAL entry instead of a
+	// duplicate. Optional — a request without it always creates.
+	IdempotencyKey string `header:"Idempotency-Key" doc:"Client-generated key; a repeated create with the same key returns the original entity instead of creating a duplicate"`
+	Body           struct {
 		ItemID          uuid.UUID  `json:"item_id" doc:"Item ID this inventory represents"`
 		LocationID      uuid.UUID  `json:"location_id" doc:"Location where inventory is stored"`
 		ContainerID     *uuid.UUID `json:"container_id,omitempty" doc:"Optional container ID"`

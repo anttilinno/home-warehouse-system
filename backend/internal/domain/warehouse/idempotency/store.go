@@ -24,6 +24,7 @@ const (
 	TypeItem      EntityType = "ITEM"
 	TypeLocation  EntityType = "LOCATION"
 	TypeContainer EntityType = "CONTAINER"
+	TypeInventory EntityType = "INVENTORY"
 )
 
 // Store is a tiny shared dependency injected into the item/container/location
