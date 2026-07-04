@@ -7,6 +7,7 @@ import { useWorkspace } from "@/features/workspace/useWorkspace";
 import { MK } from "@/lib/offline/mutationKeys";
 import { newIdemKey } from "@/lib/offline/idempotency";
 import { generateShortCode } from "@/lib/offline/shortCode";
+import { newOfflineTempId } from "@/lib/offline/tempId";
 import type { ItemCreateVars } from "@/lib/offline/mutationDefaults";
 import type { Item, ItemListResponse } from "@/lib/types";
 import type { ItemFormValues } from "../schema";
@@ -106,7 +107,9 @@ export function useItemFormMutations() {
       const snapshots = queryClient.getQueriesData({ queryKey: prefix });
       const now = new Date().toISOString();
       const tempItem: Item = {
-        id: crypto.randomUUID(),
+        // Tagged temp id: marks this row as not-yet-synced so dependent writes
+        // (a stock entry against it) can be blocked. Never sent to the backend.
+        id: newOfflineTempId(),
         workspace_id: vars.wsId,
         sku: (vars.body.sku as string | undefined) ?? "",
         name: (vars.body.name as string | undefined) ?? "",

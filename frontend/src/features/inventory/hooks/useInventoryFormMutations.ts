@@ -6,6 +6,7 @@ import { retroToast } from "@/components/retro";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 import { MK } from "@/lib/offline/mutationKeys";
 import { newIdemKey } from "@/lib/offline/idempotency";
+import { isOfflineTempId } from "@/lib/offline/tempId";
 import type { InventoryCreateVars } from "@/lib/offline/mutationDefaults";
 import type { Condition, Inventory, InventoryStatus } from "@/lib/types";
 import type { InventoryFormValues } from "../schema";
@@ -174,6 +175,15 @@ export function useInventoryFormMutations() {
   // Wraps create.mutateAsync so callers keep passing bare InventoryFormValues —
   // wsId + the idempotency key are minted here.
   function createEntry(values: InventoryFormValues): Promise<Inventory> {
+    // Dependent-write guard (option a): a stock entry against an item created
+    // offline carries a temp item_id with no server row, so it can never sync —
+    // the backend would 404. Block it at the single write chokepoint rather than
+    // at each caller (ADD button / ?item= prefill / direct URL all land here).
+    if (isOfflineTempId(values.item_id)) {
+      // ponytail: nearly-never-seen defensive toast, en-only — no i18n extract.
+      retroToast.error("Finish syncing this item before adding stock to it.");
+      return Promise.reject(new Error("dependent write against unsynced item"));
+    }
     return create.mutateAsync({
       wsId: wsId as string,
       idemKey: newIdemKey(),
