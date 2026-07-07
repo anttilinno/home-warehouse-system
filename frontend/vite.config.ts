@@ -83,6 +83,7 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    host: true, // bind 0.0.0.0 (IPv4+IPv6) so plain localhost/127.0.0.1 reach it
     proxy: {
       "/api": {
         target: "http://localhost:8080",

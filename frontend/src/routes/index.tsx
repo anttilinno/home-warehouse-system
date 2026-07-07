@@ -107,16 +107,6 @@ const PaperlessPage = lazy(() =>
   })),
 );
 
-// /demo is DEV-only. A GATED lazy import (not a static one) so the production
-// build drops both the route AND the chunk: `import.meta.env.DEV` is statically
-// false in prod, making the lazy()+import() branch dead code that Rollup DCEs —
-// the demo bytes never ship in the production artefact.
-const DemoPage = import.meta.env.DEV
-  ? lazy(() =>
-      import("@/routes/demo/DemoPage").then((m) => ({ default: m.DemoPage })),
-    )
-  : () => null;
-
 // Library-mode RR7 (NOT framework mode — AP-1). Literal routes before the
 // wildcard. /login stays public; the authenticated branch is now an AppShell
 // LAYOUT route — RequireAuth gates the shell, which renders each child route
@@ -306,18 +296,6 @@ export function AppRoutes() {
             404 INSIDE the AppShell chrome (nav + topbar stay). */}
         <Route path="*" element={<NotFoundPage />} />
       </Route>
-      {/* /demo: standalone dark-terminal dashboard mockup. DEV-gated — renders
-          full-screen OUTSIDE the AppShell (own chrome) and never ships. */}
-      {import.meta.env.DEV && (
-        <Route
-          path="/demo"
-          element={
-            <Suspense fallback={<RouteFallback />}>
-              <DemoPage />
-            </Suspense>
-          }
-        />
-      )}
       {/* Public catch-all: unauthed mistyped URL → standalone 404 on the bare
           desktop (RequireAuth would otherwise bounce it to /login). */}
       <Route path="*" element={<NotFoundPage />} />

@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router";
-import type { FilterChip } from "./FilterBar";
 import {
+  type FilterChip,
   type FilterDef,
   type FilterValues,
   chipsForDefs,
@@ -17,16 +17,42 @@ export interface UseUrlFilterStateOptions {
 
 export interface FilterState {
   values: FilterValues;
+  /** Committed search terms (`?terms=a,b`), order-preserving + deduped. Part of
+   *  saved views; the LIVE search box (`q`) is not. */
+  terms: string[];
   /** Write one def's values (empty → delete the param); always resets page=1. */
   set: (key: string, next: string[]) => void;
   /** Clear a single def (chip ✕). */
   clear: (key: string) => void;
-  /** Wipe the search box + every def param; keeps sort; resets page=1. */
+  /** Pin a live search term as a committed `SEARCH:` token (trim + dedupe). */
+  commitTerm: (term: string) => void;
+  /** Remove one committed term (token ✕). */
+  removeTerm: (term: string) => void;
+  /** Wipe the search box + every def param + terms; keeps sort; resets page=1. */
   clearAll: () => void;
   /** Human-readable active-filter chips (the search term is NOT chipped). */
   chips: FilterChip[];
-  /** True when any def has a value (the page ORs its own search term in). */
+  /** True when any def has a value OR any term is committed. */
   hasActive: boolean;
+}
+
+/** The reserved URL param for committed search terms. */
+export const TERMS_KEY = "terms";
+
+/** Decode `?terms=a,b` into an order-preserving, deduped string[]. Pure. */
+export function readTerms(params: URLSearchParams): string[] {
+  const raw = params.get(TERMS_KEY);
+  if (!raw) return [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const t of raw.split(",")) {
+    const term = t.trim();
+    if (term && !seen.has(term)) {
+      seen.add(term);
+      out.push(term);
+    }
+  }
+  return out;
 }
 
 /**
@@ -48,6 +74,44 @@ export function useUrlFilterState(
     () => readFilterValues(defs, searchParams),
     [defs, searchParams],
   );
+  const terms = useMemo(() => readTerms(searchParams), [searchParams]);
+
+  const writeTerms = useCallback(
+    (next: string[]) => {
+      setSearchParams((prev) => {
+        const p = new URLSearchParams(prev);
+        if (next.length === 0) p.delete(TERMS_KEY);
+        else p.set(TERMS_KEY, next.join(","));
+        p.set("page", "1");
+        return p;
+      });
+    },
+    [setSearchParams],
+  );
+
+  // Pin a term AND consume the live search box in ONE URL write — doing the two
+  // as separate setSearchParams calls races (each reads the same pre-event
+  // snapshot, so the second clobbers the first).
+  const commitTerm = useCallback(
+    (term: string) => {
+      const trimmed = term.trim();
+      if (!trimmed) return;
+      setSearchParams((prev) => {
+        const p = new URLSearchParams(prev);
+        p.delete(searchKey);
+        const next = terms.includes(trimmed) ? terms : [...terms, trimmed];
+        p.set(TERMS_KEY, next.join(","));
+        p.set("page", "1");
+        return p;
+      });
+    },
+    [terms, setSearchParams, searchKey],
+  );
+
+  const removeTerm = useCallback(
+    (term: string) => writeTerms(terms.filter((t) => t !== term)),
+    [terms, writeTerms],
+  );
 
   const set = useCallback(
     (key: string, next: string[]) => {
@@ -68,6 +132,7 @@ export function useUrlFilterState(
     setSearchParams((prev) => {
       const p = new URLSearchParams(prev);
       p.delete(searchKey);
+      p.delete(TERMS_KEY);
       for (const def of defs) p.delete(def.key);
       p.set("page", "1");
       return p;
@@ -79,9 +144,19 @@ export function useUrlFilterState(
     [defs, values, yesLabel],
   );
   const hasActive = useMemo(
-    () => Object.values(values).some((v) => v.length > 0),
-    [values],
+    () => terms.length > 0 || Object.values(values).some((v) => v.length > 0),
+    [values, terms],
   );
 
-  return { values, set, clear, clearAll, chips, hasActive };
+  return {
+    values,
+    terms,
+    set,
+    clear,
+    commitTerm,
+    removeTerm,
+    clearAll,
+    chips,
+    hasActive,
+  };
 }

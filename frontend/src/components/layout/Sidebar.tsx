@@ -277,11 +277,6 @@ export function Sidebar({
             label={<Trans>Settings</Trans>}
             to="/settings"
           />
-          {/* DEV-only atom review surface (Phase 4). Gated so it never appears
-              as a user nav entry; the matching /demo route is DEV-gated too. */}
-          {import.meta.env.DEV && (
-            <NavItem icon="zap" label={<Trans>Demo</Trans>} to="/demo" />
-          )}
         </NavGroup>
       </nav>
       {user && onLogout && <SidebarUserMenu user={user} onLogout={onLogout} />}

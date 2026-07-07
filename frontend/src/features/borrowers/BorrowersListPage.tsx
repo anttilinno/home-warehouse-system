@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
@@ -8,7 +8,9 @@ import {
   RetroTable,
   RetroEmptyState,
   RetroPagination,
-  FilterBar,
+  ViewBar,
+  type FilterDef,
+  useListViews,
 } from "@/components/retro";
 import { useShortcuts } from "@/components/shortcuts";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
@@ -33,6 +35,9 @@ import {
 // shortcut-binding closures so the shortcut memo depends on STABLE callbacks
 // ONLY, never `t`. Mirrors InventoryListPage exactly.
 
+// Borrowers have no enum facets (no status/condition) — a search-only surface.
+const NO_DEFS: FilterDef[] = [];
+
 export function BorrowersListPage() {
   const { t } = useLingui();
   const navigate = useNavigate();
@@ -42,12 +47,15 @@ export function BorrowersListPage() {
   const workspaceName =
     workspaces?.find((w) => w.id === wsId)?.name ?? t`Workspace`;
 
-  // Client search (name + email substring) — applied INSIDE useBorrowersQuery;
-  // it does NOT round-trip to the URL (matches the inventory/loans convention).
-  const [search, setSearch] = useState("");
+  // URL-backed search + saved views (design 1c). The query + committed terms
+  // filter name/email on the client (the list endpoint has no search param).
+  const { filters, fragments, viewBar } = useListViews(NO_DEFS, {
+    storageKey: "borrowers-list-views/v2",
+    allViewName: t`All borrowers`,
+  });
 
   const { rows, page, pageCount, isLoading, isError } =
-    useBorrowersQuery(search);
+    useBorrowersQuery(fragments);
 
   // ── Route shortcuts (N → new, / → focus search). Labels via the `t` macro
   // directly; the memo keys on the resolved strings (stable within a locale,
@@ -67,19 +75,18 @@ export function BorrowersListPage() {
   );
   useShortcuts("borrowers", routeShortcuts);
 
-  function clearSearch() {
-    setSearch("");
-  }
-
   function renderEmpty() {
-    if (search.trim()) {
+    if (fragments.length > 0) {
       return (
         <RetroEmptyState
           eyebrow={<Trans>Borrowers</Trans>}
           glyph="users"
           heading={<Trans>NO MATCHES</Trans>}
           body={<Trans>No borrowers match this search.</Trans>}
-          action={{ label: <Trans>CLEAR ALL</Trans>, onClick: clearSearch }}
+          action={{
+            label: <Trans>CLEAR ALL</Trans>,
+            onClick: filters.clearAll,
+          }}
         />
       );
     }
@@ -113,17 +120,10 @@ export function BorrowersListPage() {
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">
       <Window title={t`BORROWERS — ${workspaceName}`} titlebarVariant="mint">
-        <FilterBar
-          searchValue={search}
-          onSearchChange={setSearch}
-          searchPlaceholder={t`Filter borrowers…`}
+        <ViewBar
+          {...viewBar}
           itemCount={rows.length}
-          // Borrowers have no enum facets (no status/condition) — 09-UI-SPEC
-          // §Surface 1. The FilterBar still renders search + count + CTA.
-          facets={[]}
-          filterChips={[]}
-          onRemoveFilter={() => {}}
-          onClearAll={clearSearch}
+          searchPlaceholder={t`Search name, email… ↵ to pin`}
           primaryAction={
             <BevelButton variant="mint" onClick={goNew}>
               <PixelIcon name="plus" size={16} /> <Trans>NEW BORROWER</Trans>

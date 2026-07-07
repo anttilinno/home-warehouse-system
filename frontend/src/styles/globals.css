@@ -106,42 +106,42 @@ body {
 }
 
 [data-theme="dark"] .shadow-hard {
-  box-shadow: 3px 3px 0 0 #000000;
+  box-shadow: 3px 3px 0 0 #001318;
 }
 [data-theme="dark"] .shadow-hard-ink {
-  box-shadow: 2px 2px 0 0 #d7d7dd;
+  box-shadow: 2px 2px 0 0 #d6d0b8;
 }
 
-/* Terminal headers are FLAT (validated on /demo): the titlebar fills go dark,
-   so the System 7 white pinstripes would streak the dark chrome. Drop them. */
+/* Pinstripes stay dropped: white pinstripes over the deep solarized fills would
+   read as noise. */
 [data-theme="dark"] .pinstripes {
   background-image: none;
 }
 
-/* Dashboard stat cards: the ONLY colored panels in dark terminal mode. Full
-   body fill + a darker header tint + a bright matching number. Unlayered so it
-   beats the Tailwind bg-bg-panel / text-* utilities. Markers from StatCard. */
-[data-theme="dark"] .stat-card.stat-blue { background: #103247; }
-[data-theme="dark"] .stat-card.stat-blue > header { background: #0c2636; }
-[data-theme="dark"] .stat-card.stat-blue .stat-card__value { color: #56b4e4; }
+/* Dashboard stat cards (solarized 2a): full body fill + a darker header tint +
+   a bright matching number. Unlayered so it beats the Tailwind bg-bg-panel /
+   text-* utilities. Markers from StatCard. */
+[data-theme="dark"] .stat-card.stat-blue { background: #103c4e; }
+[data-theme="dark"] .stat-card.stat-blue > header { background: #0c2f3d; }
+[data-theme="dark"] .stat-card.stat-blue .stat-card__value { color: #59a7d7; }
 
-[data-theme="dark"] .stat-card.stat-mint { background: #0d3326; }
-[data-theme="dark"] .stat-card.stat-mint > header { background: #0a281d; }
-[data-theme="dark"] .stat-card.stat-mint .stat-card__value { color: #3fe3a4; }
+[data-theme="dark"] .stat-card.stat-mint { background: #0c3a2e; }
+[data-theme="dark"] .stat-card.stat-mint > header { background: #092e24; }
+[data-theme="dark"] .stat-card.stat-mint .stat-card__value { color: #35b8a2; }
 
-[data-theme="dark"] .stat-card.stat-pink { background: #311623; }
-[data-theme="dark"] .stat-card.stat-pink > header { background: #29111c; }
-[data-theme="dark"] .stat-card.stat-pink .stat-card__value { color: #ef7593; }
+[data-theme="dark"] .stat-card.stat-pink { background: #3d1a32; }
+[data-theme="dark"] .stat-card.stat-pink > header { background: #311527; }
+[data-theme="dark"] .stat-card.stat-pink .stat-card__value { color: #dd6ea6; }
 
-[data-theme="dark"] .stat-card.stat-butter { background: #2e2412; }
-[data-theme="dark"] .stat-card.stat-butter > header { background: #261d0e; }
-[data-theme="dark"] .stat-card.stat-butter .stat-card__value { color: #ffba5a; }
+[data-theme="dark"] .stat-card.stat-butter { background: #423408; }
+[data-theme="dark"] .stat-card.stat-butter > header { background: #352a06; }
+[data-theme="dark"] .stat-card.stat-butter .stat-card__value { color: #cfa02e; }
 
 /* Body dot-dither: a near-black dot vanishes on a dark desktop — invert to a
-   faint light dot so the desktop texture survives. */
+   faint warm-paper dot so the desktop texture survives. */
 [data-theme="dark"] body {
   background-image: radial-gradient(
-    rgba(242, 237, 227, 0.04) 1px,
+    rgba(238, 232, 213, 0.05) 1px,
     transparent 1px
   );
 }

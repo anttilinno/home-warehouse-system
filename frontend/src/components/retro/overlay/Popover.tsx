@@ -19,6 +19,11 @@ export interface PopoverProps {
   role: "menu" | "listbox";
   /** Optional min-width override. Default 160px. */
   minWidth?: number;
+  /**
+   * Chrome: "anchor" floats under the trigger (default). "sheet" pins a
+   * full-width panel to the bottom edge behind a scrim — the mobile treatment.
+   */
+  variant?: "anchor" | "sheet";
   children: ReactNode;
 }
 
@@ -36,6 +41,7 @@ export function Popover({
   anchorRef,
   role,
   minWidth = 160,
+  variant = "anchor",
   children,
 }: Readonly<PopoverProps>) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -44,13 +50,15 @@ export function Popover({
     top: 0,
     left: 0,
   });
+  const isSheet = variant === "sheet";
 
   // ESC pops via the shared modal stack (never logout).
   useModalStack(open, onClose);
 
-  // Position the panel under (or above, if no room) the anchor.
+  // Position the panel under (or above, if no room) the anchor. A sheet is
+  // CSS-pinned to the bottom edge, so it skips anchor math entirely.
   useLayoutEffect(() => {
-    if (!open) return;
+    if (!open || isSheet) return;
     const anchor = anchorRef.current;
     const panel = panelRef.current;
     if (!anchor || !panel) return;
@@ -60,7 +68,7 @@ export function Popover({
     const flipUp = spaceBelow < ph && a.top > ph;
     const top = flipUp ? a.top - ph : a.bottom;
     setPos({ top, left: a.left });
-  }, [open, anchorRef]);
+  }, [open, anchorRef, isSheet]);
 
   // Focus management: move focus into the panel on open, restore to anchor on close.
   useEffect(() => {
@@ -81,12 +89,12 @@ export function Popover({
 
   return (
     <>
-      {/* Tap-outside sentinel: a transparent backdrop that closes on click. */}
+      {/* Tap-outside sentinel: closes on click. A sheet dims behind a scrim. */}
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: tap-outside backdrop; Escape closes via the modal stack */}
       {/* biome-ignore lint/a11y/noStaticElementInteractions: tap-outside backdrop; Escape closes via the modal stack */}
       <div
         data-testid="popover-backdrop"
-        className="fixed inset-0 z-40"
+        className={`fixed inset-0 z-40 ${isSheet ? "bg-black/50" : ""}`}
         onClick={onClose}
       />
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops backdrop-click propagation only, not an interactive control */}
@@ -95,8 +103,12 @@ export function Popover({
         ref={panelRef}
         role={role}
         tabIndex={-1}
-        className="fixed z-40 flex flex-col border-2 border-border-ink bg-bg-panel bevel-raised py-sp-1 outline-none"
-        style={{ top: pos.top, left: pos.left, minWidth }}
+        className={
+          isSheet
+            ? "fixed inset-x-0 bottom-0 z-40 flex max-h-[75vh] flex-col overflow-y-auto border-t-2 border-border-ink bg-bg-panel bevel-raised py-sp-1 outline-none"
+            : "fixed z-40 flex flex-col border-2 border-border-ink bg-bg-panel bevel-raised py-sp-1 outline-none"
+        }
+        style={isSheet ? undefined : { top: pos.top, left: pos.left, minWidth }}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useMemo, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
@@ -9,7 +9,10 @@ import {
   RetroTabs,
   RetroEmptyState,
   StatusPill,
-  FilterBar,
+  ViewBar,
+  type FilterDef,
+  useListViews,
+  matchesFragments,
   retroToast,
 } from "@/components/retro";
 import { useShortcuts } from "@/components/shortcuts";
@@ -48,6 +51,9 @@ function isoDate(value?: string): string {
   return value ? value.slice(0, 10) : "—";
 }
 
+// Loans have no enum facets — a search-only surface (tabs are navigation).
+const NO_DEFS: FilterDef[] = [];
+
 export function LoansListPage() {
   const { t } = useLingui();
   const navigate = useNavigate();
@@ -59,19 +65,20 @@ export function LoansListPage() {
   const workspaceName =
     workspaces?.find((w) => w.id === wsId)?.name ?? t`Workspace`;
 
-  // ── Client-side search (item OR borrower name substring) — does NOT round-trip
-  // to the URL (matches the inventory client-filter convention).
-  const [search, setSearch] = useState("");
+  // ── URL-backed search + saved views (design 1c). The query + committed terms
+  // filter item/borrower name on the client (the endpoint has no search param).
+  const { filters, fragments, viewBar } = useListViews(NO_DEFS, {
+    storageKey: "loans-list-views/v2",
+    allViewName: t`All loans`,
+  });
 
-  const visible = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter((l) => {
-      const item = (l.item?.name ?? "").toLowerCase();
-      const borrower = (l.borrower?.name ?? "").toLowerCase();
-      return item.includes(q) || borrower.includes(q);
-    });
-  }, [items, search]);
+  const visible = useMemo(
+    () =>
+      items.filter((l) =>
+        matchesFragments([l.item?.name, l.borrower?.name], fragments),
+      ),
+    [items, fragments],
+  );
 
   const setTab = useCallback(
     (id: string) => {
@@ -112,10 +119,6 @@ export function LoansListPage() {
     triggerCsvDownload(loansToCsvBlob(visible), `loans-${tab}.csv`);
   }, [visible, tab, nothingToExport]);
 
-  function clearSearch() {
-    setSearch("");
-  }
-
   // ── Due-column cell (UI-SPEC §1 column 4). History shows returned-at; overdue
   // rows render the danger `⚠ −{n}d` chip (the third non-color cue).
   function renderDue(loan: Loan) {
@@ -147,7 +150,7 @@ export function LoansListPage() {
   }
 
   function renderEmpty() {
-    if (search.trim()) {
+    if (fragments.length > 0) {
       return (
         <RetroEmptyState
           eyebrow={<Trans>Loans</Trans>}
@@ -156,7 +159,7 @@ export function LoansListPage() {
           body={<Trans>No loans match this search.</Trans>}
           action={{
             label: <Trans>CLEAR SEARCH</Trans>,
-            onClick: clearSearch,
+            onClick: filters.clearAll,
           }}
         />
       );
@@ -207,15 +210,10 @@ export function LoansListPage() {
 
   const tableContent = (
     <>
-      <FilterBar
-        searchValue={search}
-        onSearchChange={setSearch}
-        searchPlaceholder={t`Filter loans…`}
+      <ViewBar
+        {...viewBar}
         itemCount={visible.length}
-        facets={[]}
-        filterChips={[]}
-        onRemoveFilter={() => {}}
-        onClearAll={clearSearch}
+        searchPlaceholder={t`Search item, borrower… ↵ to pin`}
         primaryAction={
           <span className="flex items-center gap-sp-2">
             <BevelButton
