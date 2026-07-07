@@ -16,6 +16,8 @@ export interface MobileDrawerProps {
   /** Close handler — scrim click, ESC, and nav selection all call it. */
   onClose: () => void;
   stats?: DashboardStats;
+  /** Pending-approvals count, forwarded to the Sidebar's Approvals badge. */
+  pendingApprovals?: number;
   user?: User;
   /** Logout handler for the Sidebar's bottom user menu (confirm-gated). */
   onLogout?: () => void;
@@ -25,6 +27,7 @@ export function MobileDrawer({
   open,
   onClose,
   stats,
+  pendingApprovals,
   user,
   onLogout,
 }: Readonly<MobileDrawerProps>) {
@@ -94,7 +97,12 @@ export function MobileDrawer({
         }}
         className="absolute inset-y-0 left-0 w-[min(280px,86vw)] overflow-y-auto bg-bg-panel outline-none transition-transform duration-[160ms] ease-out motion-reduce:transition-none"
       >
-        <Sidebar stats={stats} user={user} onLogout={onLogout} />
+        <Sidebar
+          stats={stats}
+          pendingApprovals={pendingApprovals}
+          user={user}
+          onLogout={onLogout}
+        />
       </div>
     </div>
   );

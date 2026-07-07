@@ -12,6 +12,7 @@ import { MobileDrawer } from "./MobileDrawer";
 import { F1HelpDialog } from "./F1HelpDialog";
 import { WorkspaceProvider } from "@/features/workspace/WorkspaceProvider";
 import { useLogout } from "@/features/auth/useLogout";
+import { useApprovalsList } from "@/features/approvals/hooks/useApprovalsList";
 import { settingsApi } from "@/lib/api/settings";
 import { SSEProvider, useSSEStatus } from "@/features/sse";
 import { useResumeOnReconnect } from "@/lib/offline/useResumeOnReconnect";
@@ -152,6 +153,11 @@ function ShellChrome() {
   // fetched by the settings/format/locale hooks; no new fetch path).
   const me = useQuery({ queryKey: ["me"], queryFn: () => settingsApi.getMe() });
 
+  // Pending-approvals count for the Navigator's Approvals badge. Reuses the
+  // shared ["pending-changes", wsId, "pending"] cache (same key the /approvals
+  // page fills) — no new endpoint. Non-admins 403 → total 0 → badge hidden.
+  const { total: pendingApprovals } = useApprovalsList();
+
   return (
     <div className="app-shell" data-collapsed={collapsed}>
       {/* Skip link — first focusable element, jumps focus to #main. */}
@@ -177,6 +183,7 @@ function ShellChrome() {
         <Sidebar
           collapsed={collapsed}
           onToggleCollapse={() => setCollapsed((v) => !v)}
+          pendingApprovals={pendingApprovals}
           user={me.data}
           onLogout={logout}
         />
@@ -200,6 +207,7 @@ function ShellChrome() {
       <MobileDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
+        pendingApprovals={pendingApprovals}
         user={me.data}
         onLogout={logout}
       />

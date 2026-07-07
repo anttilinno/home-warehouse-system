@@ -117,7 +117,7 @@ export function InventoryListPage() {
   // ── Route shortcuts (N → new, / → focus search).
   const goNew = useCallback(() => navigate("/inventory/new"), [navigate]);
   const focusSearch = useCallback(() => {
-    document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
+    document.querySelector<HTMLInputElement>("[data-search-input]")?.focus();
   }, []);
   const labelNew = t`New entry`;
   const labelSearch = t`Focus search`;

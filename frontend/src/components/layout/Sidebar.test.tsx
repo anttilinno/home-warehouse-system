@@ -40,7 +40,7 @@ describe("Sidebar", () => {
     i18n.activate("en");
   });
 
-  it("renders the OVERVIEW / INVENTORY / SYSTEM group labels", () => {
+  it("renders the OVERVIEW / INVENTORY / PLANNING / SYSTEM group labels", () => {
     renderSidebar(<Sidebar stats={stats} user={user} />);
     // Target the group HEADINGS specifically — "Inventory" also appears as a
     // NavItem label in the INVENTORY group, so a bare getByText is ambiguous.
@@ -50,6 +50,9 @@ describe("Sidebar", () => {
     expect(
       screen.getByRole("heading", { name: "Inventory" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Planning" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "System" })).toBeInTheDocument();
   });
 
@@ -57,7 +60,7 @@ describe("Sidebar", () => {
     renderSidebar(<Sidebar stats={stats} user={user} />, { route: "/" });
     const dashboard = screen.getByRole("link", { name: /dashboard/i });
     expect(dashboard).toHaveAttribute("aria-current", "page");
-    expect(dashboard.className).toContain("bg-titlebar-blue");
+    expect(dashboard.className).toContain("bg-selection-fill");
     expect(dashboard.className).toContain("border-border-ink");
     expect(dashboard.className).toContain("shadow-hard-ink");
   });
@@ -66,7 +69,7 @@ describe("Sidebar", () => {
     renderSidebar(<Sidebar stats={stats} user={user} />, { route: "/items" });
     const dashboard = screen.getByRole("link", { name: /dashboard/i });
     expect(dashboard).not.toHaveAttribute("aria-current", "page");
-    expect(dashboard.className).not.toContain("bg-titlebar-blue");
+    expect(dashboard.className).not.toContain("bg-selection-fill");
   });
 
   it("marks ONLY the matching ?tab taxonomy item active (not all three)", () => {

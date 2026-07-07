@@ -594,6 +594,10 @@ msgstr "Vähemalt 8 tähemärki."
 msgid "Available"
 msgstr "Saadaval"
 
+#: src/routes/NotFoundPage.tsx
+msgid "Back to dashboard"
+msgstr "Tagasi töölauale"
+
 #: src/features/auth/CallbackPage.tsx
 msgid "Back to login"
 msgstr "Tagasi sisselogimisse"
@@ -1386,6 +1390,10 @@ msgid "Couldn't sync \"{name}\" — it may have been removed."
 msgstr ""
 
 #: src/lib/offline/mutationDefaults.ts
+msgid "Couldn't sync a new stock entry."
+msgstr ""
+
+#: src/lib/offline/mutationDefaults.ts
 msgid "Couldn't sync a stock recount."
 msgstr ""
 
@@ -1845,6 +1853,10 @@ msgstr "tähtajani {0}p"
 msgid "due in {inDays}d"
 msgstr "tähtajani {inDays}p"
 
+#: src/components/layout/Sidebar.tsx
+msgid "Due Maintenance"
+msgstr "Ootel hooldus"
+
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "DUE MAINTENANCE — {workspaceName}"
 msgstr "EESSEISEV HOOLDUS — {workspaceName}"
@@ -2108,6 +2120,10 @@ msgstr "Fail *"
 #: src/components/retro/form/RetroFileInput.tsx
 msgid "File is too large (max {0})."
 msgstr "Fail on liiga suur (max {0})."
+
+#: src/routes/NotFoundPage.tsx
+msgid "File not found"
+msgstr "Faili ei leitud"
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
@@ -2455,6 +2471,10 @@ msgstr "LINGITUD"
 msgid "live"
 msgstr "reaalajas"
 
+#: src/components/layout/RouteFallback.tsx
+msgid "Loading"
+msgstr "Laadimine"
+
 #: src/components/scan/ScanResultBanner.tsx
 msgid "LOADING"
 msgstr "LAADIMINE"
@@ -2606,7 +2626,6 @@ msgstr "OTSI KOODI"
 msgid "Low stock"
 msgstr "Madal laoseis"
 
-#: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/inventory/components/InventoryRow.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
@@ -3472,6 +3491,10 @@ msgstr "FOTOD"
 msgid "Pick a different location or container."
 msgstr "Vali teine asukoht või konteiner."
 
+#: src/components/layout/Sidebar.tsx
+msgid "Planning"
+msgstr "Planeerimine"
+
 #: src/features/settings/AvatarUploader.tsx
 msgid "PNG/JPG · max 5 MB"
 msgstr "PNG/JPG · max 5 MB"
@@ -4298,6 +4321,10 @@ msgstr "See kasutaja on juba liige."
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "The file belongs to a different workspace."
 msgstr "Fail kuulub teise tööruumi."
+
+#: src/routes/NotFoundPage.tsx
+msgid "The page you were looking for does not exist or has moved."
+msgstr "Otsitavat lehte ei ole olemas või see on teisaldatud."
 
 #: src/features/settings/AppearancePage.tsx
 msgid "The same chrome on a dark desktop and panels."

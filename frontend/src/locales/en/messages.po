@@ -594,6 +594,10 @@ msgstr "At least 8 characters."
 msgid "Available"
 msgstr "Available"
 
+#: src/routes/NotFoundPage.tsx
+msgid "Back to dashboard"
+msgstr "Back to dashboard"
+
 #: src/features/auth/CallbackPage.tsx
 msgid "Back to login"
 msgstr "Back to login"
@@ -1386,6 +1390,10 @@ msgid "Couldn't sync \"{name}\" — it may have been removed."
 msgstr "Couldn't sync \"{name}\" — it may have been removed."
 
 #: src/lib/offline/mutationDefaults.ts
+msgid "Couldn't sync a new stock entry."
+msgstr "Couldn't sync a new stock entry."
+
+#: src/lib/offline/mutationDefaults.ts
 msgid "Couldn't sync a stock recount."
 msgstr "Couldn't sync a stock recount."
 
@@ -1845,6 +1853,10 @@ msgstr "due in {0}d"
 msgid "due in {inDays}d"
 msgstr "due in {inDays}d"
 
+#: src/components/layout/Sidebar.tsx
+msgid "Due Maintenance"
+msgstr "Due Maintenance"
+
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "DUE MAINTENANCE — {workspaceName}"
 msgstr "DUE MAINTENANCE — {workspaceName}"
@@ -2108,6 +2120,10 @@ msgstr "File *"
 #: src/components/retro/form/RetroFileInput.tsx
 msgid "File is too large (max {0})."
 msgstr "File is too large (max {0})."
+
+#: src/routes/NotFoundPage.tsx
+msgid "File not found"
+msgstr "File not found"
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
@@ -2455,6 +2471,10 @@ msgstr "LINKED"
 msgid "live"
 msgstr "live"
 
+#: src/components/layout/RouteFallback.tsx
+msgid "Loading"
+msgstr "Loading"
+
 #: src/components/scan/ScanResultBanner.tsx
 msgid "LOADING"
 msgstr "LOADING"
@@ -2606,7 +2626,6 @@ msgstr "LOOK UP CODE"
 msgid "Low stock"
 msgstr "Low stock"
 
-#: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/inventory/components/InventoryRow.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
@@ -3472,6 +3491,10 @@ msgstr "PHOTOS"
 msgid "Pick a different location or container."
 msgstr "Pick a different location or container."
 
+#: src/components/layout/Sidebar.tsx
+msgid "Planning"
+msgstr "Planning"
+
 #: src/features/settings/AvatarUploader.tsx
 msgid "PNG/JPG · max 5 MB"
 msgstr "PNG/JPG · max 5 MB"
@@ -4298,6 +4321,10 @@ msgstr "That user is already a member."
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "The file belongs to a different workspace."
 msgstr "The file belongs to a different workspace."
+
+#: src/routes/NotFoundPage.tsx
+msgid "The page you were looking for does not exist or has moved."
+msgstr "The page you were looking for does not exist or has moved."
 
 #: src/features/settings/AppearancePage.tsx
 msgid "The same chrome on a dark desktop and panels."

@@ -345,7 +345,7 @@ body {
     background: var(--info-bg);
   }
   .rtable tbody tr[aria-selected="true"] td {
-    background: var(--titlebar-blue);
+    background: var(--selection-fill);
     border-bottom-color: var(--border-ink);
   }
   .rtable .mono {
@@ -472,10 +472,12 @@ body {
 }
 
 /* ---------- Text selection (Dark Mode P4) ----------
-   Theme-aware via tokens: titlebar-blue stays a light pastel in both themes and
-   --fg-on-accent stays dark, so highlighted text is legible in light AND dark
-   (the default UA selection is invisible on the dark panels). */
+   Theme-aware via dedicated selection tokens: --selection-text-bg stays a
+   visibly tinted highlight in BOTH themes (light pastel blue in light, bright
+   accent blue in dark), with --selection-text-fg carrying legible contrast on
+   it. The old titlebar-blue routing went neutral-dark in terminal mode, making
+   the highlight invisible on dark panels. */
 ::selection {
-  background: var(--titlebar-blue);
-  color: var(--fg-on-accent);
+  background: var(--selection-text-bg);
+  color: var(--selection-text-fg);
 }

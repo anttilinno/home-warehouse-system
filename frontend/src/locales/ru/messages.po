@@ -594,6 +594,10 @@ msgstr "Не менее 8 символов."
 msgid "Available"
 msgstr "Доступно"
 
+#: src/routes/NotFoundPage.tsx
+msgid "Back to dashboard"
+msgstr "Вернуться на панель управления"
+
 #: src/features/auth/CallbackPage.tsx
 msgid "Back to login"
 msgstr "Назад ко входу"
@@ -1386,6 +1390,10 @@ msgid "Couldn't sync \"{name}\" — it may have been removed."
 msgstr ""
 
 #: src/lib/offline/mutationDefaults.ts
+msgid "Couldn't sync a new stock entry."
+msgstr ""
+
+#: src/lib/offline/mutationDefaults.ts
 msgid "Couldn't sync a stock recount."
 msgstr ""
 
@@ -1845,6 +1853,10 @@ msgstr "срок через {0}д"
 msgid "due in {inDays}d"
 msgstr "срок через {inDays}д"
 
+#: src/components/layout/Sidebar.tsx
+msgid "Due Maintenance"
+msgstr "Требуется обслуживание"
+
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "DUE MAINTENANCE — {workspaceName}"
 msgstr "ТРЕБУЕТСЯ ОБСЛУЖИВАНИЕ — {workspaceName}"
@@ -2108,6 +2120,10 @@ msgstr "Файл *"
 #: src/components/retro/form/RetroFileInput.tsx
 msgid "File is too large (max {0})."
 msgstr "Файл слишком большой (максимум {0})."
+
+#: src/routes/NotFoundPage.tsx
+msgid "File not found"
+msgstr "Файл не найден"
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
@@ -2455,6 +2471,10 @@ msgstr "ПРИВЯЗАНО"
 msgid "live"
 msgstr "в эфире"
 
+#: src/components/layout/RouteFallback.tsx
+msgid "Loading"
+msgstr "Загрузка"
+
 #: src/components/scan/ScanResultBanner.tsx
 msgid "LOADING"
 msgstr "ЗАГРУЗКА"
@@ -2606,7 +2626,6 @@ msgstr "НАЙТИ КОД"
 msgid "Low stock"
 msgstr "Мало на складе"
 
-#: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/inventory/components/InventoryRow.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
@@ -3472,6 +3491,10 @@ msgstr "ФОТО"
 msgid "Pick a different location or container."
 msgstr "Выберите другое местоположение или контейнер."
 
+#: src/components/layout/Sidebar.tsx
+msgid "Planning"
+msgstr "Планирование"
+
 #: src/features/settings/AvatarUploader.tsx
 msgid "PNG/JPG · max 5 MB"
 msgstr "PNG/JPG · макс. 5 МБ"
@@ -4298,6 +4321,10 @@ msgstr "Этот пользователь уже является участни
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "The file belongs to a different workspace."
 msgstr "Файл принадлежит другому рабочему пространству."
+
+#: src/routes/NotFoundPage.tsx
+msgid "The page you were looking for does not exist or has moved."
+msgstr "Запрашиваемая страница не существует или была перемещена."
 
 #: src/features/settings/AppearancePage.tsx
 msgid "The same chrome on a dark desktop and panels."

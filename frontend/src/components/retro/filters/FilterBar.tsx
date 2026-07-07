@@ -62,6 +62,10 @@ export function FilterBar({
       <div className="flex flex-wrap items-center gap-sp-2">
         <input
           type="search"
+          // Stable hook for the "/" focus-search shortcut — beats
+          // querySelector('input[type="search"]'), which grabs the first search
+          // input anywhere on the page (e.g. an open command palette).
+          data-search-input
           aria-label={t`Filter items`}
           placeholder={
             typeof searchPlaceholder === "string"

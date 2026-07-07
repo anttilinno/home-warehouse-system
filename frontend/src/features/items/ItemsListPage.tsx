@@ -130,7 +130,7 @@ export function ItemsListPage() {
   // Storage), so there is no per-page F → toggle-archived shortcut.
   const goNew = useCallback(() => navigate("/items/new"), [navigate]);
   const focusSearch = useCallback(() => {
-    document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
+    document.querySelector<HTMLInputElement>("[data-search-input]")?.focus();
   }, []);
 
   const labelNew = t`New item`;

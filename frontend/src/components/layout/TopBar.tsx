@@ -30,9 +30,16 @@ const FOCUS_RING =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
 
 // ⌘K on Apple, Ctrl+K elsewhere — match the tinykeys `$mod+k` chord label.
+// navigator.platform is deprecated; prefer userAgentData, then a UA regex,
+// with the legacy field as final fallback.
 const IS_APPLE =
   typeof navigator !== "undefined" &&
-  /Mac|iPhone|iPad/.test(navigator.platform);
+  /Mac|iPhone|iPad/.test(
+    (navigator as Navigator & { userAgentData?: { platform?: string } })
+      .userAgentData?.platform ||
+      navigator.userAgent ||
+      navigator.platform,
+  );
 const SEARCH_HINT = IS_APPLE ? "⌘K" : "Ctrl K";
 
 export interface TopBarProps {
@@ -99,7 +106,7 @@ export function TopBar({
         <span
           aria-hidden="true"
           className={`h-[8px] w-[8px] border border-border-ink ${
-            isOnline ? "bg-titlebar-mint" : "bg-fg-faint"
+            isOnline ? "bg-status-online" : "bg-fg-faint"
           }`}
         />
         <span className="hidden text-11 font-bold uppercase tracking-10 text-fg-ink sm:inline">
