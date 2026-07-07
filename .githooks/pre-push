@@ -11,6 +11,13 @@
 # Bypass once:  git push --no-verify
 set -uo pipefail
 
+# Git exports GIT_DIR/GIT_WORK_TREE to hooks. In a `git worktree`, GIT_DIR
+# points at .git/worktrees/<name>, which breaks tools that shell out to git for
+# their own diffing — notably golangci-lint's --new-from-merge-base, which then
+# fails to compute the baseline and floods the whole legacy backlog as "new".
+# Unset them so every child git invocation auto-discovers the repo from cwd.
+unset GIT_DIR GIT_WORK_TREE
+
 REMOTE_BASE="origin/master"
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT" || exit 1
