@@ -198,12 +198,19 @@ export function ScanPage() {
       onPointerDown={feedback.primeAudio}
     >
       <Window title={t`SCAN`} titlebarVariant="blue">
+        {/* Tab strip FIRST so it holds a STABLE position — the camera below is
+            only present on the Scan tab, so putting it above the strip made the
+            strip hop down on Scan and up on Manual/History. The Scan tab's panel
+            is null (RetroTabs draws no box); its real surface is the persistent
+            camera sibling below. */}
+        <RetroTabs tabs={tabs} value={activeTab} onChange={setTab} />
+
         {/* PERSISTENT camera layer — mounted once, CSS-toggled, NEVER unmounted.
             Visible only on the Scan tab; the banner + overlays + torch render on
             top of it. When the camera is blocked we swap the live frame for the
             recovery empty-state (but keep the same wrapper so a later permission
             grant could re-show it without a remount of the page). */}
-        <div className={activeTab === "scan" ? "" : "hidden"}>
+        <div className={activeTab === "scan" ? "mt-sp-3" : "hidden"}>
           {cameraBlocked ? (
             <RetroEmptyState
               glyph="cancel"
@@ -253,12 +260,6 @@ export function ScanPage() {
               />
             </div>
           )}
-        </div>
-
-        {/* Overlay tabs: the Scan tab is an empty spacer; Manual + History hold
-            the real surfaces. Switching tabs only CSS-toggles the camera above. */}
-        <div className="mt-sp-3">
-          <RetroTabs tabs={tabs} value={activeTab} onChange={setTab} />
         </div>
       </Window>
 
