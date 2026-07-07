@@ -522,14 +522,20 @@ func TestItemHandler_ListItems_FilterByNeedsReview(t *testing.T) {
 	mockSvc := new(MockService)
 	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
-	t.Run("filters items by needs_review=true", func(t *testing.T) {
+	t.Run("needs_review=true composes as a ListFiltered filter", func(t *testing.T) {
 		item1, _ := item.NewItem(setup.WorkspaceID, "Review Item", "REV-001", 0)
 		item1.SetNeedsReview(true)
 		items := []*item.Item{item1}
 
-		mockSvc.On("ListNeedingReview", mock.Anything, setup.WorkspaceID, mock.MatchedBy(func(p shared.Pagination) bool {
-			return p.Page == 1 && p.PageSize == 25
-		})).Return(items, 1, nil).Once()
+		// needs_review is now a composing filter (not a short-circuit): it flows
+		// through ListFiltered as ListFilters.NeedsReview = &true.
+		mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID,
+			mock.MatchedBy(func(f item.ListFilters) bool {
+				return f.NeedsReview != nil && *f.NeedsReview
+			}),
+			mock.MatchedBy(func(p shared.Pagination) bool {
+				return p.Page == 1 && p.PageSize == 25
+			})).Return(items, 1, nil).Once()
 
 		rec := setup.Get("/items?needs_review=true")
 
@@ -537,13 +543,33 @@ func TestItemHandler_ListItems_FilterByNeedsReview(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("without needs_review filter calls ListFiltered", func(t *testing.T) {
+	t.Run("is_insured=true composes as a ListFiltered filter", func(t *testing.T) {
+		item1, _ := item.NewItem(setup.WorkspaceID, "Insured Item", "INS-001", 0)
+		items := []*item.Item{item1}
+
+		mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID,
+			mock.MatchedBy(func(f item.ListFilters) bool {
+				return f.IsInsured != nil && *f.IsInsured && f.NeedsReview == nil
+			}),
+			mock.Anything).Return(items, 1, nil).Once()
+
+		rec := setup.Get("/items?is_insured=true")
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("no boolean facets → ListFilters leaves them nil", func(t *testing.T) {
 		item1, _ := item.NewItem(setup.WorkspaceID, "Normal Item", "NRM-001", 0)
 		items := []*item.Item{item1}
 
-		mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID, mock.Anything, mock.MatchedBy(func(p shared.Pagination) bool {
-			return p.Page == 1 && p.PageSize == 25
-		})).Return(items, 1, nil).Once()
+		mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID,
+			mock.MatchedBy(func(f item.ListFilters) bool {
+				return f.IsInsured == nil && f.NeedsReview == nil
+			}),
+			mock.MatchedBy(func(p shared.Pagination) bool {
+				return p.Page == 1 && p.PageSize == 25
+			})).Return(items, 1, nil).Once()
 
 		rec := setup.Get("/items")
 

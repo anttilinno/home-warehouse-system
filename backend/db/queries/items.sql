@@ -112,6 +112,10 @@ WHERE workspace_id = $1
        OR search_vector @@ plainto_tsquery('english', sqlc.narg('search')::text))
   AND (sqlc.narg('category_id')::uuid IS NULL
        OR category_id = sqlc.narg('category_id')::uuid)
+  AND (sqlc.narg('is_insured')::bool IS NULL
+       OR is_insured = sqlc.narg('is_insured')::bool)
+  AND (sqlc.narg('needs_review')::bool IS NULL
+       OR needs_review = sqlc.narg('needs_review')::bool)
 ORDER BY
   CASE WHEN sqlc.arg('sort_field')::text = 'name'        AND sqlc.arg('sort_dir')::text = 'asc'  THEN name        END ASC NULLS LAST,
   CASE WHEN sqlc.arg('sort_field')::text = 'name'        AND sqlc.arg('sort_dir')::text = 'desc' THEN name        END DESC NULLS LAST,
@@ -133,7 +137,11 @@ WHERE workspace_id = $1
        OR sqlc.narg('search')::text = ''
        OR search_vector @@ plainto_tsquery('english', sqlc.narg('search')::text))
   AND (sqlc.narg('category_id')::uuid IS NULL
-       OR category_id = sqlc.narg('category_id')::uuid);
+       OR category_id = sqlc.narg('category_id')::uuid)
+  AND (sqlc.narg('is_insured')::bool IS NULL
+       OR is_insured = sqlc.narg('is_insured')::bool)
+  AND (sqlc.narg('needs_review')::bool IS NULL
+       OR needs_review = sqlc.narg('needs_review')::bool);
 
 -- name: DeleteItem :exec
 DELETE FROM warehouse.items WHERE id = $1 AND workspace_id = $2;

@@ -55,6 +55,10 @@ WHERE workspace_id = $1
        OR search_vector @@ plainto_tsquery('english', $3::text))
   AND ($4::uuid IS NULL
        OR category_id = $4::uuid)
+  AND ($5::bool IS NULL
+       OR is_insured = $5::bool)
+  AND ($6::bool IS NULL
+       OR needs_review = $6::bool)
 `
 
 type CountItemsFilteredParams struct {
@@ -62,6 +66,8 @@ type CountItemsFilteredParams struct {
 	Archived    *bool       `json:"archived"`
 	Search      *string     `json:"search"`
 	CategoryID  pgtype.UUID `json:"category_id"`
+	IsInsured   *bool       `json:"is_insured"`
+	NeedsReview *bool       `json:"needs_review"`
 }
 
 func (q *Queries) CountItemsFiltered(ctx context.Context, arg CountItemsFilteredParams) (int64, error) {
@@ -70,6 +76,8 @@ func (q *Queries) CountItemsFiltered(ctx context.Context, arg CountItemsFiltered
 		arg.Archived,
 		arg.Search,
 		arg.CategoryID,
+		arg.IsInsured,
+		arg.NeedsReview,
 	)
 	var count int64
 	err := row.Scan(&count)
@@ -646,15 +654,19 @@ WHERE workspace_id = $1
        OR search_vector @@ plainto_tsquery('english', $5::text))
   AND ($6::uuid IS NULL
        OR category_id = $6::uuid)
+  AND ($7::bool IS NULL
+       OR is_insured = $7::bool)
+  AND ($8::bool IS NULL
+       OR needs_review = $8::bool)
 ORDER BY
-  CASE WHEN $7::text = 'name'        AND $8::text = 'asc'  THEN name        END ASC NULLS LAST,
-  CASE WHEN $7::text = 'name'        AND $8::text = 'desc' THEN name        END DESC NULLS LAST,
-  CASE WHEN $7::text = 'sku'         AND $8::text = 'asc'  THEN sku         END ASC NULLS LAST,
-  CASE WHEN $7::text = 'sku'         AND $8::text = 'desc' THEN sku         END DESC NULLS LAST,
-  CASE WHEN $7::text = 'created_at'  AND $8::text = 'asc'  THEN created_at  END ASC NULLS LAST,
-  CASE WHEN $7::text = 'created_at'  AND $8::text = 'desc' THEN created_at  END DESC NULLS LAST,
-  CASE WHEN $7::text = 'updated_at'  AND $8::text = 'asc'  THEN updated_at  END ASC NULLS LAST,
-  CASE WHEN $7::text = 'updated_at'  AND $8::text = 'desc' THEN updated_at  END DESC NULLS LAST
+  CASE WHEN $9::text = 'name'        AND $10::text = 'asc'  THEN name        END ASC NULLS LAST,
+  CASE WHEN $9::text = 'name'        AND $10::text = 'desc' THEN name        END DESC NULLS LAST,
+  CASE WHEN $9::text = 'sku'         AND $10::text = 'asc'  THEN sku         END ASC NULLS LAST,
+  CASE WHEN $9::text = 'sku'         AND $10::text = 'desc' THEN sku         END DESC NULLS LAST,
+  CASE WHEN $9::text = 'created_at'  AND $10::text = 'asc'  THEN created_at  END ASC NULLS LAST,
+  CASE WHEN $9::text = 'created_at'  AND $10::text = 'desc' THEN created_at  END DESC NULLS LAST,
+  CASE WHEN $9::text = 'updated_at'  AND $10::text = 'asc'  THEN updated_at  END ASC NULLS LAST,
+  CASE WHEN $9::text = 'updated_at'  AND $10::text = 'desc' THEN updated_at  END DESC NULLS LAST
 LIMIT $2 OFFSET $3
 `
 
@@ -665,6 +677,8 @@ type ListItemsFilteredParams struct {
 	Archived    *bool       `json:"archived"`
 	Search      *string     `json:"search"`
 	CategoryID  pgtype.UUID `json:"category_id"`
+	IsInsured   *bool       `json:"is_insured"`
+	NeedsReview *bool       `json:"needs_review"`
 	SortField   string      `json:"sort_field"`
 	SortDir     string      `json:"sort_dir"`
 }
@@ -677,6 +691,8 @@ func (q *Queries) ListItemsFiltered(ctx context.Context, arg ListItemsFilteredPa
 		arg.Archived,
 		arg.Search,
 		arg.CategoryID,
+		arg.IsInsured,
+		arg.NeedsReview,
 		arg.SortField,
 		arg.SortDir,
 	)

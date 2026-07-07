@@ -112,6 +112,15 @@ func lookupSinglePrimary(ctx context.Context, photos PrimaryPhotoLookup, itemID,
 	return p
 }
 
+// trueOrNil maps a boolean facet query param to a filter pointer: true → filter
+// to the true set; false (param absent) → nil → no filter on this dimension.
+func trueOrNil(v bool) *bool {
+	if v {
+		return &v
+	}
+	return nil
+}
+
 // listItems returns the handler for GET /items.
 func listItems(svc ServiceInterface, photos PrimaryPhotoLookup, photoURLGen PrimaryPhotoURLGenerator) func(context.Context, *ListItemsInput) (*ListItemsOutput, error) {
 	return func(ctx context.Context, input *ListItemsInput) (*ListItemsOutput, error) {
@@ -122,36 +131,32 @@ func listItems(svc ServiceInterface, photos PrimaryPhotoLookup, photoURLGen Prim
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
 
-		var items []*Item
-		var total int
-		var err error
-
-		switch {
-		case input.NeedsReview:
-			// Preserve legacy needs-review listing (orthogonal to filtered list).
-			items, total, err = svc.ListNeedingReview(ctx, workspaceID, pagination)
-		default:
-			// Parse CategoryID — malformed UUID is silently treated as no filter
-			// (Pitfall 10 adjacent — defense in depth against malformed input).
-			var categoryID *uuid.UUID
-			if input.CategoryID != "" {
-				if id, perr := uuid.Parse(input.CategoryID); perr == nil {
-					categoryID = &id
-				}
+		// Parse CategoryID — malformed UUID is silently treated as no filter
+		// (Pitfall 10 adjacent — defense in depth against malformed input).
+		var categoryID *uuid.UUID
+		if input.CategoryID != "" {
+			if id, perr := uuid.Parse(input.CategoryID); perr == nil {
+				categoryID = &id
 			}
-
-			filters := ListFilters{
-				// Empty search normalized to "no filter" by both SQL and repo
-				// (Pitfall 2 — defense in depth).
-				Search:          input.Search,
-				CategoryID:      categoryID,
-				IncludeArchived: input.Archived,
-				Sort:            input.Sort,
-				SortDir:         input.SortDir,
-			}
-
-			items, total, err = svc.ListFiltered(ctx, workspaceID, filters, pagination)
 		}
+
+		// Boolean facets filter to the TRUE set only (a false query value means
+		// "no filter", matching the frontend toggle semantics). needs_review is a
+		// composing filter here, NOT a short-circuit — it stacks with search,
+		// category, and sort.
+		filters := ListFilters{
+			// Empty search normalized to "no filter" by both SQL and repo
+			// (Pitfall 2 — defense in depth).
+			Search:          input.Search,
+			CategoryID:      categoryID,
+			IsInsured:       trueOrNil(input.IsInsured),
+			NeedsReview:     trueOrNil(input.NeedsReview),
+			IncludeArchived: input.Archived,
+			Sort:            input.Sort,
+			SortDir:         input.SortDir,
+		}
+
+		items, total, err := svc.ListFiltered(ctx, workspaceID, filters, pagination)
 		if err != nil {
 			return nil, huma.Error500InternalServerError("failed to list items")
 		}
@@ -709,12 +714,13 @@ func toItemResponse(i *Item, primary *itemphoto.ItemPhoto, photoURLGen PrimaryPh
 type ListItemsInput struct {
 	Page        int    `query:"page" default:"1" minimum:"1"`
 	Limit       int    `query:"limit" default:"25" minimum:"1" maximum:"100"`
-	Search      string `query:"search,omitempty" maxLength:"200" doc:"Full-text search over name, SKU, and barcode"`
+	Search      string `query:"search,omitempty" maxLength:"200" doc:"Full-text search over name, brand, model, and description"`
 	CategoryID  string `query:"category_id,omitempty" doc:"Filter by category UUID"`
+	IsInsured   bool   `query:"is_insured,omitempty" doc:"When true, only insured items"`
 	Archived    bool   `query:"archived" default:"false" doc:"When true, include archived items in the list"`
 	Sort        string `query:"sort" default:"name" enum:"name,sku,created_at,updated_at" doc:"Sort field"`
 	SortDir     string `query:"sort_dir" default:"asc" enum:"asc,desc" doc:"Sort direction"`
-	NeedsReview bool   `query:"needs_review,omitempty" doc:"Filter by needs_review status (orthogonal to filtered list)"`
+	NeedsReview bool   `query:"needs_review,omitempty" doc:"When true, only items flagged needs_review"`
 }
 
 type ListItemsOutput struct {

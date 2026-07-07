@@ -254,6 +254,7 @@ const (
 	WarehouseFavoriteTypeEnumITEM      WarehouseFavoriteTypeEnum = "ITEM"
 	WarehouseFavoriteTypeEnumLOCATION  WarehouseFavoriteTypeEnum = "LOCATION"
 	WarehouseFavoriteTypeEnumCONTAINER WarehouseFavoriteTypeEnum = "CONTAINER"
+	WarehouseFavoriteTypeEnumINVENTORY WarehouseFavoriteTypeEnum = "INVENTORY"
 )
 
 func (e *WarehouseFavoriteTypeEnum) Scan(src interface{}) error {

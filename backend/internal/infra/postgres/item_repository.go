@@ -319,6 +319,8 @@ func (r *ItemRepository) FindByWorkspaceFiltered(
 		Archived:    archivedParam,
 		Search:      searchParam,
 		CategoryID:  categoryParam,
+		IsInsured:   filters.IsInsured,
+		NeedsReview: filters.NeedsReview,
 		SortField:   sortField,
 		SortDir:     sortDir,
 		Limit:       int32(pagination.Limit()),
@@ -333,6 +335,8 @@ func (r *ItemRepository) FindByWorkspaceFiltered(
 		Archived:    archivedParam,
 		Search:      searchParam,
 		CategoryID:  categoryParam,
+		IsInsured:   filters.IsInsured,
+		NeedsReview: filters.NeedsReview,
 	})
 	if err != nil {
 		return nil, 0, err

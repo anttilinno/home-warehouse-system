@@ -13,8 +13,10 @@ import (
 // "no filter on this dimension". Sort and SortDir default to "name" and "asc"
 // respectively when empty (handled at the repository layer).
 type ListFilters struct {
-	Search          string     // FTS search over name, SKU, barcode; empty → no search
-	CategoryID      *uuid.UUID // filter by category; nil → no filter
+	Search          string     // FTS search over name, brand, model, description; empty → no search
+	CategoryID      *uuid.UUID // filter by category (exact id, no descendants); nil → no filter
+	IsInsured       *bool      // filter by is_insured; nil → no filter
+	NeedsReview     *bool      // filter by needs_review; nil → no filter
 	IncludeArchived bool       // true → include is_archived=true rows; false → active only
 	Sort            string     // one of: name, sku, created_at, updated_at
 	SortDir         string     // one of: asc, desc
