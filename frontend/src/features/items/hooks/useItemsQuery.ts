@@ -17,6 +17,8 @@ export const DEFAULT_SORT_DIR = "asc";
 export interface ItemsListUrlState {
   q: string;
   category: string;
+  insured: boolean;
+  needsReview: boolean;
   sort: string;
   sortDir: string;
   page: number;
@@ -33,6 +35,8 @@ export function readItemsUrlState(params: URLSearchParams): ItemsListUrlState {
   return {
     q: params.get("q") ?? "",
     category: params.get("category") ?? "",
+    insured: params.get("insured") === "1",
+    needsReview: params.get("needs_review") === "1",
     sort: params.get("sort") ?? DEFAULT_SORT,
     sortDir: params.get("sort_dir") ?? DEFAULT_SORT_DIR,
     page: Math.max(1, Number(params.get("page") ?? "1") || 1),
@@ -44,6 +48,8 @@ export function toListParams(state: ItemsListUrlState): ItemListParams {
   return {
     search: state.q || undefined,
     category_id: state.category || undefined,
+    is_insured: state.insured || undefined,
+    needs_review: state.needsReview || undefined,
     sort: state.sort,
     sort_dir: state.sortDir,
     page: state.page,

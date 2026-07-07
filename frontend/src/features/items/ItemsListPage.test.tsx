@@ -165,6 +165,81 @@ describe("ItemsListPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("populates the CATEGORY facet and chips the selected category NAME (not its id)", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get("/api/workspaces/:wsId/items", () =>
+        HttpResponse.json(listOf([makeItem(1)])),
+      ),
+    );
+    renderPage();
+    await screen.findByText("Item 1");
+
+    await user.click(screen.getByRole("button", { name: /category/i }));
+    // Options come from the workspace category tree (Electronics + child Phones).
+    await user.click(
+      await screen.findByRole("checkbox", { name: "Electronics" }),
+    );
+
+    await waitFor(() =>
+      expect(lastSearch).toContain("category=cat-electronics"),
+    );
+    // The chip shows the human name, not the uuid (the URL still carries the id).
+    expect(screen.getByText("Electronics")).toBeInTheDocument();
+  });
+
+  it("the INSURED boolean facet toggles ?insured and chips as Yes", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get("/api/workspaces/:wsId/items", () =>
+        HttpResponse.json(listOf([makeItem(1)])),
+      ),
+    );
+    renderPage();
+    await screen.findByText("Item 1");
+
+    await user.click(screen.getByRole("button", { name: "Insured" }));
+    await waitFor(() => expect(lastSearch).toContain("insured=1"));
+    expect(screen.getByText("Yes")).toBeInTheDocument();
+
+    // Toggling off clears the param.
+    await user.click(screen.getByRole("button", { name: "Insured" }));
+    await waitFor(() => expect(lastSearch).not.toContain("insured=1"));
+  });
+
+  it("CLEAR ALL clears a search-only state (the search box carries no chip)", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get("/api/workspaces/:wsId/items", () =>
+        HttpResponse.json(listOf([makeItem(1)])),
+      ),
+    );
+    renderPage(["/items?q=drill"]);
+    await screen.findByText("Item 1");
+
+    await user.click(screen.getByRole("button", { name: /clear all/i }));
+    await waitFor(() => expect(lastSearch).not.toContain("q=drill"));
+  });
+
+  it("renders the Category column: the resolved name, plus a header", async () => {
+    const withCat = { ...makeItem(1), category_id: "cat-electronics" };
+    server.use(
+      http.get("/api/workspaces/:wsId/items", () =>
+        HttpResponse.json(listOf([withCat, makeItem(2)])),
+      ),
+    );
+    renderPage();
+    await screen.findByText("Item 1");
+
+    expect(
+      screen.getByRole("columnheader", { name: /category/i }),
+    ).toBeInTheDocument();
+    // Item 1's category_id resolves to its name via the categories query.
+    expect(
+      screen.getByRole("cell", { name: "Electronics" }),
+    ).toBeInTheDocument();
+  });
+
   it("includes archived rows when the show_archived preference is on", async () => {
     server.use(
       // Global preference ON → the list hook sends archived=true.

@@ -211,7 +211,10 @@ describe("BorrowersListPage", () => {
       expect(screen.getByText(/no matches/i)).toBeInTheDocument(),
     );
 
-    await user.click(screen.getByRole("button", { name: /clear all/i }));
+    // Two CLEAR ALL affordances now: the always-visible FilterBar reset (shown
+    // for a search-only state) + the empty-state recovery CTA. Either clears.
+    const clearButtons = screen.getAllByRole("button", { name: /clear all/i });
+    await user.click(clearButtons[0]);
     expect(await screen.findByText("Alex Carter")).toBeInTheDocument();
   });
 });

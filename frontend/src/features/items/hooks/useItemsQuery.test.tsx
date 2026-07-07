@@ -100,6 +100,29 @@ describe("useItemsQuery", () => {
     expect(ITEMS_LIMIT).toBe(25);
   });
 
+  it("restores the boolean facets from a saved-view URL (?insured=1&needs_review=1)", async () => {
+    setWsId("ws-A");
+    let listUrl: URL | null = null;
+    server.use(
+      http.get("/api/workspaces/:wsId/items", ({ request }) => {
+        listUrl = new URL(request.url);
+        return HttpResponse.json({
+          items: [],
+          total: 0,
+          page: 1,
+          total_pages: 0,
+        });
+      }),
+    );
+    const { wrapper } = makeWrapper(["/items?insured=1&needs_review=1"]);
+    const { result } = renderHook(() => useItemsQuery(), { wrapper });
+
+    await waitFor(() => expect(result.current.data).toBeTruthy());
+    // The generic filter params ride the URL, so a restored saved view sends them.
+    expect(listUrl!.searchParams.get("is_insured")).toBe("true");
+    expect(listUrl!.searchParams.get("needs_review")).toBe("true");
+  });
+
   it("omits the archived param when the show_archived preference is off", async () => {
     setWsId("ws-A");
     let listUrl: URL | null = null;

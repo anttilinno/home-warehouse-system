@@ -5,6 +5,8 @@ import { Popover } from "../overlay";
 export interface FilterFacetOption {
   value: string;
   label: ReactNode;
+  /** Tree indent level (0 = root); indents the checklist row when set. */
+  depth?: number;
 }
 
 export interface FilterPopoverProps {
@@ -14,8 +16,13 @@ export interface FilterPopoverProps {
   options: FilterFacetOption[];
   /** Currently-selected values (controlled). */
   selected: string[];
-  /** Called with the next selection on each toggle (multi-select). */
+  /** Called with the next selection on each toggle. */
   onChange: (next: string[]) => void;
+  /**
+   * Single-select: toggling a value replaces the selection with just that
+   * value and closes the popover; unchecking clears it. Default = multi.
+   */
+  single?: boolean;
   className?: string;
 }
 
@@ -30,12 +37,20 @@ export function FilterPopover({
   options,
   selected,
   onChange,
+  single = false,
   className = "",
 }: Readonly<FilterPopoverProps>) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
 
   function toggle(value: string, checked: boolean) {
+    if (single) {
+      // Single-select: pick one value (replacing any prior) and close, or
+      // clear on uncheck.
+      onChange(checked ? [value] : []);
+      if (checked) setOpen(false);
+      return;
+    }
     const next = checked
       ? [...selected, value]
       : selected.filter((v) => v !== value);
@@ -64,12 +79,16 @@ export function FilterPopover({
       >
         <div className="flex flex-col gap-sp-1 px-sp-2 py-sp-1">
           {options.map((opt) => (
-            <RetroCheckbox
+            <div
               key={opt.value}
-              label={opt.label}
-              checked={selected.includes(opt.value)}
-              onChange={(e) => toggle(opt.value, e.target.checked)}
-            />
+              style={opt.depth ? { paddingLeft: opt.depth * 12 } : undefined}
+            >
+              <RetroCheckbox
+                label={opt.label}
+                checked={selected.includes(opt.value)}
+                onChange={(e) => toggle(opt.value, e.target.checked)}
+              />
+            </div>
           ))}
         </div>
       </Popover>

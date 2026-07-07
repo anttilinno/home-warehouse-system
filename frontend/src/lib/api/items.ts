@@ -10,6 +10,8 @@ import { toProxyUrl } from "./url";
 export interface ItemListParams {
   search?: string;
   category_id?: string;
+  is_insured?: boolean;
+  needs_review?: boolean;
   archived?: boolean;
   sort?: string;
   sort_dir?: string;
@@ -37,6 +39,8 @@ function buildQuery(params: ItemListParams): string {
   const qs = new URLSearchParams();
   if (params.search) qs.set("search", params.search);
   if (params.category_id) qs.set("category_id", params.category_id);
+  if (params.is_insured) qs.set("is_insured", "true");
+  if (params.needs_review) qs.set("needs_review", "true");
   if (params.archived) qs.set("archived", "true");
   if (params.sort) qs.set("sort", params.sort);
   if (params.sort_dir) qs.set("sort_dir", params.sort_dir);

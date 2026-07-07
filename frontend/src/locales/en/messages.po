@@ -828,6 +828,7 @@ msgstr "CATEGORIES — {workspaceName}"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/declutter/DeclutterPage.tsx
+#: src/features/items/components/ItemsResults.tsx
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemFormPage.tsx
 #: src/features/items/ItemsListPage.tsx
@@ -835,8 +836,8 @@ msgid "Category"
 msgstr "Category"
 
 #: src/features/items/ItemsListPage.tsx
-msgid "CATEGORY"
-msgstr "CATEGORY"
+#~ msgid "CATEGORY"
+#~ msgstr "CATEGORY"
 
 #: src/features/analytics/components/CategoryValueChart.tsx
 msgid "Category breakdown"
@@ -2239,7 +2240,6 @@ msgid "Filter items"
 msgstr "Filter items"
 
 #: src/components/retro/filters/FilterBar.tsx
-#: src/features/items/ItemsListPage.tsx
 msgid "Filter items…"
 msgstr "Filter items…"
 
@@ -2378,6 +2378,10 @@ msgstr "IN STOCK"
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "Indeterminate (partial)"
 #~ msgstr "Indeterminate (partial)"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Insured"
+msgstr "Insured"
 
 #: src/features/settings/LanguagePage.tsx
 msgid "Interface language"
@@ -2679,7 +2683,6 @@ msgstr "LOCAL"
 #: src/features/declutter/DeclutterPage.tsx
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/components/InventoryWhereFields.tsx
-#: src/features/items/components/ItemsResults.tsx
 #: src/features/items/ItemFormPage.tsx
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Location"
@@ -2915,6 +2918,10 @@ msgstr "Name"
 #: src/components/layout/Sidebar.tsx
 msgid "Navigator"
 msgstr "Navigator"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Needs review"
+msgstr "Needs review"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "never"
@@ -3690,7 +3697,6 @@ msgstr "Progress"
 
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/ExpiringPage.tsx
-#: src/features/items/components/ItemsResults.tsx
 msgid "Qty"
 msgstr "Qty"
 
@@ -4126,6 +4132,10 @@ msgstr "Search failed. Try again."
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Search locations…"
 msgstr "Search locations…"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Search name, brand, model…"
+msgstr "Search name, brand, model…"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
@@ -4827,6 +4837,10 @@ msgstr "Workspaces"
 #: src/features/auth/LoginPage.tsx
 msgid "Wrong email or password. Try again."
 msgstr "Wrong email or password. Try again."
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Yes"
+msgstr "Yes"
 
 #: src/features/settings/MembersPage.tsx
 msgid "YOU"

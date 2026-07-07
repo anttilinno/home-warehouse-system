@@ -12,6 +12,19 @@ export {
   type FilterFacetOption,
 } from "./FilterPopover";
 export {
+  type FilterDef,
+  type FilterOption,
+  type FilterValues,
+  chipsForDefs,
+  readFilterValues,
+} from "./filterDefs";
+export {
+  useUrlFilterState,
+  type FilterState,
+  type UseUrlFilterStateOptions,
+} from "./useUrlFilterState";
+export { filterFacetsFor } from "./FilterDefFacets";
+export {
   BulkActionBar,
   type BulkActionBarProps,
   type DestructiveBulkAction,

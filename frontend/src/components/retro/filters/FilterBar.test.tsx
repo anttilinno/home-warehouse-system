@@ -105,4 +105,41 @@ describe("FilterBar", () => {
     await user.click(screen.getByRole("button", { name: /clear all/i }));
     expect(onClearAll).toHaveBeenCalled();
   });
+
+  it("shows CLEAR ALL for a search-only state (no chips), and hides it when fully idle", () => {
+    const { rerender } = render(
+      wrap(
+        <FilterBar
+          searchValue="drill"
+          onSearchChange={vi.fn()}
+          facets={[]}
+          itemCount={2}
+          filterChips={[]}
+          onRemoveFilter={vi.fn()}
+          onClearAll={vi.fn()}
+        />,
+      ),
+    );
+    // Search term carries no chip, but the reset affordance must still appear.
+    expect(
+      screen.getByRole("button", { name: /clear all/i }),
+    ).toBeInTheDocument();
+
+    rerender(
+      wrap(
+        <FilterBar
+          searchValue=""
+          onSearchChange={vi.fn()}
+          facets={[]}
+          itemCount={2}
+          filterChips={[]}
+          onRemoveFilter={vi.fn()}
+          onClearAll={vi.fn()}
+        />,
+      ),
+    );
+    expect(
+      screen.queryByRole("button", { name: /clear all/i }),
+    ).not.toBeInTheDocument();
+  });
 });

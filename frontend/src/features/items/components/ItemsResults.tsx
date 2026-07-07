@@ -34,6 +34,7 @@ export function ItemsResults({
   hasFilters,
   onAdd,
   onClearAll,
+  categoryNameById,
   currentPage,
   totalPages,
   perPage,
@@ -51,6 +52,8 @@ export function ItemsResults({
   hasFilters: boolean;
   onAdd: () => void;
   onClearAll: () => void;
+  /** item.category_id → category name, for the Category column. */
+  categoryNameById: Map<string, string>;
   currentPage: number;
   totalPages: number;
   perPage: number;
@@ -144,8 +147,7 @@ export function ItemsResults({
                 </button>
               </th>
             ))}
-            <th>{t`Location`}</th>
-            <th className="text-right">{t`Qty`}</th>
+            <th>{t`Category`}</th>
             <th>{t`Status`}</th>
             <th />
           </tr>
@@ -156,6 +158,11 @@ export function ItemsResults({
               key={item.id}
               item={item}
               selected={isSelected(item.id)}
+              categoryName={
+                item.category_id
+                  ? categoryNameById.get(item.category_id)
+                  : undefined
+              }
               {...rowActions}
             />
           ))}

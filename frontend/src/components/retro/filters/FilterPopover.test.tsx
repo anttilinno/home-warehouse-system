@@ -71,6 +71,55 @@ describe("FilterPopover", () => {
     ).toBeInTheDocument();
   });
 
+  it("single-select replaces the selection with the picked value and closes the popover", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      wrap(
+        <FilterPopover
+          label="Category"
+          options={OPTIONS}
+          selected={["consumables"]}
+          onChange={onChange}
+          single
+        />,
+      ),
+    );
+
+    await user.click(screen.getByRole("button", { name: /category/i }));
+    await user.click(await screen.findByRole("checkbox", { name: "Tools" }));
+
+    // Replaces, not appends.
+    expect(onChange).toHaveBeenCalledWith(["tools"]);
+    // Popover closes on a single-select pick.
+    expect(
+      screen.queryByRole("checkbox", { name: "Consumables" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("indents options by depth (tree-shaped enums)", async () => {
+    const user = userEvent.setup();
+    render(
+      wrap(
+        <FilterPopover
+          label="Category"
+          options={[
+            { value: "tools", label: "Tools", depth: 0 },
+            { value: "power", label: "Power Tools", depth: 1 },
+          ]}
+          selected={[]}
+          onChange={vi.fn()}
+        />,
+      ),
+    );
+
+    await user.click(screen.getByRole("button", { name: /category/i }));
+    const child = await screen.findByRole("checkbox", { name: "Power Tools" });
+    // depth 1 → 12px indent on the row wrapper.
+    const wrapper = child.closest("div");
+    expect(wrapper).toHaveStyle({ paddingLeft: "12px" });
+  });
+
   it("Escape closes via the modal stack (no local document ESC listener)", async () => {
     const user = userEvent.setup();
     render(

@@ -7,13 +7,19 @@ import {
   PixelIcon,
   useTableSelection,
   FilterBar,
-  FilterPopover,
+  type FilterDef,
+  type FilterOption,
+  filterFacetsFor,
+  useUrlFilterState,
   SavedFilters,
   useSavedFilters,
   retroToast,
 } from "@/components/retro";
 import { useShortcuts } from "@/components/shortcuts";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
+import { useCategoriesQuery } from "@/features/taxonomy/hooks/useCategoriesQuery";
+import type { TreeNode } from "@/features/taxonomy/lib/buildTree";
+import type { Category } from "@/lib/api/category";
 import { photosApi } from "@/lib/api/photos";
 import type { Item } from "@/lib/types";
 import { useItemsQuery } from "./hooks/useItemsQuery";
@@ -24,6 +30,20 @@ import { DeleteItemDialog } from "./components/DeleteItemDialog";
 import { BulkDeleteItemsDialog } from "./components/BulkDeleteItemsDialog";
 
 const SAVED_FILTERS_KEY = "items-list-filters/v1";
+
+// Depth-first flatten of the category forest into indented filter options
+// (root categories first, each child under its parent, indented by depth).
+function flattenCategoryTree(nodes: TreeNode<Category>[]): FilterOption[] {
+  const out: FilterOption[] = [];
+  const walk = (list: TreeNode<Category>[]) => {
+    for (const n of list) {
+      out.push({ value: n.node.id, label: n.node.name, depth: n.depth });
+      if (n.children.length > 0) walk(n.children);
+    }
+  };
+  walk(nodes);
+  return out;
+}
 
 export function ItemsListPage() {
   const { t } = useLingui();
@@ -47,6 +67,33 @@ export function ItemsListPage() {
 
   const workspaceName =
     workspaces?.find((w) => w.id === wsId)?.name ?? t`Workspace`;
+
+  // ── Filter definitions (the generic filter system). Category is a single-select
+  // enum built from the workspace category tree (indented); insured + needs-review
+  // are booleans. useUrlFilterState turns these into URL-backed state + chips.
+  const { rows: categoryRows, tree: categoryTree } = useCategoriesQuery();
+  const categoryNameById = useMemo(
+    () => new Map(categoryRows.map((c) => [c.id, c.name])),
+    [categoryRows],
+  );
+  const filterDefs = useMemo<FilterDef[]>(
+    () => [
+      {
+        key: "category",
+        label: t`Category`,
+        kind: "enum",
+        options: flattenCategoryTree(categoryTree),
+      },
+      { key: "insured", label: t`Insured`, kind: "boolean" },
+      { key: "needs_review", label: t`Needs review`, kind: "boolean" },
+    ],
+    [categoryTree, t],
+  );
+  const filters = useUrlFilterState(filterDefs, { yesLabel: t`Yes` });
+  const filterFacets = useMemo(
+    () => filterFacetsFor(filterDefs, filters),
+    [filterDefs, filters],
+  );
 
   // ── URL param writer (Pattern 1): mutate one key, reset page on filter change.
   const setParam = useCallback(
@@ -207,27 +254,9 @@ export function ItemsListPage() {
     return state.sortDir === "asc" ? " ↑" : " ↓";
   }
 
-  // ── Active-filter chips (live state) for the FilterBar.
-  const filterChips = useMemo(() => {
-    const chips: { key: string; label: string; displayValue: string }[] = [];
-    if (state.category)
-      chips.push({
-        key: "category",
-        label: t`Category`,
-        displayValue: state.category,
-      });
-    return chips;
-  }, [state.category, t]);
-
-  const hasFilters = !!state.q || !!state.category;
-
-  function clearAllFilters() {
-    setSearchParams(() => {
-      const next = new URLSearchParams();
-      next.set("page", "1");
-      return next;
-    });
-  }
+  // Search term is not chipped (it lives in the box), but it counts toward the
+  // "anything active?" test that drives the empty-state + CLEAR ALL affordance.
+  const hasFilters = !!state.q || filters.hasActive;
 
   const toggleAll = () => {
     const allSelected = selectedCount === items.length && items.length > 0;
@@ -269,27 +298,12 @@ export function ItemsListPage() {
         <FilterBar
           searchValue={state.q}
           onSearchChange={(v) => setParam("q", v)}
-          searchPlaceholder={t`Filter items…`}
+          searchPlaceholder={t`Search name, brand, model…`}
           itemCount={data?.total ?? 0}
-          facets={[
-            {
-              key: "category",
-              label: t`Category`,
-              trigger: (
-                <FilterPopover
-                  label={<Trans>CATEGORY</Trans>}
-                  options={[]}
-                  selected={state.category ? [state.category] : []}
-                  onChange={(next) =>
-                    setParam("category", next[next.length - 1] ?? null)
-                  }
-                />
-              ),
-            },
-          ]}
-          filterChips={filterChips}
-          onRemoveFilter={(key) => setParam(key, null)}
-          onClearAll={clearAllFilters}
+          facets={filterFacets}
+          filterChips={filters.chips}
+          onRemoveFilter={filters.clear}
+          onClearAll={filters.clearAll}
           primaryAction={
             <BevelButton variant="mint" onClick={goNew}>
               <PixelIcon name="plus" size={16} /> <Trans>ADD ITEM</Trans>
@@ -317,7 +331,8 @@ export function ItemsListPage() {
           sortGlyph={sortGlyph}
           hasFilters={hasFilters}
           onAdd={goNew}
-          onClearAll={clearAllFilters}
+          onClearAll={filters.clearAll}
+          categoryNameById={categoryNameById}
           currentPage={currentPage}
           totalPages={totalPages}
           perPage={25}

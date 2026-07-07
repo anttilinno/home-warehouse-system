@@ -25,13 +25,16 @@ export interface ItemRowActions {
 export function ItemRow({
   item,
   selected,
+  categoryName,
   onNavigate,
   onNavigateEdit,
   onArchive,
   onRestore,
   onRequestDelete,
   onToggleSelect,
-}: Readonly<{ item: Item; selected: boolean } & ItemRowActions>) {
+}: Readonly<
+  { item: Item; selected: boolean; categoryName?: string } & ItemRowActions
+>) {
   const archived = item.is_archived ?? false;
 
   return (
@@ -68,9 +71,9 @@ export function ItemRow({
       <td className="font-semibold">{item.name}</td>
       {/* SKU stands in for the second sort header column. */}
       <td className="mono">{item.sku}</td>
-      {/* Location/Qty are not on the wire ItemResponse yet. */}
-      <td className="text-fg-muted">—</td>
-      <td className="mono text-right text-fg-muted">—</td>
+      <td className={categoryName ? "" : "text-fg-muted"}>
+        {categoryName ?? "—"}
+      </td>
       <td>
         {archived ? (
           <RetroBadge variant="neutral">

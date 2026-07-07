@@ -828,6 +828,7 @@ msgstr "КАТЕГОРИИ — {workspaceName}"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/declutter/DeclutterPage.tsx
+#: src/features/items/components/ItemsResults.tsx
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemFormPage.tsx
 #: src/features/items/ItemsListPage.tsx
@@ -835,8 +836,8 @@ msgid "Category"
 msgstr "Категория"
 
 #: src/features/items/ItemsListPage.tsx
-msgid "CATEGORY"
-msgstr "КАТЕГОРИЯ"
+#~ msgid "CATEGORY"
+#~ msgstr "КАТЕГОРИЯ"
 
 #: src/features/analytics/components/CategoryValueChart.tsx
 msgid "Category breakdown"
@@ -2239,7 +2240,6 @@ msgid "Filter items"
 msgstr "Фильтровать предметы"
 
 #: src/components/retro/filters/FilterBar.tsx
-#: src/features/items/ItemsListPage.tsx
 msgid "Filter items…"
 msgstr "Фильтровать предметы…"
 
@@ -2378,6 +2378,10 @@ msgstr "В НАЛИЧИИ"
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "Indeterminate (partial)"
 #~ msgstr "Неопределённо (частично)"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Insured"
+msgstr "Застраховано"
 
 #: src/features/settings/LanguagePage.tsx
 msgid "Interface language"
@@ -2679,7 +2683,6 @@ msgstr "ЛОКАЛЬНО"
 #: src/features/declutter/DeclutterPage.tsx
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/components/InventoryWhereFields.tsx
-#: src/features/items/components/ItemsResults.tsx
 #: src/features/items/ItemFormPage.tsx
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Location"
@@ -2915,6 +2918,10 @@ msgstr "Название"
 #: src/components/layout/Sidebar.tsx
 msgid "Navigator"
 msgstr "Навигатор"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Needs review"
+msgstr "Требует проверки"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "never"
@@ -3690,7 +3697,6 @@ msgstr "Прогресс"
 
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/ExpiringPage.tsx
-#: src/features/items/components/ItemsResults.tsx
 msgid "Qty"
 msgstr "Кол-во"
 
@@ -4126,6 +4132,10 @@ msgstr "Поиск не удался. Попробуйте снова."
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Search locations…"
 msgstr "Поиск местоположений…"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Search name, brand, model…"
+msgstr "Поиск по названию, бренду, модели…"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
@@ -4827,6 +4837,10 @@ msgstr "Рабочие пространства"
 #: src/features/auth/LoginPage.tsx
 msgid "Wrong email or password. Try again."
 msgstr "Неверный email или пароль. Попробуйте снова."
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Yes"
+msgstr "Да"
 
 #: src/features/settings/MembersPage.tsx
 msgid "YOU"

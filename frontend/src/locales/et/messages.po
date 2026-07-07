@@ -828,6 +828,7 @@ msgstr "KATEGOORIAD — {workspaceName}"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/declutter/DeclutterPage.tsx
+#: src/features/items/components/ItemsResults.tsx
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemFormPage.tsx
 #: src/features/items/ItemsListPage.tsx
@@ -835,8 +836,8 @@ msgid "Category"
 msgstr "Kategooria"
 
 #: src/features/items/ItemsListPage.tsx
-msgid "CATEGORY"
-msgstr "KATEGOORIA"
+#~ msgid "CATEGORY"
+#~ msgstr "KATEGOORIA"
 
 #: src/features/analytics/components/CategoryValueChart.tsx
 msgid "Category breakdown"
@@ -2239,7 +2240,6 @@ msgid "Filter items"
 msgstr "Filtreeri esemeid"
 
 #: src/components/retro/filters/FilterBar.tsx
-#: src/features/items/ItemsListPage.tsx
 msgid "Filter items…"
 msgstr "Filtreeri esemeid…"
 
@@ -2378,6 +2378,10 @@ msgstr "LAOS"
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "Indeterminate (partial)"
 #~ msgstr "Määramata (osaline)"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Insured"
+msgstr "Kindlustatud"
 
 #: src/features/settings/LanguagePage.tsx
 msgid "Interface language"
@@ -2679,7 +2683,6 @@ msgstr "LOKAALNE"
 #: src/features/declutter/DeclutterPage.tsx
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/components/InventoryWhereFields.tsx
-#: src/features/items/components/ItemsResults.tsx
 #: src/features/items/ItemFormPage.tsx
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Location"
@@ -2915,6 +2918,10 @@ msgstr "Nimi"
 #: src/components/layout/Sidebar.tsx
 msgid "Navigator"
 msgstr "Navigaator"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Needs review"
+msgstr "Vajab ülevaatust"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "never"
@@ -3690,7 +3697,6 @@ msgstr "Edenemine"
 
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/ExpiringPage.tsx
-#: src/features/items/components/ItemsResults.tsx
 msgid "Qty"
 msgstr "Kogus"
 
@@ -4126,6 +4132,10 @@ msgstr "Otsing ebaõnnestus. Proovi uuesti."
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Search locations…"
 msgstr "Otsi asukohti…"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Search name, brand, model…"
+msgstr "Otsi nime, brändi, mudelit…"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
@@ -4827,6 +4837,10 @@ msgstr "Tööruumid"
 #: src/features/auth/LoginPage.tsx
 msgid "Wrong email or password. Try again."
 msgstr "Vale e-post või parool. Proovi uuesti."
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Yes"
+msgstr "Jah"
 
 #: src/features/settings/MembersPage.tsx
 msgid "YOU"

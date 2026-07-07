@@ -94,7 +94,10 @@ export function FilterBar({
         {primaryAction}
       </div>
 
-      {filterChips.length > 0 && (
+      {/* The chip row + CLEAR ALL shows whenever ANYTHING is active — including a
+          search-only state (the search box carries no chip, but must still be
+          clearable). */}
+      {(filterChips.length > 0 || searchValue !== "") && (
         <div className="flex flex-wrap items-center gap-sp-1">
           {filterChips.map((chip) => {
             // chip.label is ReactNode; for the button's accessible text use the
