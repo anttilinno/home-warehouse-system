@@ -365,6 +365,10 @@ msgstr "АККАУНТ"
 msgid "Account created — welcome."
 msgstr "Аккаунт создан — добро пожаловать."
 
+#: src/components/layout/breadcrumbs.tsx
+msgid "Accounts"
+msgstr "Учётные записи"
+
 #: src/features/inventory/components/InventoryDateFields.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
@@ -435,6 +439,7 @@ msgstr "ДОБАВИТЬ ЗАПИСЬ"
 msgid "ADD FILE"
 msgstr "ДОБАВИТЬ ФАЙЛ"
 
+#: src/components/layout/Fab.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Add item"
 msgstr "Добавить предмет"
@@ -483,6 +488,7 @@ msgstr "Уже есть аккаунт?"
 msgid "Amount in your workspace currency."
 msgstr "Сумма в валюте вашего рабочего пространства."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Analytics"
@@ -492,11 +498,13 @@ msgstr "Аналитика"
 msgid "API token"
 msgstr "API-токен"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/AppearancePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Appearance"
 msgstr "Оформление"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/approvals/ApprovalsPage.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -648,6 +656,7 @@ msgstr "ПОЛУЧАТЕЛЬ НЕ НАЙДЕН"
 msgid "Borrower updated."
 msgstr "Получатель обновлён."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
@@ -763,6 +772,7 @@ msgstr "Подпись"
 #~ msgid "Careful."
 #~ msgstr "Осторожно."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/components/DashboardStatTiles.tsx
@@ -971,6 +981,7 @@ msgstr "Контейнер"
 msgid "CONTAINER"
 msgstr ""
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/CommandPalette.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -1503,11 +1514,13 @@ msgstr "Опасная зона"
 msgid "Dark"
 msgstr ""
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Dashboard"
 msgstr "Панель управления"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/DataStoragePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Data & Storage"
@@ -1542,6 +1555,7 @@ msgstr "Дней без использования"
 msgid "Decimal separator"
 msgstr "Десятичный разделитель"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/declutter/DeclutterPage.tsx
@@ -1562,6 +1576,7 @@ msgstr "Удаление"
 
 #: src/components/retro/filters/SavedFilters.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/items/components/BulkDeleteItemsDialog.tsx
 #: src/features/items/components/DeleteItemDialog.tsx
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/items/components/ItemsBulkBar.tsx
@@ -1595,6 +1610,10 @@ msgstr "Удалить {0}"
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "Delete {0}? This can't be undone."
 msgstr "Удалить {0}? Это действие нельзя отменить."
+
+#: src/features/items/components/BulkDeleteItemsDialog.tsx
+msgid "DELETE {count} ITEMS?"
+msgstr "УДАЛИТЬ {count} ЭЛЕМЕНТОВ?"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "Delete {selectedCount} selected"
@@ -1701,6 +1720,10 @@ msgstr "Описание"
 #: src/features/items/components/ItemLabels.tsx
 msgid "Detach {0}"
 msgstr "Открепить {0}"
+
+#: src/components/layout/breadcrumbs.tsx
+msgid "Detail"
+msgstr "Подробности"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "DETAILS"
@@ -1853,6 +1876,7 @@ msgstr "срок через {0}д"
 msgid "due in {inDays}d"
 msgstr "срок через {inDays}д"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 msgid "Due Maintenance"
 msgstr "Требуется обслуживание"
@@ -1865,6 +1889,7 @@ msgstr "ТРЕБУЕТСЯ ОБСЛУЖИВАНИЕ — {workspaceName}"
 msgid "e.g. duplicate request"
 msgstr "напр. дублирующий запрос"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
 msgid "Edit"
 msgstr "Изменить"
@@ -2036,6 +2061,10 @@ msgstr "Все отслеживаемые предметы недавно исп
 msgid "exchanging credentials"
 msgstr "обмен учётными данными"
 
+#: src/components/layout/breadcrumbs.tsx
+msgid "Expiring"
+msgstr "Истекающие"
+
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "Expiring soon"
 msgstr "Скоро истекает срок"
@@ -2184,6 +2213,10 @@ msgstr ""
 #~ msgid "Form Atoms"
 #~ msgstr "Атомы форм"
 
+#: src/components/layout/breadcrumbs.tsx
+msgid "Formats"
+msgstr "Форматы"
+
 #. placeholder {0}: duplicates.length
 #: src/features/items/components/DuplicateWarningDialog.tsx
 msgid "Found {0} similar photo(s) already on this item."
@@ -2269,6 +2302,7 @@ msgstr "Для импорта данных нужны права админис�
 msgid "Importing…"
 msgstr "Импорт…"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/imports/components/ImportHistory.tsx
@@ -2296,6 +2330,7 @@ msgstr "Язык интерфейса"
 msgid "Interval (days)"
 msgstr "Интервал (дни)"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -2363,6 +2398,7 @@ msgstr "Предмет извлечён из архива."
 msgid "items"
 msgstr "предметов"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/CommandPalette.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -2409,6 +2445,7 @@ msgstr "МЕТКИ"
 msgid "LABELS — {workspaceName}"
 msgstr "МЕТКИ — {workspaceName}"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/LanguagePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Language"
@@ -2554,6 +2591,7 @@ msgstr "Выдано"
 msgid "Loaning this item — pick a borrower."
 msgstr "Выдача этого предмета — выберите получателя."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -2590,6 +2628,7 @@ msgstr "Местоположение"
 msgid "Location value"
 msgstr "Значение местоположения"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/CommandPalette.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -2715,6 +2754,7 @@ msgstr "Участник удалён."
 msgid "members"
 msgstr "участники"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/MembersPage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Members"
@@ -2789,6 +2829,7 @@ msgstr "ПЕРЕМЕЩЕНИЯ — {itemName}"
 msgid "My changes"
 msgstr "Мои изменения"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 msgid "My Changes"
@@ -2817,6 +2858,10 @@ msgstr "Навигатор"
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "never"
 msgstr "никогда"
+
+#: src/components/layout/breadcrumbs.tsx
+msgid "New"
+msgstr "Создать"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "New borrower"
@@ -3255,6 +3300,7 @@ msgstr "Нечего экспортировать."
 msgid "Notification settings saved."
 msgstr "Настройки уведомлений сохранены."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/notifications/components/NotificationsBell.tsx
 #: src/features/notifications/components/NotificationsDropdown.tsx
 #: src/features/settings/NotificationsPage.tsx
@@ -3366,6 +3412,7 @@ msgstr "ПРОСРОЧЕНО"
 #~ msgid "Overlay Atoms"
 #~ msgstr "Атомы оверлеев"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 msgid "Overview"
 msgstr "Обзор"
@@ -3382,6 +3429,7 @@ msgstr "страница {page} из {pageCount} · {perPage} / стр."
 msgid "Pagination"
 msgstr "Постраничная навигация"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Paperless"
 msgstr "Paperless"
@@ -3491,6 +3539,7 @@ msgstr "ФОТО"
 msgid "Pick a different location or container."
 msgstr "Выберите другое местоположение или контейнер."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 msgid "Planning"
 msgstr "Планирование"
@@ -3557,6 +3606,7 @@ msgstr "Обработка"
 msgid "PRODUCT FOUND"
 msgstr "ТОВАР НАЙДЕН"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/SidebarUserMenu.tsx
 #: src/features/settings/ProfilePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
@@ -3969,6 +4019,7 @@ msgstr "Сохранено."
 #~ msgid "SavedFilters — preset chips + ▾ PRESETS menu."
 #~ msgstr "SavedFilters — чипы пресетов + меню ▾ ПРЕСЕТЫ."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
@@ -4028,6 +4079,7 @@ msgstr ""
 msgid "Searching…"
 msgstr "Поиск…"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Security"
 msgstr "Безопасность"
@@ -4081,6 +4133,7 @@ msgstr "СДЕЛАТЬ ОСНОВНЫМ"
 msgid "Set when created — can't be changed."
 msgstr ""
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/components/layout/SidebarUserMenu.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -4240,6 +4293,7 @@ msgstr "Переключено на {name}."
 msgid "Sync"
 msgstr "Синхронизация"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Sync History"
@@ -4258,6 +4312,7 @@ msgstr ""
 msgid "Syncing {0} changes…"
 msgstr ""
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/settings/AppearancePage.tsx
 msgid "System"
@@ -4275,12 +4330,9 @@ msgstr "Системные сводки"
 msgid "target {CAPACITY_TARGET_PLACEHOLDER} · data pending"
 msgstr "цель {CAPACITY_TARGET_PLACEHOLDER} · данные ожидаются"
 
-#: src/features/taxonomy/components/CategoriesTab.tsx
-#: src/features/taxonomy/components/ContainersTab.tsx
-#: src/features/taxonomy/components/LabelsTab.tsx
-#: src/features/taxonomy/components/LocationsTab.tsx
-#~ msgid "Taxonomy"
-#~ msgstr "Таксономия"
+#: src/components/layout/breadcrumbs.tsx
+msgid "Taxonomy"
+msgstr "Таксономия"
 
 #: src/features/taxonomy/TaxonomyPage.tsx
 #~ msgid "TAXONOMY — {workspaceName}"
@@ -4515,6 +4567,10 @@ msgstr "Попробуйте снова."
 msgid "Type"
 msgstr "Тип"
 
+#: src/features/items/components/BulkDeleteItemsDialog.tsx
+msgid "Type {count} to delete {count} archived items. This can't be undone."
+msgstr "Введите {count}, чтобы удалить {count} архивных элементов. Это действие необратимо."
+
 #: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "Type *"
@@ -4540,6 +4596,10 @@ msgstr "Введите DELETE для подтверждения. Это безв
 #: src/features/items/ItemDetailPage.tsx
 msgid "Type the item name to confirm. This can't be undone."
 msgstr "Введите название предмета для подтверждения. Это действие нельзя отменить."
+
+#: src/features/items/components/BulkDeleteItemsDialog.tsx
+msgid "Type the number of items to delete"
+msgstr "Введите число удаляемых элементов"
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "UNARCHIVE"
@@ -4646,6 +4706,7 @@ msgstr "Когда"
 msgid "Window"
 msgstr "Окно"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/wishlist/components/WishlistTable.tsx

@@ -250,8 +250,10 @@
   --titlebar-mint:   #131317;
   --titlebar-butter: #131317;
 
-  /* ---------- State fills (stay visibly tinted in terminal mode) ---------- */
-  --selection-fill: #103247;   /* dim blue; ink 12.2:1, muted 8.6:1 on it */
+  /* ---------- State fills (stay visibly tinted in terminal mode) ----------
+     Brighter than --info-bg (#103247, the .rtable HOVER fill) so a selected
+     row and a hovered row stay distinct during multi-select. */
+  --selection-fill: #164a68;   /* dim blue; ink >=4.5:1, distinct from info-bg */
   --status-online:  #3fe3a4;   /* lit green LED (accent-mint-deep dark value) */
   --selection-text-bg: #56b4e4; /* bright accent blue */
   --selection-text-fg: #060608; /* 8.5:1 on #56b4e4 */

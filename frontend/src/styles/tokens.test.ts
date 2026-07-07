@@ -200,6 +200,13 @@ describe("state fills are distinguishable from their surface (>= 1.3:1)", () => 
       ["status-online", "dark"],
       ["bg-panel-2", "dark"],
     ],
+    // Selected row (selection-fill) vs hovered row (info-bg) must not collide
+    // in dark — a multi-select where both read identical is ambiguous.
+    [
+      "selection-fill vs info-bg (dark)",
+      ["selection-fill", "dark"],
+      ["info-bg", "dark"],
+    ],
   ];
 
   it.each(fillPairs)("%s", (_label, fill, surface) => {

@@ -75,6 +75,7 @@
     "jsdom": "latest",
     "knip": "^6.17.1",
     "msw": "^2.14.2",
+    "pixelarticons": "^2.2.0",
     "rollup-plugin-visualizer": "latest",
     "tailwindcss": "^4.2.4",
     "typescript": "^5.9.3",

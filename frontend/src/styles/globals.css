@@ -317,6 +317,24 @@ body {
    descendant rules — cleaner as a component class than per-cell utilities;
    consumed by components/retro/RetroTable.tsx) ---------- */
 @layer components {
+  /* Right-edge overflow cue (C6): RetroTable toggles data-overflow-right on the
+     wrapper when the inner scroller has hidden columns to the right. A hard,
+     ink-tinted shade pinned to the visible right edge (pointer-events:none so it
+     never eats clicks). Matches the retro language — no soft glow. */
+  .rtable-wrap[data-overflow-right="true"]::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 16px;
+    pointer-events: none;
+    background: linear-gradient(
+      to left,
+      color-mix(in srgb, var(--border-ink) 22%, transparent),
+      transparent
+    );
+  }
   .rtable {
     width: 100%;
     border-collapse: collapse;

@@ -7,7 +7,7 @@ import {
   it,
   vi,
 } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -156,8 +156,12 @@ describe("AppShell", () => {
 
   it("derives the PageHeader breadcrumb from the current route", () => {
     renderShell("/items");
-    // The breadcrumb shows the items route leaf.
-    expect(screen.getByText("ITEMS")).toBeInTheDocument();
+    // The breadcrumb shows the items route leaf (label content is "Items";
+    // the uppercase is CSS). Scope to the Breadcrumb nav — "Items" also appears
+    // as a sidebar nav label.
+    const crumb = screen.getByRole("navigation", { name: "Breadcrumb" });
+    expect(within(crumb).getByText("Items")).toBeInTheDocument();
+    expect(within(crumb).getByText("Inventory")).toBeInTheDocument();
   });
 
   it("ESC navigates back through history when no overlay is open", async () => {

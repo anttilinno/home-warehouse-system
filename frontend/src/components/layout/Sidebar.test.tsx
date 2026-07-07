@@ -172,8 +172,22 @@ describe("Sidebar", () => {
   });
 
   it("sets the collapse toggle aria-expanded=false when collapsed", () => {
-    renderSidebar(<Sidebar stats={stats} user={user} collapsed />);
+    renderSidebar(
+      <Sidebar
+        stats={stats}
+        user={user}
+        collapsed
+        onToggleCollapse={vi.fn()}
+      />,
+    );
     const toggle = screen.getByRole("button", { name: /collapse|expand/i });
     expect(toggle).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("omits the collapse toggle when no onToggleCollapse is provided (drawer)", () => {
+    renderSidebar(<Sidebar stats={stats} user={user} />);
+    expect(
+      screen.queryByRole("button", { name: /collapse|expand/i }),
+    ).toBeNull();
   });
 });

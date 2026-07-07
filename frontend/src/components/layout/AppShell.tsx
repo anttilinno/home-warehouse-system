@@ -6,6 +6,7 @@ import { Trans } from "@lingui/react/macro";
 import { TopBar } from "./TopBar";
 import { Sidebar } from "./Sidebar";
 import { PageHeader } from "./PageHeader";
+import { buildCrumbs } from "./breadcrumbs";
 import { Bottombar } from "./Bottombar";
 import { Fab } from "./Fab";
 import { MobileDrawer } from "./MobileDrawer";
@@ -13,6 +14,7 @@ import { F1HelpDialog } from "./F1HelpDialog";
 import { WorkspaceProvider } from "@/features/workspace/WorkspaceProvider";
 import { useLogout } from "@/features/auth/useLogout";
 import { useApprovalsList } from "@/features/approvals/hooks/useApprovalsList";
+import { useDashboardStats } from "@/features/dashboard/useDashboardStats";
 import { settingsApi } from "@/lib/api/settings";
 import { SSEProvider, useSSEStatus } from "@/features/sse";
 import { useResumeOnReconnect } from "@/lib/offline/useResumeOnReconnect";
@@ -39,24 +41,6 @@ const CommandPalette = lazy(() => import("@/features/command-palette"));
 // through the <Outlet/>; the desktop Bottombar + the mobile FAB read the same
 // useShortcuts SSOT. The Fab/MobileDrawer/Bottombar carry the responsive class
 // contract (hidden md:flex / md:hidden) so CSS, not JS, picks the surface.
-
-// Route → breadcrumb segments. Placeholder routes are fine this phase; feature
-// phases extend this map as their routes land.
-const ROUTE_SEGMENTS: Record<string, string[]> = {
-  "/": ["OVERVIEW", "DASHBOARD"],
-  "/items": ["INVENTORY", "ITEMS"],
-  "/locations": ["INVENTORY", "LOCATIONS"],
-  "/containers": ["INVENTORY", "CONTAINERS"],
-  "/categories": ["INVENTORY", "CATEGORIES"],
-  "/loans": ["INVENTORY", "LOANS"],
-  "/borrowers": ["INVENTORY", "BORROWERS"],
-  "/scan": ["SYSTEM", "SCAN"],
-  "/settings": ["SYSTEM", "SETTINGS"],
-};
-
-function segmentsForPath(pathname: string): string[] {
-  return ROUTE_SEGMENTS[pathname] ?? ["OVERVIEW"];
-}
 
 // Format a Date as a local HH:MM:SS readout for the PageHeader LAST SYNC slot.
 // Returns undefined when there has been no event yet so PageHeader falls back to
@@ -130,9 +114,9 @@ function ShellChrome() {
     return () => document.removeEventListener("keydown", onEsc);
   }, [navigate]);
 
-  const segments = useMemo(
-    () => segmentsForPath(location.pathname),
-    [location.pathname],
+  const crumbs = useMemo(
+    () => buildCrumbs(location.pathname, location.search),
+    [location.pathname, location.search],
   );
 
   // Live SSE status (read once here, threaded into the chrome). The split STATUS
@@ -157,6 +141,11 @@ function ShellChrome() {
   // shared ["pending-changes", wsId, "pending"] cache (same key the /approvals
   // page fills) — no new endpoint. Non-admins 403 → total 0 → badge hidden.
   const { total: pendingApprovals } = useApprovalsList();
+
+  // Workspace stat totals for the Navigator's count badges. Shares the
+  // ["dashboard", wsId] cache with the dashboard tiles (staleTime in the hook
+  // stops per-route refetch); undefined until loaded → badges just don't show.
+  const stats = useDashboardStats().data;
 
   return (
     <div className="app-shell" data-collapsed={collapsed}>
@@ -183,6 +172,7 @@ function ShellChrome() {
         <Sidebar
           collapsed={collapsed}
           onToggleCollapse={() => setCollapsed((v) => !v)}
+          stats={stats}
           pendingApprovals={pendingApprovals}
           user={me.data}
           onLogout={logout}
@@ -190,8 +180,10 @@ function ShellChrome() {
       </div>
 
       <main id="main" tabIndex={-1} className="app-main">
-        <PageHeader segments={segments} lastSync={lastSync} />
-        <div className="p-sp-5">
+        <PageHeader crumbs={crumbs} lastSync={lastSync} />
+        {/* Extra bottom padding below md so the last row (and its right-side
+            actions) clears the 56px FAB + safe-area inset (C3). */}
+        <div className="p-sp-5 max-md:pb-[calc(88px+env(safe-area-inset-bottom))]">
           <Outlet />
         </div>
       </main>
@@ -207,6 +199,7 @@ function ShellChrome() {
       <MobileDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
+        stats={stats}
         pendingApprovals={pendingApprovals}
         user={me.data}
         onLogout={logout}

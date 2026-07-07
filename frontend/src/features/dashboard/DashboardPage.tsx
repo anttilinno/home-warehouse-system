@@ -6,7 +6,8 @@ import { Window } from "@/components/retro";
 import { useShortcuts } from "@/components/shortcuts";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 import { get } from "@/lib/api";
-import type { DashboardStats, RecentActivity } from "@/lib/types";
+import type { RecentActivity } from "@/lib/types";
+import { useDashboardStats } from "./useDashboardStats";
 import { DashboardSideRail } from "./components/DashboardSideRail";
 import { DashboardStatTiles } from "./components/DashboardStatTiles";
 import { RecentActivityCard } from "./components/RecentActivityCard";
@@ -27,13 +28,7 @@ export function DashboardPage() {
   // ["workspaces"] query; the dashboard reads its list for the empty-state.
   const { currentWorkspaceId: wsId, workspaces } = useWorkspace();
 
-  const stats = useQuery({
-    queryKey: ["dashboard", wsId],
-    queryFn: () =>
-      get<DashboardStats>(`/workspaces/${wsId}/analytics/dashboard`),
-    enabled: !!wsId,
-    retry: false,
-  });
+  const stats = useDashboardStats();
   const activity = useQuery({
     queryKey: ["activity", wsId],
     queryFn: () =>

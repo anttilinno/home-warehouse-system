@@ -62,6 +62,22 @@ beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
+// ── ResizeObserver test stub ─────────────────────────────────────────────────
+// jsdom ships NO `ResizeObserver`. RetroTable observes its scroller to toggle
+// the right-edge overflow cue, so every test that renders a RetroTable would
+// throw `ResizeObserver is not defined` without this. Minimal no-op: it never
+// fires (jsdom has no layout), which is fine — the cue is a visual affordance,
+// and the initial `update()` call still runs against the (zero-size) element.
+if (typeof globalThis.ResizeObserver === "undefined") {
+  class MockResizeObserver {
+    observe(): void {}
+    unobserve(): void {}
+    disconnect(): void {}
+  }
+  (globalThis as { ResizeObserver?: unknown }).ResizeObserver =
+    MockResizeObserver;
+}
+
 // ── EventSource test stub ────────────────────────────────────────────────────
 // jsdom ships NO `EventSource` (Phase 6 RESEARCH Pitfall 1 — verified via JSDOM
 // probe → undefined). SSEProvider constructs `new EventSource(url, { withCredentials })`,

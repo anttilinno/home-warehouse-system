@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { NavLink, Link, useLocation } from "react-router";
 import { Trans } from "@lingui/react/macro";
 import type { DashboardStats, User } from "@/lib/types";
-import { Window } from "@/components/retro";
+import { PixelIcon, type PixelIconName, Window } from "@/components/retro";
 import { SidebarUserMenu } from "./SidebarUserMenu";
 
 // Navigator sidebar (sketch 006): grouped Overview / Inventory / Planning /
@@ -15,25 +15,27 @@ import { SidebarUserMenu } from "./SidebarUserMenu";
 // hooks, leaving the glyph cell (+ a badge dot for counted items).
 
 interface NavItemProps {
-  glyph: string;
+  icon: PixelIconName;
   label: ReactNode;
   count?: number;
   /** Route path. Every nav destination is built, so this is required. */
   to: string;
 }
 
-// Shared base layout; `relative` anchors the rail-mode badge dot.
+// Shared base layout; `relative` anchors the rail-mode badge dot. Desktop keeps
+// the dense py-[5px]; below md (the drawer) rows grow to a >=44px touch target
+// (C1) via py-sp-3 (12px padding + the 20px glyph cell ≈ 44px).
 const NAV_BASE =
-  "relative flex items-center gap-sp-2 px-sp-2 py-[5px] text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
+  "relative flex items-center gap-sp-2 px-sp-2 py-[5px] max-md:py-sp-3 text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
 
-function NavBody({ glyph, label, count }: Readonly<Omit<NavItemProps, "to">>) {
+function NavBody({ icon, label, count }: Readonly<Omit<NavItemProps, "to">>) {
   return (
     <>
       <span
         aria-hidden="true"
         className="relative grid h-[20px] w-[20px] flex-none place-items-center"
       >
-        {glyph}
+        <PixelIcon name={icon} size={18} />
         {count !== undefined && (
           // Rail-mode badge dot: hidden in expanded mode, surfaced when the
           // sidebar collapses to its 60px glyph rail (Plan 06 CSS keys off
@@ -60,7 +62,7 @@ const NAV_INACTIVE = `${NAV_BASE} border border-transparent text-fg-ink hover:bo
 // /taxonomy with no ?tab renders the Categories tab (TaxonomyPage default).
 const TAXONOMY_DEFAULT_TAB = "categories";
 
-function NavItem({ glyph, label, count, to }: Readonly<NavItemProps>) {
+function NavItem({ icon, label, count, to }: Readonly<NavItemProps>) {
   const location = useLocation();
   // Query-tab links (e.g. /taxonomy?tab=locations) all share one pathname, so
   // NavLink — which ignores the query string — would mark ALL of them active at
@@ -85,7 +87,7 @@ function NavItem({ glyph, label, count, to }: Readonly<NavItemProps>) {
         aria-current={isActive ? "page" : undefined}
         className={isActive ? NAV_ACTIVE : NAV_INACTIVE}
       >
-        <NavBody glyph={glyph} label={label} count={count} />
+        <NavBody icon={icon} label={label} count={count} />
       </Link>
     );
   }
@@ -95,7 +97,7 @@ function NavItem({ glyph, label, count, to }: Readonly<NavItemProps>) {
       end={to === "/"}
       className={({ isActive }) => (isActive ? NAV_ACTIVE : NAV_INACTIVE)}
     >
-      <NavBody glyph={glyph} label={label} count={count} />
+      <NavBody icon={icon} label={label} count={count} />
     </NavLink>
   );
 }
@@ -132,6 +134,29 @@ export interface SidebarProps {
   onLogout?: () => void;
 }
 
+// Collapse chevron for the docked Navigator titlebar. Rendered ONLY when the
+// shell wires a toggle (desktop); the MobileDrawer passes none, so it returns
+// undefined and the Window falls back to its default corner box (C2).
+function CollapseToggle({
+  collapsed,
+  onToggle,
+}: Readonly<{ collapsed: boolean; onToggle?: () => void }>) {
+  if (!onToggle) return undefined;
+  const label = collapsed ? "Expand navigator" : "Collapse navigator";
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={!collapsed}
+      aria-label={label}
+      title={label}
+      className="grid h-[16px] w-[16px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-12 leading-none bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
+    >
+      <span aria-hidden="true">{collapsed ? "›" : "‹"}</span>
+    </button>
+  );
+}
+
 export function Sidebar({
   stats,
   pendingApprovals,
@@ -140,68 +165,67 @@ export function Sidebar({
   onToggleCollapse,
   onLogout,
 }: Readonly<SidebarProps>) {
-  const collapseToggle = (
-    <button
-      type="button"
-      onClick={onToggleCollapse}
-      aria-expanded={!collapsed}
-      aria-label={collapsed ? "Expand navigator" : "Collapse navigator"}
-      title={collapsed ? "Expand navigator" : "Collapse navigator"}
-      className="grid h-[16px] w-[16px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-12 leading-none bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
-    >
-      <span aria-hidden="true">{collapsed ? "›" : "‹"}</span>
-    </button>
-  );
-
   return (
     <Window
       title={<Trans>Navigator</Trans>}
       titlebarVariant="plain"
       className="flex flex-col"
       bodyClassName="flex flex-1 flex-col p-sp-2"
-      actions={collapseToggle}
+      actions={
+        onToggleCollapse ? (
+          <CollapseToggle collapsed={collapsed} onToggle={onToggleCollapse} />
+        ) : undefined
+      }
     >
       <nav aria-label="Primary">
         <NavGroup title={<Trans>Overview</Trans>}>
-          <NavItem glyph="▦" label={<Trans>Dashboard</Trans>} to="/" />
-          <NavItem glyph="▤" label={<Trans>Analytics</Trans>} to="/analytics" />
+          <NavItem icon="app-windows" label={<Trans>Dashboard</Trans>} to="/" />
+          <NavItem
+            icon="chart-bar-big"
+            label={<Trans>Analytics</Trans>}
+            to="/analytics"
+          />
           {/* Scan promoted to Overview — it is the primary capture action. */}
-          <NavItem glyph="⌗" label={<Trans>Scan</Trans>} to="/scan" />
+          <NavItem icon="camera" label={<Trans>Scan</Trans>} to="/scan" />
         </NavGroup>
         <NavGroup title={<Trans>Inventory</Trans>}>
           <NavItem
-            glyph="▣"
+            icon="archive"
             label={<Trans>Items</Trans>}
             count={stats?.total_items}
             to="/items"
           />
-          <NavItem glyph="⬚" label={<Trans>Inventory</Trans>} to="/inventory" />
           <NavItem
-            glyph="▢"
+            icon="grid-3x3"
+            label={<Trans>Inventory</Trans>}
+            to="/inventory"
+          />
+          <NavItem
+            icon="map-pin"
             label={<Trans>Locations</Trans>}
             count={stats?.total_locations}
             to="/taxonomy?tab=locations"
           />
           <NavItem
-            glyph="▥"
+            icon="folder"
             label={<Trans>Containers</Trans>}
             count={stats?.total_containers}
             to="/taxonomy?tab=containers"
           />
           <NavItem
-            glyph="◇"
+            icon="bookmark"
             label={<Trans>Categories</Trans>}
             count={stats?.total_categories}
             to="/taxonomy?tab=categories"
           />
           <NavItem
-            glyph="↧"
+            icon="download"
             label={<Trans>Loans</Trans>}
             count={stats?.active_loans}
             to="/loans"
           />
           <NavItem
-            glyph="☺"
+            icon="users"
             label={<Trans>Borrowers</Trans>}
             count={stats?.total_borrowers}
             to="/borrowers"
@@ -211,12 +235,20 @@ export function Sidebar({
           {/* Label honest to the only maintenance surface (/maintenance/due —
               there is no /maintenance index). */}
           <NavItem
-            glyph="⊞"
+            icon="clock"
             label={<Trans>Due Maintenance</Trans>}
             to="/maintenance/due"
           />
-          <NavItem glyph="♡" label={<Trans>Wishlist</Trans>} to="/wishlist" />
-          <NavItem glyph="⊘" label={<Trans>Declutter</Trans>} to="/declutter" />
+          <NavItem
+            icon="heart"
+            label={<Trans>Wishlist</Trans>}
+            to="/wishlist"
+          />
+          <NavItem
+            icon="trash"
+            label={<Trans>Declutter</Trans>}
+            to="/declutter"
+          />
         </NavGroup>
         <NavGroup title={<Trans>System</Trans>}>
           {/* Phase 14 System pages (14-08 wiring). Distinct retro glyphs;
@@ -224,27 +256,31 @@ export function Sidebar({
               AppShell (shared cache) — no query is added here. `|| undefined`
               hides the badge when nothing is pending (0 is noise). */}
           <NavItem
-            glyph="✓"
+            icon="check"
             label={<Trans>Approvals</Trans>}
             count={pendingApprovals || undefined}
             to="/approvals"
           />
           <NavItem
-            glyph="≣"
+            icon="bulletlist"
             label={<Trans>My Changes</Trans>}
             to="/my-changes"
           />
-          <NavItem glyph="↥" label={<Trans>Imports</Trans>} to="/imports" />
+          <NavItem icon="upload" label={<Trans>Imports</Trans>} to="/imports" />
           <NavItem
-            glyph="⇄"
+            icon="reload"
             label={<Trans>Sync History</Trans>}
             to="/sync-history"
           />
-          <NavItem glyph="⚙" label={<Trans>Settings</Trans>} to="/settings" />
+          <NavItem
+            icon="settings-2"
+            label={<Trans>Settings</Trans>}
+            to="/settings"
+          />
           {/* DEV-only atom review surface (Phase 4). Gated so it never appears
               as a user nav entry; the matching /demo route is DEV-gated too. */}
           {import.meta.env.DEV && (
-            <NavItem glyph="◈" label={<Trans>Demo</Trans>} to="/demo" />
+            <NavItem icon="zap" label={<Trans>Demo</Trans>} to="/demo" />
           )}
         </NavGroup>
       </nav>
