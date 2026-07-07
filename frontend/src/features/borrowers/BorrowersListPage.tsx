@@ -53,7 +53,7 @@ export function BorrowersListPage() {
   // re-runs on language switch) so the register effect never loops.
   const goNew = useCallback(() => navigate("/borrowers/new"), [navigate]);
   const focusSearch = useCallback(() => {
-    document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
+    document.querySelector<HTMLInputElement>("[data-search-input]")?.focus();
   }, []);
   const labelNew = t`New borrower`;
   const labelSearch = t`Focus search`;

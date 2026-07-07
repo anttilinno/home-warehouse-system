@@ -15,6 +15,9 @@ export interface ShortcutChipProps {
   /** Native hover tooltip; falls back to `label` when omitted. Lets a bare
    *  keycap (empty `label`) still explain itself on hover (e.g. Bottombar N/S/L). */
   title?: string;
+  /** Extra classes on the label span — e.g. `"hidden lg:inline"` to reveal the
+   *  label only where there's room (Bottombar inline chips). */
+  labelClassName?: string;
 }
 
 // Face colors are mutually exclusive: danger wins, then current, else panel.
@@ -41,6 +44,7 @@ export function ShortcutChip({
   danger,
   current,
   title,
+  labelClassName = "",
 }: Readonly<ShortcutChipProps>) {
   // One source for the human-readable purpose: an explicit `title`, else the
   // visible `label`. Drives BOTH the hover tooltip AND the accessible name, so a
@@ -61,7 +65,9 @@ export function ShortcutChip({
       <span className="inline-flex items-center justify-center border border-border-ink bg-bg-panel-2 px-1 font-mono text-12 font-semibold">
         {shortcutKey}
       </span>
-      <span className="font-body text-11 font-bold uppercase tracking-10">
+      <span
+        className={`font-body text-11 font-bold uppercase tracking-10 ${labelClassName}`}
+      >
         {label}
       </span>
     </button>

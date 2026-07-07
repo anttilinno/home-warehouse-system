@@ -2,45 +2,47 @@ import type { ReactNode } from "react";
 import { NavLink, Link, useLocation } from "react-router";
 import { Trans } from "@lingui/react/macro";
 import type { DashboardStats, User } from "@/lib/types";
-import { Window } from "@/components/retro";
+import { PixelIcon, type PixelIconName, Window } from "@/components/retro";
 import { SidebarUserMenu } from "./SidebarUserMenu";
 
-// Navigator sidebar (sketch 006): grouped Overview / Inventory / System nav
-// inside a plain-titlebar Window, user identity in the footer (frontend1
-// pattern, carried over). Items with a `to` are real router NavLinks whose
-// active state is per-route (SHELL-04); the rest land with their feature phases
-// (7-12) and render disabled until then. The AppShell owns the `collapsed`
+// Navigator sidebar (sketch 006): grouped Overview / Inventory / Planning /
+// System nav inside a plain-titlebar Window, user identity in the footer
+// (frontend1 pattern, carried over). Every nav item is a real router NavLink
+// whose active state is per-route (SHELL-04) — all destinations are built now.
+// The AppShell owns the `collapsed`
 // boolean (Plan 06) and toggles it via the titlebar chevron; rail-mode CSS keys
 // off an ancestor `[data-collapsed]` and hides the `.nav-label` / `.nav-count`
 // hooks, leaving the glyph cell (+ a badge dot for counted items).
 
 interface NavItemProps {
-  glyph: string;
+  icon: PixelIconName;
   label: ReactNode;
   count?: number;
-  /** Route path. Omit for not-yet-built destinations (renders disabled). */
-  to?: string;
+  /** Route path. Every nav destination is built, so this is required. */
+  to: string;
 }
 
-// Shared base layout; `relative` anchors the rail-mode badge dot.
+// Shared base layout; `relative` anchors the rail-mode badge dot. Desktop keeps
+// the dense py-[5px]; below md (the drawer) rows grow to a >=44px touch target
+// (C1) via py-sp-3 (12px padding + the 20px glyph cell ≈ 44px).
 const NAV_BASE =
-  "relative flex items-center gap-sp-2 px-sp-2 py-[5px] text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
+  "relative flex items-center gap-sp-2 px-sp-2 py-[5px] max-md:py-sp-3 text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
 
-function NavBody({ glyph, label, count }: Readonly<NavItemProps>) {
+function NavBody({ icon, label, count }: Readonly<Omit<NavItemProps, "to">>) {
   return (
     <>
       <span
         aria-hidden="true"
         className="relative grid h-[20px] w-[20px] flex-none place-items-center"
       >
-        {glyph}
+        <PixelIcon name={icon} size={18} />
         {count !== undefined && (
           // Rail-mode badge dot: hidden in expanded mode, surfaced when the
           // sidebar collapses to its 60px glyph rail (Plan 06 CSS keys off
           // [data-collapsed] to reveal it). 6px ink-bordered pastel dot.
           <span
             aria-hidden="true"
-            className="nav-badge-dot pointer-events-none absolute right-[-2px] top-[-2px] hidden h-[6px] w-[6px] rounded-[2px] border border-border-ink bg-titlebar-blue"
+            className="nav-badge-dot pointer-events-none absolute right-[-2px] top-[-2px] hidden h-[6px] w-[6px] rounded-[2px] border border-border-ink bg-selection-fill"
           />
         )}
       </span>
@@ -54,60 +56,49 @@ function NavBody({ glyph, label, count }: Readonly<NavItemProps>) {
   );
 }
 
-const NAV_ACTIVE = `${NAV_BASE} border border-border-ink bg-titlebar-blue shadow-hard-ink`;
+const NAV_ACTIVE = `${NAV_BASE} border border-border-ink bg-selection-fill shadow-hard-ink`;
 const NAV_INACTIVE = `${NAV_BASE} border border-transparent text-fg-ink hover:border-border-ink hover:bg-bg-panel-2 active:bg-bg-pressed`;
 
 // /taxonomy with no ?tab renders the Categories tab (TaxonomyPage default).
 const TAXONOMY_DEFAULT_TAB = "categories";
 
-function NavItem({ glyph, label, count, to }: Readonly<NavItemProps>) {
+function NavItem({ icon, label, count, to }: Readonly<NavItemProps>) {
   const location = useLocation();
-  if (to) {
-    // Query-tab links (e.g. /taxonomy?tab=locations) all share one pathname, so
-    // NavLink — which ignores the query string — would mark ALL of them active at
-    // once. Match the `tab` param explicitly instead.
-    const qIndex = to.indexOf("?");
-    if (qIndex !== -1) {
-      const path = to.slice(0, qIndex);
-      const linkTab = new URLSearchParams(to.slice(qIndex + 1)).get("tab");
-      const currentTab =
-        new URLSearchParams(location.search).get("tab") ?? TAXONOMY_DEFAULT_TAB;
-      // Active on the tab itself (/taxonomy?tab=X) AND on that tab's sub-routes
-      // (e.g. /taxonomy/categories/new keeps Categories highlighted, the way
-      // /items/new keeps Items highlighted under NavLink's prefix match).
-      const subPath = `${path}/${linkTab}`;
-      const isActive =
-        (location.pathname === path && currentTab === linkTab) ||
-        location.pathname === subPath ||
-        location.pathname.startsWith(`${subPath}/`);
-      return (
-        <Link
-          to={to}
-          aria-current={isActive ? "page" : undefined}
-          className={isActive ? NAV_ACTIVE : NAV_INACTIVE}
-        >
-          <NavBody glyph={glyph} label={label} count={count} />
-        </Link>
-      );
-    }
+  // Query-tab links (e.g. /taxonomy?tab=locations) all share one pathname, so
+  // NavLink — which ignores the query string — would mark ALL of them active at
+  // once. Match the `tab` param explicitly instead.
+  const qIndex = to.indexOf("?");
+  if (qIndex !== -1) {
+    const path = to.slice(0, qIndex);
+    const linkTab = new URLSearchParams(to.slice(qIndex + 1)).get("tab");
+    const currentTab =
+      new URLSearchParams(location.search).get("tab") ?? TAXONOMY_DEFAULT_TAB;
+    // Active on the tab itself (/taxonomy?tab=X) AND on that tab's sub-routes
+    // (e.g. /taxonomy/categories/new keeps Categories highlighted, the way
+    // /items/new keeps Items highlighted under NavLink's prefix match).
+    const subPath = `${path}/${linkTab}`;
+    const isActive =
+      (location.pathname === path && currentTab === linkTab) ||
+      location.pathname === subPath ||
+      location.pathname.startsWith(`${subPath}/`);
     return (
-      <NavLink
+      <Link
         to={to}
-        end={to === "/"}
-        className={({ isActive }) => (isActive ? NAV_ACTIVE : NAV_INACTIVE)}
+        aria-current={isActive ? "page" : undefined}
+        className={isActive ? NAV_ACTIVE : NAV_INACTIVE}
       >
-        <NavBody glyph={glyph} label={label} count={count} />
-      </NavLink>
+        <NavBody icon={icon} label={label} count={count} />
+      </Link>
     );
   }
   return (
-    <div
-      aria-disabled="true"
-      title="Not built yet"
-      className={`${NAV_BASE} cursor-not-allowed border border-transparent text-fg-muted hover:border-dashed hover:border-fg-faint`}
+    <NavLink
+      to={to}
+      end={to === "/"}
+      className={({ isActive }) => (isActive ? NAV_ACTIVE : NAV_INACTIVE)}
     >
-      <NavBody glyph={glyph} label={label} count={count} />
-    </div>
+      <NavBody icon={icon} label={label} count={count} />
+    </NavLink>
   );
 }
 
@@ -130,6 +121,10 @@ function NavGroup({
 
 export interface SidebarProps {
   stats?: DashboardStats;
+  /** Pending-approvals count for the Approvals nav badge. Threaded from
+   *  AppShell (shared ["pending-changes", wsId, "pending"] cache) so no query
+   *  is added here — the Sidebar stays side-effect-free. */
+  pendingApprovals?: number;
   user?: User;
   /** Rail-mode flag (AppShell owns it, Plan 06). Drives the chevron direction. */
   collapsed?: boolean;
@@ -139,107 +134,153 @@ export interface SidebarProps {
   onLogout?: () => void;
 }
 
-export function Sidebar({
-  stats,
-  user,
-  collapsed = false,
-  onToggleCollapse,
-  onLogout,
-}: Readonly<SidebarProps>) {
-  const collapseToggle = (
+// Collapse chevron for the docked Navigator titlebar. Rendered ONLY when the
+// shell wires a toggle (desktop); the MobileDrawer passes none, so it returns
+// undefined and the Window falls back to its default corner box (C2).
+function CollapseToggle({
+  collapsed,
+  onToggle,
+}: Readonly<{ collapsed: boolean; onToggle?: () => void }>) {
+  if (!onToggle) return undefined;
+  const label = collapsed ? "Expand navigator" : "Collapse navigator";
+  return (
     <button
       type="button"
-      onClick={onToggleCollapse}
+      onClick={onToggle}
       aria-expanded={!collapsed}
-      aria-label={collapsed ? "Expand navigator" : "Collapse navigator"}
-      title={collapsed ? "Expand navigator" : "Collapse navigator"}
+      aria-label={label}
+      title={label}
       className="grid h-[16px] w-[16px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-12 leading-none bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
     >
       <span aria-hidden="true">{collapsed ? "›" : "‹"}</span>
     </button>
   );
+}
 
+export function Sidebar({
+  stats,
+  pendingApprovals,
+  user,
+  collapsed = false,
+  onToggleCollapse,
+  onLogout,
+}: Readonly<SidebarProps>) {
   return (
     <Window
       title={<Trans>Navigator</Trans>}
       titlebarVariant="plain"
       className="flex flex-col"
       bodyClassName="flex flex-1 flex-col p-sp-2"
-      actions={collapseToggle}
+      actions={
+        onToggleCollapse ? (
+          <CollapseToggle collapsed={collapsed} onToggle={onToggleCollapse} />
+        ) : undefined
+      }
     >
       <nav aria-label="Primary">
         <NavGroup title={<Trans>Overview</Trans>}>
-          <NavItem glyph="▦" label={<Trans>Dashboard</Trans>} to="/" />
-          <NavItem glyph="▤" label={<Trans>Analytics</Trans>} to="/analytics" />
+          <NavItem icon="app-windows" label={<Trans>Dashboard</Trans>} to="/" />
+          <NavItem
+            icon="chart-bar-big"
+            label={<Trans>Analytics</Trans>}
+            to="/analytics"
+          />
+          {/* Scan promoted to Overview — it is the primary capture action. */}
+          <NavItem icon="camera" label={<Trans>Scan</Trans>} to="/scan" />
         </NavGroup>
         <NavGroup title={<Trans>Inventory</Trans>}>
           <NavItem
-            glyph="▣"
+            icon="archive"
             label={<Trans>Items</Trans>}
             count={stats?.total_items}
             to="/items"
           />
-          <NavItem glyph="⬚" label={<Trans>Inventory</Trans>} to="/inventory" />
           <NavItem
-            glyph="⊞"
-            label={<Trans>Maintenance</Trans>}
-            to="/maintenance/due"
+            icon="grid-3x3"
+            label={<Trans>Inventory</Trans>}
+            to="/inventory"
           />
           <NavItem
-            glyph="▢"
+            icon="map-pin"
             label={<Trans>Locations</Trans>}
             count={stats?.total_locations}
             to="/taxonomy?tab=locations"
           />
           <NavItem
-            glyph="▥"
+            icon="folder"
             label={<Trans>Containers</Trans>}
             count={stats?.total_containers}
             to="/taxonomy?tab=containers"
           />
           <NavItem
-            glyph="◇"
+            icon="bookmark"
             label={<Trans>Categories</Trans>}
             count={stats?.total_categories}
             to="/taxonomy?tab=categories"
           />
           <NavItem
-            glyph="↧"
+            icon="download"
             label={<Trans>Loans</Trans>}
             count={stats?.active_loans}
             to="/loans"
           />
           <NavItem
-            glyph="☺"
+            icon="users"
             label={<Trans>Borrowers</Trans>}
             count={stats?.total_borrowers}
             to="/borrowers"
           />
         </NavGroup>
-        <NavGroup title={<Trans>System</Trans>}>
-          <NavItem glyph="⌗" label={<Trans>Scan</Trans>} to="/scan" />
-          {/* Phase 14 System pages (14-08 wiring). Distinct retro glyphs;
-              all labels via <Trans>. Wiring stays side-effect-free — no new
-              query is added here just for a count badge. */}
-          <NavItem glyph="✓" label={<Trans>Approvals</Trans>} to="/approvals" />
+        <NavGroup title={<Trans>Planning</Trans>}>
+          {/* Label honest to the only maintenance surface (/maintenance/due —
+              there is no /maintenance index). */}
           <NavItem
-            glyph="≣"
+            icon="clock"
+            label={<Trans>Due Maintenance</Trans>}
+            to="/maintenance/due"
+          />
+          <NavItem
+            icon="heart"
+            label={<Trans>Wishlist</Trans>}
+            to="/wishlist"
+          />
+          <NavItem
+            icon="trash"
+            label={<Trans>Declutter</Trans>}
+            to="/declutter"
+          />
+        </NavGroup>
+        <NavGroup title={<Trans>System</Trans>}>
+          {/* Phase 14 System pages (14-08 wiring). Distinct retro glyphs;
+              all labels via <Trans>. The Approvals count is threaded in from
+              AppShell (shared cache) — no query is added here. `|| undefined`
+              hides the badge when nothing is pending (0 is noise). */}
+          <NavItem
+            icon="check"
+            label={<Trans>Approvals</Trans>}
+            count={pendingApprovals || undefined}
+            to="/approvals"
+          />
+          <NavItem
+            icon="bulletlist"
             label={<Trans>My Changes</Trans>}
             to="/my-changes"
           />
-          <NavItem glyph="♡" label={<Trans>Wishlist</Trans>} to="/wishlist" />
-          <NavItem glyph="⊘" label={<Trans>Declutter</Trans>} to="/declutter" />
-          <NavItem glyph="↥" label={<Trans>Imports</Trans>} to="/imports" />
+          <NavItem icon="upload" label={<Trans>Imports</Trans>} to="/imports" />
           <NavItem
-            glyph="⇄"
+            icon="reload"
             label={<Trans>Sync History</Trans>}
             to="/sync-history"
           />
-          <NavItem glyph="⚙" label={<Trans>Settings</Trans>} to="/settings" />
+          <NavItem
+            icon="settings-2"
+            label={<Trans>Settings</Trans>}
+            to="/settings"
+          />
           {/* DEV-only atom review surface (Phase 4). Gated so it never appears
               as a user nav entry; the matching /demo route is DEV-gated too. */}
           {import.meta.env.DEV && (
-            <NavItem glyph="◈" label={<Trans>Demo</Trans>} to="/demo" />
+            <NavItem icon="zap" label={<Trans>Demo</Trans>} to="/demo" />
           )}
         </NavGroup>
       </nav>

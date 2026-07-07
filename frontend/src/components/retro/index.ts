@@ -14,6 +14,8 @@ export {
 } from "./RetroBadge";
 export { StatCard, type StatCardProps, type StatValueTone } from "./StatCard";
 export { RetroTable, type RetroTableProps } from "./RetroTable";
+export { PixelIcon, type PixelIconProps } from "./PixelIcon";
+export type { PixelIconName } from "./pixelIconPaths";
 
 // Phase 4 subdir barrels (aggregated through the single @/components/retro
 // barrel — locked v2.0 convention). `overlay` ships in this plan (04-01).

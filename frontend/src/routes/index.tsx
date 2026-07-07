@@ -1,6 +1,8 @@
 import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router";
 import { AppShell } from "@/components/layout/AppShell";
+import { RouteFallback } from "@/components/layout/RouteFallback";
+import { NotFoundPage } from "@/routes/NotFoundPage";
 // Phase 14 System group (14-01..14-06). Imported EAGERLY (tables + forms, no
 // heavy chart/scanner chunk) so a wrong path/name fails at tsc/build time, not
 // at runtime (T-14-22). SyncHistoryPage lives at features/system-history/Page —
@@ -121,18 +123,6 @@ const DemoPage = import.meta.env.DEV
 // through its <Outlet/> (Phase 3 chrome). Feature phases (4 atoms, 5+ features)
 // add child routes under the same shell.
 
-function PlaceholderShell() {
-  return (
-    <main className="p-sp-4 font-mono">
-      <h1>v3.0 — placeholder shell</h1>
-      <p>
-        Phase 1 scaffold OK. Tokens (Phase 2), chrome (Phase 3), atoms (Phase 4)
-        follow.
-      </p>
-    </main>
-  );
-}
-
 export function AppRoutes() {
   return (
     <Routes>
@@ -203,7 +193,7 @@ export function AppRoutes() {
         <Route
           path="scan"
           element={
-            <Suspense fallback={null}>
+            <Suspense fallback={<RouteFallback />}>
               <ScanPage />
             </Suspense>
           }
@@ -216,7 +206,7 @@ export function AppRoutes() {
         <Route
           path="analytics"
           element={
-            <Suspense fallback={null}>
+            <Suspense fallback={<RouteFallback />}>
               <AnalyticsPage />
             </Suspense>
           }
@@ -247,7 +237,7 @@ export function AppRoutes() {
           <Route
             path="profile"
             element={
-              <Suspense fallback={null}>
+              <Suspense fallback={<RouteFallback />}>
                 <ProfilePage />
               </Suspense>
             }
@@ -255,7 +245,7 @@ export function AppRoutes() {
           <Route
             path="appearance"
             element={
-              <Suspense fallback={null}>
+              <Suspense fallback={<RouteFallback />}>
                 <AppearancePage />
               </Suspense>
             }
@@ -263,7 +253,7 @@ export function AppRoutes() {
           <Route
             path="language"
             element={
-              <Suspense fallback={null}>
+              <Suspense fallback={<RouteFallback />}>
                 <LanguagePage />
               </Suspense>
             }
@@ -271,7 +261,7 @@ export function AppRoutes() {
           <Route
             path="formats"
             element={
-              <Suspense fallback={null}>
+              <Suspense fallback={<RouteFallback />}>
                 <RegionalFormatsPage />
               </Suspense>
             }
@@ -279,7 +269,7 @@ export function AppRoutes() {
           <Route
             path="notifications"
             element={
-              <Suspense fallback={null}>
+              <Suspense fallback={<RouteFallback />}>
                 <NotificationsPage />
               </Suspense>
             }
@@ -287,7 +277,7 @@ export function AppRoutes() {
           <Route
             path="data"
             element={
-              <Suspense fallback={null}>
+              <Suspense fallback={<RouteFallback />}>
                 <DataStoragePage />
               </Suspense>
             }
@@ -295,7 +285,7 @@ export function AppRoutes() {
           <Route
             path="members"
             element={
-              <Suspense fallback={null}>
+              <Suspense fallback={<RouteFallback />}>
                 <MembersPage />
               </Suspense>
             }
@@ -306,12 +296,15 @@ export function AppRoutes() {
           <Route
             path="paperless"
             element={
-              <Suspense fallback={null}>
+              <Suspense fallback={<RouteFallback />}>
                 <PaperlessPage />
               </Suspense>
             }
           />
         </Route>
+        {/* Authed catch-all: a mistyped URL for a logged-in user renders the
+            404 INSIDE the AppShell chrome (nav + topbar stay). */}
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
       {/* /demo: standalone dark-terminal dashboard mockup. DEV-gated — renders
           full-screen OUTSIDE the AppShell (own chrome) and never ships. */}
@@ -319,13 +312,15 @@ export function AppRoutes() {
         <Route
           path="/demo"
           element={
-            <Suspense fallback={null}>
+            <Suspense fallback={<RouteFallback />}>
               <DemoPage />
             </Suspense>
           }
         />
       )}
-      <Route path="*" element={<PlaceholderShell />} />
+      {/* Public catch-all: unauthed mistyped URL → standalone 404 on the bare
+          desktop (RequireAuth would otherwise bounce it to /login). */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

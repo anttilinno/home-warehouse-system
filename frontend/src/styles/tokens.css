@@ -38,6 +38,13 @@
   --titlebar-mint:   #b8e0c8;
   --titlebar-butter: #f6e3a8;
 
+  /* ---------- State fills (selection/active must stay visibly tinted in BOTH
+     themes — unlike --titlebar-*, which goes neutral-dark in terminal mode) */
+  --selection-fill: #b8d8e8;   /* same as light titlebar-blue today */
+  --status-online:  #b8e0c8;   /* same as light titlebar-mint today */
+  --selection-text-bg: #b8d8e8; /* ::selection highlight */
+  --selection-text-fg: #26262e;
+
   /* ---------- Deep companions (colored text on white/cream) ---------- */
   --accent-blue-deep: #19526f;
   --accent-pink-deep: #a8334f;
@@ -111,6 +118,9 @@
   --color-titlebar-pink: var(--titlebar-pink);
   --color-titlebar-mint: var(--titlebar-mint);
   --color-titlebar-butter: var(--titlebar-butter);
+
+  --color-selection-fill: var(--selection-fill);
+  --color-status-online: var(--status-online);
 
   --color-accent-blue-deep: var(--accent-blue-deep);
   --color-accent-pink-deep: var(--accent-pink-deep);
@@ -239,6 +249,14 @@
   --titlebar-pink:   #131317;
   --titlebar-mint:   #131317;
   --titlebar-butter: #131317;
+
+  /* ---------- State fills (stay visibly tinted in terminal mode) ----------
+     Brighter than --info-bg (#103247, the .rtable HOVER fill) so a selected
+     row and a hovered row stay distinct during multi-select. */
+  --selection-fill: #164a68;   /* dim blue; ink >=4.5:1, distinct from info-bg */
+  --status-online:  #3fe3a4;   /* lit green LED (accent-mint-deep dark value) */
+  --selection-text-bg: #56b4e4; /* bright accent blue */
+  --selection-text-fg: #060608; /* 8.5:1 on #56b4e4 */
 
   /* ---------- Deep companions → bright accents (colored text on dark) --- */
   --accent-blue-deep: #56b4e4;

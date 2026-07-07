@@ -20,6 +20,7 @@ import { useItemMutations } from "./hooks/useItemMutations";
 import { ItemsResults } from "./components/ItemsResults";
 import { ItemsBulkBar } from "./components/ItemsBulkBar";
 import { DeleteItemDialog } from "./components/DeleteItemDialog";
+import { BulkDeleteItemsDialog } from "./components/BulkDeleteItemsDialog";
 
 const SAVED_FILTERS_KEY = "items-list-filters/v1";
 
@@ -91,22 +92,24 @@ export function ItemsListPage() {
   }, [selectedItems, archiveItem, restoreItem, clearSelection]);
 
   const onlyArchivedMsg = t`Only archived items can be deleted.`;
+  // X / FAB / mobile bulk bar → OPEN the count-to-confirm dialog (A1). The
+  // archived-only guard still gates it up front so a mixed selection never
+  // reaches the dialog. Actual deletion happens in confirmBulkDelete.
   const bulkDelete = useCallback(() => {
     if (!allSelectedArchived) {
       retroToast.error(onlyArchivedMsg);
       return;
     }
+    setBulkConfirm("");
+    setBulkDeleteOpen(true);
+  }, [allSelectedArchived, onlyArchivedMsg]);
+
+  const confirmBulkDelete = useCallback(() => {
     selectedItems.forEach((i) => {
       deleteItem({ id: i.id, isArchived: i.is_archived ?? false });
     });
     clearSelection();
-  }, [
-    allSelectedArchived,
-    selectedItems,
-    deleteItem,
-    clearSelection,
-    onlyArchivedMsg,
-  ]);
+  }, [selectedItems, deleteItem, clearSelection]);
 
   // Labels via the `t` macro directly; memo keys on the resolved strings
   // (stable within a locale, re-run on language switch) so the register effect
@@ -130,7 +133,7 @@ export function ItemsListPage() {
   // Storage), so there is no per-page F → toggle-archived shortcut.
   const goNew = useCallback(() => navigate("/items/new"), [navigate]);
   const focusSearch = useCallback(() => {
-    document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
+    document.querySelector<HTMLInputElement>("[data-search-input]")?.focus();
   }, []);
 
   const labelNew = t`New item`;
@@ -187,6 +190,8 @@ export function ItemsListPage() {
   // ── Type-to-confirm single delete (archived rows only).
   const [pendingDelete, setPendingDelete] = useState<Item | null>(null);
   const [confirmName, setConfirmName] = useState("");
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkConfirm, setBulkConfirm] = useState("");
 
   // ── Sort header toggling.
   function onSort(sortKey: string) {
@@ -346,6 +351,19 @@ export function ItemsListPage() {
         onClose={() => {
           setPendingDelete(null);
           setConfirmName("");
+        }}
+      />
+
+      {/* Count-to-confirm bulk delete (A1) — no more silent delete loop. */}
+      <BulkDeleteItemsDialog
+        open={bulkDeleteOpen}
+        count={selectedCount}
+        confirmValue={bulkConfirm}
+        onConfirmValueChange={setBulkConfirm}
+        onConfirm={confirmBulkDelete}
+        onClose={() => {
+          setBulkDeleteOpen(false);
+          setBulkConfirm("");
         }}
       />
     </div>

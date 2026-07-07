@@ -365,6 +365,10 @@ msgstr "ACCOUNT"
 msgid "Account created — welcome."
 msgstr "Account created — welcome."
 
+#: src/components/layout/breadcrumbs.tsx
+msgid "Accounts"
+msgstr "Accounts"
+
 #: src/features/inventory/components/InventoryDateFields.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
@@ -435,6 +439,7 @@ msgstr "ADD ENTRY"
 msgid "ADD FILE"
 msgstr "ADD FILE"
 
+#: src/components/layout/Fab.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Add item"
 msgstr "Add item"
@@ -483,6 +488,7 @@ msgstr "Already have an account?"
 msgid "Amount in your workspace currency."
 msgstr "Amount in your workspace currency."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Analytics"
@@ -492,11 +498,13 @@ msgstr "Analytics"
 msgid "API token"
 msgstr "API token"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/AppearancePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Appearance"
 msgstr "Appearance"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/approvals/ApprovalsPage.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -594,6 +602,10 @@ msgstr "At least 8 characters."
 msgid "Available"
 msgstr "Available"
 
+#: src/routes/NotFoundPage.tsx
+msgid "Back to dashboard"
+msgstr "Back to dashboard"
+
 #: src/features/auth/CallbackPage.tsx
 msgid "Back to login"
 msgstr "Back to login"
@@ -644,6 +656,7 @@ msgstr "BORROWER NOT FOUND"
 msgid "Borrower updated."
 msgstr "Borrower updated."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
@@ -759,6 +772,7 @@ msgstr "Caption"
 #~ msgid "Careful."
 #~ msgstr "Careful."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/components/DashboardStatTiles.tsx
@@ -967,6 +981,7 @@ msgstr "Container"
 msgid "CONTAINER"
 msgstr "CONTAINER"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/CommandPalette.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -1386,6 +1401,10 @@ msgid "Couldn't sync \"{name}\" — it may have been removed."
 msgstr "Couldn't sync \"{name}\" — it may have been removed."
 
 #: src/lib/offline/mutationDefaults.ts
+msgid "Couldn't sync a new stock entry."
+msgstr "Couldn't sync a new stock entry."
+
+#: src/lib/offline/mutationDefaults.ts
 msgid "Couldn't sync a stock recount."
 msgstr "Couldn't sync a stock recount."
 
@@ -1495,11 +1514,13 @@ msgstr "Danger Zone"
 msgid "Dark"
 msgstr "Dark"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Dashboard"
 msgstr "Dashboard"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/DataStoragePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Data & Storage"
@@ -1534,6 +1555,7 @@ msgstr "Days unused"
 msgid "Decimal separator"
 msgstr "Decimal separator"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/declutter/DeclutterPage.tsx
@@ -1554,6 +1576,7 @@ msgstr "Delete"
 
 #: src/components/retro/filters/SavedFilters.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/items/components/BulkDeleteItemsDialog.tsx
 #: src/features/items/components/DeleteItemDialog.tsx
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/items/components/ItemsBulkBar.tsx
@@ -1587,6 +1610,10 @@ msgstr "Delete {0}"
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "Delete {0}? This can't be undone."
 msgstr "Delete {0}? This can't be undone."
+
+#: src/features/items/components/BulkDeleteItemsDialog.tsx
+msgid "DELETE {count} ITEMS?"
+msgstr "DELETE {count} ITEMS?"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "Delete {selectedCount} selected"
@@ -1693,6 +1720,10 @@ msgstr "Description"
 #: src/features/items/components/ItemLabels.tsx
 msgid "Detach {0}"
 msgstr "Detach {0}"
+
+#: src/components/layout/breadcrumbs.tsx
+msgid "Detail"
+msgstr "Detail"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "DETAILS"
@@ -1845,6 +1876,11 @@ msgstr "due in {0}d"
 msgid "due in {inDays}d"
 msgstr "due in {inDays}d"
 
+#: src/components/layout/breadcrumbs.tsx
+#: src/components/layout/Sidebar.tsx
+msgid "Due Maintenance"
+msgstr "Due Maintenance"
+
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "DUE MAINTENANCE — {workspaceName}"
 msgstr "DUE MAINTENANCE — {workspaceName}"
@@ -1853,6 +1889,7 @@ msgstr "DUE MAINTENANCE — {workspaceName}"
 msgid "e.g. duplicate request"
 msgstr "e.g. duplicate request"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
 msgid "Edit"
 msgstr "Edit"
@@ -2024,6 +2061,10 @@ msgstr "Every tracked item has been used recently. Items that sit unused will su
 msgid "exchanging credentials"
 msgstr "exchanging credentials"
 
+#: src/components/layout/breadcrumbs.tsx
+msgid "Expiring"
+msgstr "Expiring"
+
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "Expiring soon"
 msgstr "Expiring soon"
@@ -2109,6 +2150,10 @@ msgstr "File *"
 msgid "File is too large (max {0})."
 msgstr "File is too large (max {0})."
 
+#: src/routes/NotFoundPage.tsx
+msgid "File not found"
+msgstr "File not found"
+
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "Files"
@@ -2167,6 +2212,10 @@ msgstr "Follow the operating system setting."
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "Form Atoms"
 #~ msgstr "Form Atoms"
+
+#: src/components/layout/breadcrumbs.tsx
+msgid "Formats"
+msgstr "Formats"
 
 #. placeholder {0}: duplicates.length
 #: src/features/items/components/DuplicateWarningDialog.tsx
@@ -2253,6 +2302,7 @@ msgstr "Importing data requires admin rights."
 msgid "Importing…"
 msgstr "Importing…"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/imports/components/ImportHistory.tsx
@@ -2280,6 +2330,7 @@ msgstr "Interface language"
 msgid "Interval (days)"
 msgstr "Interval (days)"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -2347,6 +2398,7 @@ msgstr "Item unarchived."
 msgid "items"
 msgstr "items"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/CommandPalette.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -2393,6 +2445,7 @@ msgstr "LABELS"
 msgid "LABELS — {workspaceName}"
 msgstr "LABELS — {workspaceName}"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/LanguagePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Language"
@@ -2454,6 +2507,10 @@ msgstr "LINKED"
 #: src/components/retro/feedback/RetroStatusDot.tsx
 msgid "live"
 msgstr "live"
+
+#: src/components/layout/RouteFallback.tsx
+msgid "Loading"
+msgstr "Loading"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "LOADING"
@@ -2534,6 +2591,7 @@ msgstr "Loaned"
 msgid "Loaning this item — pick a borrower."
 msgstr "Loaning this item — pick a borrower."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -2570,6 +2628,7 @@ msgstr "Location"
 msgid "Location value"
 msgstr "Location value"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/CommandPalette.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -2606,7 +2665,6 @@ msgstr "LOOK UP CODE"
 msgid "Low stock"
 msgstr "Low stock"
 
-#: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/inventory/components/InventoryRow.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
@@ -2696,6 +2754,7 @@ msgstr "Member removed."
 msgid "members"
 msgstr "members"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/MembersPage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Members"
@@ -2770,6 +2829,7 @@ msgstr "MOVEMENTS — {itemName}"
 msgid "My changes"
 msgstr "My changes"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 msgid "My Changes"
@@ -2798,6 +2858,10 @@ msgstr "Navigator"
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "never"
 msgstr "never"
+
+#: src/components/layout/breadcrumbs.tsx
+msgid "New"
+msgstr "New"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "New borrower"
@@ -3236,6 +3300,7 @@ msgstr "Nothing to export."
 msgid "Notification settings saved."
 msgstr "Notification settings saved."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/notifications/components/NotificationsBell.tsx
 #: src/features/notifications/components/NotificationsDropdown.tsx
 #: src/features/settings/NotificationsPage.tsx
@@ -3347,6 +3412,7 @@ msgstr "OVERDUE"
 #~ msgid "Overlay Atoms"
 #~ msgstr "Overlay Atoms"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 msgid "Overview"
 msgstr "Overview"
@@ -3363,6 +3429,7 @@ msgstr "page {page} of {pageCount} · {perPage} / page"
 msgid "Pagination"
 msgstr "Pagination"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Paperless"
 msgstr "Paperless"
@@ -3472,6 +3539,11 @@ msgstr "PHOTOS"
 msgid "Pick a different location or container."
 msgstr "Pick a different location or container."
 
+#: src/components/layout/breadcrumbs.tsx
+#: src/components/layout/Sidebar.tsx
+msgid "Planning"
+msgstr "Planning"
+
 #: src/features/settings/AvatarUploader.tsx
 msgid "PNG/JPG · max 5 MB"
 msgstr "PNG/JPG · max 5 MB"
@@ -3534,6 +3606,7 @@ msgstr "Processing"
 msgid "PRODUCT FOUND"
 msgstr "PRODUCT FOUND"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/SidebarUserMenu.tsx
 #: src/features/settings/ProfilePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
@@ -3946,6 +4019,7 @@ msgstr "Saved."
 #~ msgid "SavedFilters — preset chips + ▾ PRESETS menu."
 #~ msgstr "SavedFilters — preset chips + ▾ PRESETS menu."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
@@ -4005,6 +4079,7 @@ msgstr "Search…"
 msgid "Searching…"
 msgstr "Searching…"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Security"
 msgstr "Security"
@@ -4058,6 +4133,7 @@ msgstr "SET PRIMARY"
 msgid "Set when created — can't be changed."
 msgstr "Set when created — can't be changed."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/components/layout/SidebarUserMenu.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -4217,6 +4293,7 @@ msgstr "Switched to {name}."
 msgid "Sync"
 msgstr "Sync"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Sync History"
@@ -4235,6 +4312,7 @@ msgstr "Synced."
 msgid "Syncing {0} changes…"
 msgstr "Syncing {0} changes…"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/settings/AppearancePage.tsx
 msgid "System"
@@ -4252,12 +4330,9 @@ msgstr "System rollups"
 msgid "target {CAPACITY_TARGET_PLACEHOLDER} · data pending"
 msgstr "target {CAPACITY_TARGET_PLACEHOLDER} · data pending"
 
-#: src/features/taxonomy/components/CategoriesTab.tsx
-#: src/features/taxonomy/components/ContainersTab.tsx
-#: src/features/taxonomy/components/LabelsTab.tsx
-#: src/features/taxonomy/components/LocationsTab.tsx
-#~ msgid "Taxonomy"
-#~ msgstr "Taxonomy"
+#: src/components/layout/breadcrumbs.tsx
+msgid "Taxonomy"
+msgstr "Taxonomy"
 
 #: src/features/taxonomy/TaxonomyPage.tsx
 #~ msgid "TAXONOMY — {workspaceName}"
@@ -4298,6 +4373,10 @@ msgstr "That user is already a member."
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "The file belongs to a different workspace."
 msgstr "The file belongs to a different workspace."
+
+#: src/routes/NotFoundPage.tsx
+msgid "The page you were looking for does not exist or has moved."
+msgstr "The page you were looking for does not exist or has moved."
 
 #: src/features/settings/AppearancePage.tsx
 msgid "The same chrome on a dark desktop and panels."
@@ -4488,6 +4567,10 @@ msgstr "Try again."
 msgid "Type"
 msgstr "Type"
 
+#: src/features/items/components/BulkDeleteItemsDialog.tsx
+msgid "Type {count} to delete {count} archived items. This can't be undone."
+msgstr "Type {count} to delete {count} archived items. This can't be undone."
+
 #: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "Type *"
@@ -4513,6 +4596,10 @@ msgstr "Type DELETE to confirm. This permanently removes your account and cannot
 #: src/features/items/ItemDetailPage.tsx
 msgid "Type the item name to confirm. This can't be undone."
 msgstr "Type the item name to confirm. This can't be undone."
+
+#: src/features/items/components/BulkDeleteItemsDialog.tsx
+msgid "Type the number of items to delete"
+msgstr "Type the number of items to delete"
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "UNARCHIVE"
@@ -4619,6 +4706,7 @@ msgstr "When"
 msgid "Window"
 msgstr "Window"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/wishlist/components/WishlistTable.tsx

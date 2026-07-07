@@ -30,9 +30,16 @@ const FOCUS_RING =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
 
 // ⌘K on Apple, Ctrl+K elsewhere — match the tinykeys `$mod+k` chord label.
+// navigator.platform is deprecated; prefer userAgentData, then a UA regex,
+// with the legacy field as final fallback.
 const IS_APPLE =
   typeof navigator !== "undefined" &&
-  /Mac|iPhone|iPad/.test(navigator.platform);
+  /Mac|iPhone|iPad/.test(
+    (navigator as Navigator & { userAgentData?: { platform?: string } })
+      .userAgentData?.platform ||
+      navigator.userAgent ||
+      navigator.platform,
+  );
 const SEARCH_HINT = IS_APPLE ? "⌘K" : "Ctrl K";
 
 export interface TopBarProps {
@@ -69,13 +76,15 @@ export function TopBar({
 
   return (
     <header className="sticky top-0 z-10 flex h-[40px] items-center gap-sp-2 border-b-2 border-border-ink bg-bg-panel px-sp-3 py-sp-1 shadow-[inset_0_-2px_0_var(--bevel-shade)] md:gap-sp-4 md:px-sp-4">
-      {/* Mobile hamburger — hidden on desktop where the sidebar is persistent. */}
+      {/* Mobile hamburger — hidden on desktop where the sidebar is persistent.
+          Visual stays 28px (fits the 40px bar); the ::before extends the tap
+          target to 44px so it clears the touch-target minimum (C1). */}
       <button
         type="button"
         onClick={onToggleDrawer}
         aria-label="Open navigation"
         title="Open navigation"
-        className={`grid h-[28px] w-[28px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-14 leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed md:hidden ${FOCUS_RING}`}
+        className={`relative grid h-[28px] w-[28px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-14 leading-none bevel-raised-ink before:absolute before:-inset-2 before:content-[''] active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed md:hidden ${FOCUS_RING}`}
       >
         <span aria-hidden="true">☰</span>
       </button>
@@ -99,7 +108,7 @@ export function TopBar({
         <span
           aria-hidden="true"
           className={`h-[8px] w-[8px] border border-border-ink ${
-            isOnline ? "bg-titlebar-mint" : "bg-fg-faint"
+            isOnline ? "bg-status-online" : "bg-fg-faint"
           }`}
         />
         <span className="hidden text-11 font-bold uppercase tracking-10 text-fg-ink sm:inline">

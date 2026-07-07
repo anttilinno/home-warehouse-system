@@ -365,6 +365,10 @@ msgstr "KONTO"
 msgid "Account created — welcome."
 msgstr "Konto loodud — tere tulemast."
 
+#: src/components/layout/breadcrumbs.tsx
+msgid "Accounts"
+msgstr "Kontod"
+
 #: src/features/inventory/components/InventoryDateFields.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
@@ -435,6 +439,7 @@ msgstr "LISA KIRJE"
 msgid "ADD FILE"
 msgstr "LISA FAIL"
 
+#: src/components/layout/Fab.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Add item"
 msgstr "Lisa ese"
@@ -483,6 +488,7 @@ msgstr "On juba konto?"
 msgid "Amount in your workspace currency."
 msgstr "Summa sinu tööruumi valuutas."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Analytics"
@@ -492,11 +498,13 @@ msgstr "Analüütika"
 msgid "API token"
 msgstr "API-võti"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/AppearancePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Appearance"
 msgstr "Välimus"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/approvals/ApprovalsPage.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -594,6 +602,10 @@ msgstr "Vähemalt 8 tähemärki."
 msgid "Available"
 msgstr "Saadaval"
 
+#: src/routes/NotFoundPage.tsx
+msgid "Back to dashboard"
+msgstr "Tagasi töölauale"
+
 #: src/features/auth/CallbackPage.tsx
 msgid "Back to login"
 msgstr "Tagasi sisselogimisse"
@@ -644,6 +656,7 @@ msgstr "LAENAJAT EI LEITUD"
 msgid "Borrower updated."
 msgstr "Laenaja uuendatud."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
@@ -759,6 +772,7 @@ msgstr "Pealkiri"
 #~ msgid "Careful."
 #~ msgstr "Ettevaatust."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/components/DashboardStatTiles.tsx
@@ -967,6 +981,7 @@ msgstr "Konteiner"
 msgid "CONTAINER"
 msgstr ""
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/CommandPalette.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -1386,6 +1401,10 @@ msgid "Couldn't sync \"{name}\" — it may have been removed."
 msgstr ""
 
 #: src/lib/offline/mutationDefaults.ts
+msgid "Couldn't sync a new stock entry."
+msgstr ""
+
+#: src/lib/offline/mutationDefaults.ts
 msgid "Couldn't sync a stock recount."
 msgstr ""
 
@@ -1495,11 +1514,13 @@ msgstr "Ohutsoon"
 msgid "Dark"
 msgstr ""
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Dashboard"
 msgstr "Töölaud"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/DataStoragePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Data & Storage"
@@ -1534,6 +1555,7 @@ msgstr "Kasutamata päevi"
 msgid "Decimal separator"
 msgstr "Kümnendkoha eraldaja"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/declutter/DeclutterPage.tsx
@@ -1554,6 +1576,7 @@ msgstr "Kustutamine"
 
 #: src/components/retro/filters/SavedFilters.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/items/components/BulkDeleteItemsDialog.tsx
 #: src/features/items/components/DeleteItemDialog.tsx
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/items/components/ItemsBulkBar.tsx
@@ -1587,6 +1610,10 @@ msgstr "Kustuta {0}"
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "Delete {0}? This can't be undone."
 msgstr "Kas kustutada {0}? Seda ei saa tagasi võtta."
+
+#: src/features/items/components/BulkDeleteItemsDialog.tsx
+msgid "DELETE {count} ITEMS?"
+msgstr "KUSTUTA {count} ÜKSUST?"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "Delete {selectedCount} selected"
@@ -1693,6 +1720,10 @@ msgstr "Kirjeldus"
 #: src/features/items/components/ItemLabels.tsx
 msgid "Detach {0}"
 msgstr "Eemalda {0}"
+
+#: src/components/layout/breadcrumbs.tsx
+msgid "Detail"
+msgstr "Üksikasjad"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "DETAILS"
@@ -1845,6 +1876,11 @@ msgstr "tähtajani {0}p"
 msgid "due in {inDays}d"
 msgstr "tähtajani {inDays}p"
 
+#: src/components/layout/breadcrumbs.tsx
+#: src/components/layout/Sidebar.tsx
+msgid "Due Maintenance"
+msgstr "Ootel hooldus"
+
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "DUE MAINTENANCE — {workspaceName}"
 msgstr "EESSEISEV HOOLDUS — {workspaceName}"
@@ -1853,6 +1889,7 @@ msgstr "EESSEISEV HOOLDUS — {workspaceName}"
 msgid "e.g. duplicate request"
 msgstr "nt korduv taotlus"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
 msgid "Edit"
 msgstr "Muuda"
@@ -2024,6 +2061,10 @@ msgstr "Kõiki jälgitavaid esemeid on hiljuti kasutatud. Kasutamata seisvad ese
 msgid "exchanging credentials"
 msgstr "mandaatide vahetamine"
 
+#: src/components/layout/breadcrumbs.tsx
+msgid "Expiring"
+msgstr "Aeguvad"
+
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "Expiring soon"
 msgstr "Peagi aegumas"
@@ -2109,6 +2150,10 @@ msgstr "Fail *"
 msgid "File is too large (max {0})."
 msgstr "Fail on liiga suur (max {0})."
 
+#: src/routes/NotFoundPage.tsx
+msgid "File not found"
+msgstr "Faili ei leitud"
+
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "Files"
@@ -2167,6 +2212,10 @@ msgstr ""
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "Form Atoms"
 #~ msgstr "Vormiaatomid"
+
+#: src/components/layout/breadcrumbs.tsx
+msgid "Formats"
+msgstr "Vormingud"
 
 #. placeholder {0}: duplicates.length
 #: src/features/items/components/DuplicateWarningDialog.tsx
@@ -2253,6 +2302,7 @@ msgstr "Andmete importimiseks on vaja administraatori õigusi."
 msgid "Importing…"
 msgstr "Importimine…"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/imports/components/ImportHistory.tsx
@@ -2280,6 +2330,7 @@ msgstr "Liidese keel"
 msgid "Interval (days)"
 msgstr "Intervall (päevades)"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -2347,6 +2398,7 @@ msgstr "Ese arhiivist taastatud."
 msgid "items"
 msgstr "eset"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/CommandPalette.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -2393,6 +2445,7 @@ msgstr "SILDID"
 msgid "LABELS — {workspaceName}"
 msgstr "SILDID — {workspaceName}"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/LanguagePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Language"
@@ -2454,6 +2507,10 @@ msgstr "LINGITUD"
 #: src/components/retro/feedback/RetroStatusDot.tsx
 msgid "live"
 msgstr "reaalajas"
+
+#: src/components/layout/RouteFallback.tsx
+msgid "Loading"
+msgstr "Laadimine"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "LOADING"
@@ -2534,6 +2591,7 @@ msgstr "Laenatud"
 msgid "Loaning this item — pick a borrower."
 msgstr "Selle eseme laenutamine — vali laenaja."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -2570,6 +2628,7 @@ msgstr "Asukoht"
 msgid "Location value"
 msgstr "Asukoha väärtus"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/CommandPalette.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -2606,7 +2665,6 @@ msgstr "OTSI KOODI"
 msgid "Low stock"
 msgstr "Madal laoseis"
 
-#: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/inventory/components/InventoryRow.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
@@ -2696,6 +2754,7 @@ msgstr "Liige eemaldatud."
 msgid "members"
 msgstr "liikmed"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/MembersPage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Members"
@@ -2770,6 +2829,7 @@ msgstr "LIIKUMISED — {itemName}"
 msgid "My changes"
 msgstr "Minu muudatused"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 msgid "My Changes"
@@ -2798,6 +2858,10 @@ msgstr "Navigaator"
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "never"
 msgstr "mitte kunagi"
+
+#: src/components/layout/breadcrumbs.tsx
+msgid "New"
+msgstr "Uus"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "New borrower"
@@ -3236,6 +3300,7 @@ msgstr "Pole midagi eksportida."
 msgid "Notification settings saved."
 msgstr "Teavituste seaded salvestatud."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/notifications/components/NotificationsBell.tsx
 #: src/features/notifications/components/NotificationsDropdown.tsx
 #: src/features/settings/NotificationsPage.tsx
@@ -3347,6 +3412,7 @@ msgstr "ÜLE TÄHTAJA"
 #~ msgid "Overlay Atoms"
 #~ msgstr "Ülekatteaatomid"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 msgid "Overview"
 msgstr "Ülevaade"
@@ -3363,6 +3429,7 @@ msgstr "leht {page} / {pageCount} · {perPage} / leht"
 msgid "Pagination"
 msgstr "Lehekülgede jaotus"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Paperless"
 msgstr "Paperless"
@@ -3472,6 +3539,11 @@ msgstr "FOTOD"
 msgid "Pick a different location or container."
 msgstr "Vali teine asukoht või konteiner."
 
+#: src/components/layout/breadcrumbs.tsx
+#: src/components/layout/Sidebar.tsx
+msgid "Planning"
+msgstr "Planeerimine"
+
 #: src/features/settings/AvatarUploader.tsx
 msgid "PNG/JPG · max 5 MB"
 msgstr "PNG/JPG · max 5 MB"
@@ -3534,6 +3606,7 @@ msgstr "Töötlemisel"
 msgid "PRODUCT FOUND"
 msgstr "TOODE LEITUD"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/SidebarUserMenu.tsx
 #: src/features/settings/ProfilePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
@@ -3946,6 +4019,7 @@ msgstr "Salvestatud."
 #~ msgid "SavedFilters — preset chips + ▾ PRESETS menu."
 #~ msgstr "SavedFilters — eelseadete sildid + ▾ EELSEADED menüü."
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
@@ -4005,6 +4079,7 @@ msgstr ""
 msgid "Searching…"
 msgstr "Otsimine…"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Security"
 msgstr "Turvalisus"
@@ -4058,6 +4133,7 @@ msgstr "MÄÄRA PEAMISEKS"
 msgid "Set when created — can't be changed."
 msgstr ""
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/components/layout/SidebarUserMenu.tsx
 #: src/features/command-palette/paletteRoutes.ts
@@ -4217,6 +4293,7 @@ msgstr "Vahetatud: {name}."
 msgid "Sync"
 msgstr "Sünkroonimine"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Sync History"
@@ -4235,6 +4312,7 @@ msgstr ""
 msgid "Syncing {0} changes…"
 msgstr ""
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/settings/AppearancePage.tsx
 msgid "System"
@@ -4252,12 +4330,9 @@ msgstr "Süsteemi koondid"
 msgid "target {CAPACITY_TARGET_PLACEHOLDER} · data pending"
 msgstr "siht {CAPACITY_TARGET_PLACEHOLDER} · andmed ootel"
 
-#: src/features/taxonomy/components/CategoriesTab.tsx
-#: src/features/taxonomy/components/ContainersTab.tsx
-#: src/features/taxonomy/components/LabelsTab.tsx
-#: src/features/taxonomy/components/LocationsTab.tsx
-#~ msgid "Taxonomy"
-#~ msgstr "Taksonoomia"
+#: src/components/layout/breadcrumbs.tsx
+msgid "Taxonomy"
+msgstr "Taksonoomia"
 
 #: src/features/taxonomy/TaxonomyPage.tsx
 #~ msgid "TAXONOMY — {workspaceName}"
@@ -4298,6 +4373,10 @@ msgstr "See kasutaja on juba liige."
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "The file belongs to a different workspace."
 msgstr "Fail kuulub teise tööruumi."
+
+#: src/routes/NotFoundPage.tsx
+msgid "The page you were looking for does not exist or has moved."
+msgstr "Otsitavat lehte ei ole olemas või see on teisaldatud."
 
 #: src/features/settings/AppearancePage.tsx
 msgid "The same chrome on a dark desktop and panels."
@@ -4488,6 +4567,10 @@ msgstr "Proovi uuesti."
 msgid "Type"
 msgstr "Tüüp"
 
+#: src/features/items/components/BulkDeleteItemsDialog.tsx
+msgid "Type {count} to delete {count} archived items. This can't be undone."
+msgstr "Kustutamiseks trüki {count}, et kustutada {count} arhiveeritud üksust. Seda ei saa tagasi võtta."
+
 #: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "Type *"
@@ -4513,6 +4596,10 @@ msgstr "Kinnitamiseks sisesta DELETE. See eemaldab sinu konto jäädavalt ja sed
 #: src/features/items/ItemDetailPage.tsx
 msgid "Type the item name to confirm. This can't be undone."
 msgstr "Kinnitamiseks sisesta eseme nimi. Seda ei saa tagasi võtta."
+
+#: src/features/items/components/BulkDeleteItemsDialog.tsx
+msgid "Type the number of items to delete"
+msgstr "Trüki kustutatavate üksuste arv"
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "UNARCHIVE"
@@ -4619,6 +4706,7 @@ msgstr "Millal"
 msgid "Window"
 msgstr "Aken"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/wishlist/components/WishlistTable.tsx

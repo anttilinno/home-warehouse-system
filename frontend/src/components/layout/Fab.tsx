@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
+import { useLingui } from "@lingui/react/macro";
 import { useShortcutsContext, type Shortcut } from "@/components/shortcuts";
 import { useModalStack } from "@/components/modal";
 
@@ -20,6 +21,7 @@ import { useModalStack } from "@/components/modal";
 export function Fab() {
   const { shortcuts } = useShortcutsContext();
   const navigate = useNavigate();
+  const { t } = useLingui();
   const [open, setOpen] = useState(false);
 
   const close = () => setOpen(false);
@@ -34,11 +36,11 @@ export function Fab() {
     return [
       {
         key: "+",
-        label: "Add item",
+        label: t`Add item`,
         action: () => navigate("/items/new"),
       },
     ];
-  }, [shortcuts, navigate]);
+  }, [shortcuts, navigate, t]);
 
   return (
     <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+var(--sp-4))] right-sp-4 z-30 md:hidden">
@@ -94,9 +96,9 @@ export function Fab() {
                       : "bg-bg-panel text-fg-ink"
                   }`}
                 >
-                  <span className="inline-flex items-center justify-center border border-border-ink bg-bg-panel-2 px-1 font-mono text-12 font-semibold">
-                    {s.key}
-                  </span>
+                  {/* Keycap chip omitted (C4): the FAB is touch-only, so a
+                      keyboard-key hint is a meaningless desktop metaphor here —
+                      the label carries the action. */}
                   <span className="font-body text-11 font-bold uppercase tracking-10">
                     {s.label}
                   </span>

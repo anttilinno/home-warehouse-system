@@ -15,7 +15,8 @@
     "@fontsource/silkscreen",
     "tailwindcss",
     "@lingui/swc-plugin",
-    "rollup-plugin-visualizer"
+    "rollup-plugin-visualizer",
+    "pixelarticons"
   ],
   "rules": {
     "files": "error",

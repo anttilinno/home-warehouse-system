@@ -83,7 +83,7 @@ export function SidebarUserMenu({
             to="/settings/profile"
             role="menuitem"
             onClick={() => setMenuOpen(false)}
-            className={`block px-sp-3 py-[6px] text-13 font-semibold uppercase tracking-4 text-fg-ink hover:bg-bg-panel-2 ${FOCUS_RING}`}
+            className={`block px-sp-3 py-[6px] max-md:py-sp-3 text-13 font-semibold uppercase tracking-4 text-fg-ink hover:bg-bg-panel-2 ${FOCUS_RING}`}
           >
             <Trans>Profile</Trans>
           </Link>
@@ -91,7 +91,7 @@ export function SidebarUserMenu({
             to="/settings"
             role="menuitem"
             onClick={() => setMenuOpen(false)}
-            className={`block px-sp-3 py-[6px] text-13 font-semibold uppercase tracking-4 text-fg-ink hover:bg-bg-panel-2 ${FOCUS_RING}`}
+            className={`block px-sp-3 py-[6px] max-md:py-sp-3 text-13 font-semibold uppercase tracking-4 text-fg-ink hover:bg-bg-panel-2 ${FOCUS_RING}`}
           >
             <Trans>Settings</Trans>
           </Link>
@@ -102,7 +102,7 @@ export function SidebarUserMenu({
               setMenuOpen(false);
               setConfirmOpen(true);
             }}
-            className={`block w-full px-sp-3 py-[6px] text-left text-13 font-semibold uppercase tracking-4 text-danger hover:bg-danger-bg ${FOCUS_RING}`}
+            className={`block w-full px-sp-3 py-[6px] max-md:py-sp-3 text-left text-13 font-semibold uppercase tracking-4 text-danger hover:bg-danger-bg ${FOCUS_RING}`}
           >
             <Trans>Log out</Trans>
           </button>

@@ -163,3 +163,88 @@ describe("dark-mode tokens meet WCAG AA (>= 4.5:1)", () => {
     expect(contrastRatio(get(fg), get(bg))).toBeGreaterThanOrEqual(AA);
   });
 });
+
+// State fills (selection/active/online) must stay VISIBLE against the surface
+// they sit on — a lower bar than text AA. The AA text-pair guards above cannot
+// catch a state fill that vanishes into its background (the terminal-revision
+// bug: --titlebar-blue went #131317, invisible on the #0b0b0e dark panels).
+describe("state fills are distinguishable from their surface (>= 1.3:1)", () => {
+  type Ref = [name: string, scope: "dark" | "root"];
+  const get = ([name, scope]: Ref) =>
+    scope === "dark" ? darkToken(name) : token(name);
+
+  const FILL_MIN = 1.3;
+  const fillPairs: Array<[label: string, fill: Ref, surface: Ref]> = [
+    [
+      "selection-fill vs bg-panel (light)",
+      ["selection-fill", "root"],
+      ["bg-panel", "root"],
+    ],
+    [
+      "selection-fill vs bg-panel (dark)",
+      ["selection-fill", "dark"],
+      ["bg-panel", "dark"],
+    ],
+    [
+      "selection-fill vs table-stripe (light)",
+      ["selection-fill", "root"],
+      ["table-stripe", "root"],
+    ],
+    [
+      "selection-fill vs table-stripe (dark)",
+      ["selection-fill", "dark"],
+      ["table-stripe", "dark"],
+    ],
+    [
+      "status-online vs bg-panel-2 (dark)",
+      ["status-online", "dark"],
+      ["bg-panel-2", "dark"],
+    ],
+    // Selected row (selection-fill) vs hovered row (info-bg) must not collide
+    // in dark — a multi-select where both read identical is ambiguous.
+    [
+      "selection-fill vs info-bg (dark)",
+      ["selection-fill", "dark"],
+      ["info-bg", "dark"],
+    ],
+  ];
+
+  it.each(fillPairs)("%s", (_label, fill, surface) => {
+    expect(contrastRatio(get(fill), get(surface))).toBeGreaterThanOrEqual(
+      FILL_MIN,
+    );
+  });
+});
+
+describe("text painted on the state fills meets WCAG AA (>= 4.5:1)", () => {
+  type Ref = [name: string, scope: "dark" | "root"];
+  const get = ([name, scope]: Ref) =>
+    scope === "dark" ? darkToken(name) : token(name);
+
+  const textPairs: Array<[label: string, fg: Ref, bg: Ref]> = [
+    [
+      "fg-ink on selection-fill (dark)",
+      ["fg-ink", "dark"],
+      ["selection-fill", "dark"],
+    ],
+    [
+      "fg-on-accent on selection-fill (light)",
+      ["fg-on-accent", "root"],
+      ["selection-fill", "root"],
+    ],
+    [
+      "selection-text-fg on selection-text-bg (light)",
+      ["selection-text-fg", "root"],
+      ["selection-text-bg", "root"],
+    ],
+    [
+      "selection-text-fg on selection-text-bg (dark)",
+      ["selection-text-fg", "dark"],
+      ["selection-text-bg", "dark"],
+    ],
+  ];
+
+  it.each(textPairs)("%s", (_label, fg, bg) => {
+    expect(contrastRatio(get(fg), get(bg))).toBeGreaterThanOrEqual(AA);
+  });
+});
