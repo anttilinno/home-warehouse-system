@@ -1,6 +1,6 @@
 // AUTO-GENERATED from pixelarticons@2.2.0 svgs — do not edit by hand.
 // Regenerate (from repo root): node scripts/gen-pixel-icons.mjs (paths use the 24x24 grid,
-// fill inherits currentColor). Only the 19 icons the
+// fill inherits currentColor). Only the 20 icons the
 // Navigator sidebar uses are bundled here — no runtime fetch, no CDN.
 export type PixelIconName =
   | "app-windows"
@@ -21,7 +21,8 @@ export type PixelIconName =
   | "upload"
   | "reload"
   | "settings-2"
-  | "zap";
+  | "zap"
+  | "image";
 
 export const PIXEL_ICON_PATHS: Record<PixelIconName, readonly string[]> = {
   "app-windows": [
@@ -84,5 +85,9 @@ export const PIXEL_ICON_PATHS: Record<PixelIconName, readonly string[]> = {
   ],
   zap: [
     "M4 13h8v6h2v2h-2v2h-2v-8H2v-4h2v2Zm12 6h-2v-2h2v2Zm2-2h-2v-2h2v2Zm2-2h-2v-2h2v2Zm-6-6h8v4h-2v-2h-8V5h-2V3h2V1h2v8Zm-8 2H4V9h2v2Zm2-2H6V7h2v2Zm2-2H8V5h2v2Z",
+  ],
+  image: [
+    "M4 2h16v2H4zm0 18h16v2H4zM2 4h2v16H2zm18 0h2v16h-2zm-4 8h2v2h-2zm-2 2h2v2h-2zm4 0h2v2h-2zm-8 0h2v2h-2zm2 2h2v2h-2zm2 2h2v2h-2z",
+    "M20 16h2v2h-2zM8 16h2v2H8zm-2 2h2v2H6zM8 6h2v2H8zM6 8h2v2H6zm2 2h2v2H8zm2-2h2v2h-2z",
   ],
 };

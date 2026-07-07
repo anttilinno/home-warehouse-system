@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import { BevelButton, RetroDialog } from "@/components/retro";
+import { BevelButton, PixelIcon, RetroDialog } from "@/components/retro";
 import type { DuplicateInfo } from "@/lib/types";
 
 export interface DuplicateWarningDialogProps {
@@ -86,9 +86,9 @@ export function DuplicateWarningDialog({
               ) : (
                 <span
                   aria-hidden="true"
-                  className="flex h-full w-full items-center justify-center text-20 text-fg-faint"
+                  className="flex h-full w-full items-center justify-center text-fg-faint"
                 >
-                  ◇
+                  <PixelIcon name="image" size={32} />
                 </span>
               )}
               <span className="absolute bottom-[2px] right-[2px] rounded-chip border border-border-ink bg-bg-panel px-[4px] py-px font-mono text-10 tabular-nums text-fg-ink">

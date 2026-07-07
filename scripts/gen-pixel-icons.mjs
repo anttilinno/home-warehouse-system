@@ -21,6 +21,7 @@ const map = {
   reload: "reload",
   "settings-2": "settings-2",
   zap: "zap",
+  image: "image",
 };
 const out = {};
 for (const [name, file] of Object.entries(map)) {

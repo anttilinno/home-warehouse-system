@@ -1,6 +1,7 @@
 import { Trans } from "@lingui/react/macro";
 import {
   BevelButton,
+  PixelIcon,
   RetroBadge,
   RetroCheckbox,
   StatusPill,
@@ -60,7 +61,7 @@ export function ItemRow({
             aria-hidden="true"
             className="flex h-[26px] w-[26px] items-center justify-center border border-border-ink bg-bg-panel-2 text-fg-faint"
           >
-            ◇
+            <PixelIcon name="image" size={16} />
           </span>
         )}
       </td>
