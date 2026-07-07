@@ -39,7 +39,7 @@ export function OutOfStockTable({
       <div className="p-sp-4">
         <RetroEmptyState
           eyebrow={<Trans>Inventory</Trans>}
-          glyph="✓"
+          glyph="check"
           heading={<Trans>NOTHING OUT OF STOCK</Trans>}
           body={
             <Trans>

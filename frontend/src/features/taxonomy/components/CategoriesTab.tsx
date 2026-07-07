@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   BevelButton,
+  PixelIcon,
   RetroTree,
   RetroEmptyState,
   RetroConfirmDialog,
@@ -95,7 +96,8 @@ export function CategoriesTab() {
           storageKey="taxonomy:tree:categories"
           leadingAction={
             <BevelButton variant="mint" onClick={openCreateRoot}>
-              <Trans>⊕ ADD ROOT CATEGORY</Trans>
+              <PixelIcon name="plus" size={16} />{" "}
+              <Trans>ADD ROOT CATEGORY</Trans>
             </BevelButton>
           }
           onAddChild={openAddChild}
@@ -105,7 +107,7 @@ export function CategoriesTab() {
           emptyState={
             <RetroEmptyState
               eyebrow={<Trans>Categories</Trans>}
-              glyph="◇"
+              glyph="bookmark"
               heading={<Trans>NO CATEGORIES YET</Trans>}
               body={
                 <Trans>
@@ -114,7 +116,12 @@ export function CategoriesTab() {
                 </Trans>
               }
               action={{
-                label: <Trans>⊕ ADD ROOT CATEGORY</Trans>,
+                label: (
+                  <>
+                    <PixelIcon name="plus" size={16} />{" "}
+                    <Trans>ADD ROOT CATEGORY</Trans>
+                  </>
+                ),
                 onClick: openCreateRoot,
               }}
             />

@@ -121,8 +121,12 @@ describe("MaintenanceDrawer", () => {
     server.use(...maintenanceHandlers);
     renderDrawer();
     await screen.findByText("Oil change");
-    await userEvent.click(screen.getByText("⊕ ADD SCHEDULE"));
-    expect(await screen.findByText("ADD SCHEDULE")).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: /add schedule/i }),
+    );
+    expect(
+      await screen.findByRole("dialog", { name: /add schedule/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText("SAVE SCHEDULE")).toBeInTheDocument();
   });
 

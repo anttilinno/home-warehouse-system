@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import {
   Window,
   BevelButton,
+  PixelIcon,
   StatusPill,
   RetroEmptyState,
 } from "@/components/retro";
@@ -72,7 +73,7 @@ export function ActiveLoanPanel({
             type="button"
             onClick={() => navigate(`/loans/new?itemId=${itemId}`)}
           >
-            <Trans>⊕ LOAN THIS ITEM</Trans>
+            <PixelIcon name="plus" size={16} /> <Trans>LOAN THIS ITEM</Trans>
           </BevelButton>
         </div>
       </Window>

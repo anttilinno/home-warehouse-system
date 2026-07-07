@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { BevelButton } from "@/components/retro";
+import { BevelButton, PixelIcon, type PixelIconName } from "@/components/retro";
 
 export interface RetroEmptyStateAction {
   label: ReactNode;
@@ -9,8 +9,8 @@ export interface RetroEmptyStateAction {
 export interface RetroEmptyStateProps {
   /** Optional 10px uppercase eyebrow (group label scale). */
   eyebrow?: ReactNode;
-  /** Decorative unicode glyph in the thumb frame (default ◇). */
-  glyph?: ReactNode;
+  /** Decorative Pixelarticons glyph in the thumb frame (default `folder`). */
+  glyph?: PixelIconName;
   /** 16px Silkscreen uppercase heading. */
   heading: ReactNode;
   /** 14px muted body — one sentence + next step. */
@@ -24,7 +24,7 @@ export interface RetroEmptyStateProps {
 // atom owns layout + chrome only, per UI-SPEC § Feedback Family.
 export function RetroEmptyState({
   eyebrow,
-  glyph = "◇",
+  glyph = "folder",
   heading,
   body,
   action,
@@ -40,9 +40,9 @@ export function RetroEmptyState({
           here (decorative). */}
       <span
         aria-hidden="true"
-        className="flex h-12 w-12 items-center justify-center border border-border-ink bg-bg-panel-2 text-32 leading-none text-fg-faint"
+        className="flex h-12 w-12 items-center justify-center border border-border-ink bg-bg-panel-2 leading-none text-fg-faint"
       >
-        {glyph}
+        <PixelIcon name={glyph} size={28} />
       </span>
       <h3 className="font-display text-16 uppercase text-fg-ink">{heading}</h3>
       <p className="max-w-[42ch] text-14 text-fg-muted">{body}</p>

@@ -5,6 +5,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
+import { PixelIcon } from "@/components/retro";
 import { BevelButton } from "../BevelButton";
 import { RetroBadge } from "../RetroBadge";
 import { getSet, saveSet } from "@/features/taxonomy/lib/safeSessionStorage";
@@ -214,7 +215,8 @@ export function RetroTree({
                 className="!px-[8px] !py-[2px] !text-11"
                 onClick={expandAll}
               >
-                ⊞<span className="hidden sm:inline"> EXPAND ALL</span>
+                <PixelIcon name="plus-box" size={16} />
+                <span className="hidden sm:inline"> EXPAND ALL</span>
               </BevelButton>
               <BevelButton
                 type="button"
@@ -223,7 +225,8 @@ export function RetroTree({
                 className="!px-[8px] !py-[2px] !text-11"
                 onClick={collapseAll}
               >
-                ⊟<span className="hidden sm:inline"> COLLAPSE ALL</span>
+                <PixelIcon name="minus-box" size={16} />
+                <span className="hidden sm:inline"> COLLAPSE ALL</span>
               </BevelButton>
             </div>
           )}
@@ -279,7 +282,11 @@ export function RetroTree({
                   }}
                   className="w-[12px] shrink-0 text-center text-12 leading-none text-fg-ink"
                 >
-                  {isOpen ? "▾" : "▸"}
+                  {isOpen ? (
+                    <PixelIcon name="chevron-down" size={16} />
+                  ) : (
+                    <PixelIcon name="chevron-right" size={16} />
+                  )}
                 </button>
               ) : (
                 <span
@@ -360,7 +367,7 @@ export function RetroTree({
                       className="!px-[8px] !py-[2px] !text-11"
                       onClick={() => onAddChild(node)}
                     >
-                      {"⊕"}
+                      <PixelIcon name="plus" size={16} />
                     </BevelButton>
                     <BevelButton
                       type="button"

@@ -4,6 +4,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import {
   Window,
   BevelButton,
+  PixelIcon,
   RetroTable,
   RetroTabs,
   RetroEmptyState,
@@ -150,7 +151,7 @@ export function LoansListPage() {
       return (
         <RetroEmptyState
           eyebrow={<Trans>Loans</Trans>}
-          glyph="◇"
+          glyph="download"
           heading={<Trans>NO MATCHES</Trans>}
           body={<Trans>No loans match this search.</Trans>}
           action={{
@@ -164,7 +165,7 @@ export function LoansListPage() {
       return (
         <RetroEmptyState
           eyebrow={<Trans>Loans</Trans>}
-          glyph="◇"
+          glyph="download"
           heading={<Trans>NOTHING OVERDUE</Trans>}
           body={<Trans>No active loans are past their due date.</Trans>}
         />
@@ -174,7 +175,7 @@ export function LoansListPage() {
       return (
         <RetroEmptyState
           eyebrow={<Trans>Loans</Trans>}
-          glyph="◇"
+          glyph="download"
           heading={<Trans>NO LOAN HISTORY</Trans>}
           body={<Trans>No loans have been returned yet.</Trans>}
         />
@@ -183,14 +184,21 @@ export function LoansListPage() {
     return (
       <RetroEmptyState
         eyebrow={<Trans>Loans</Trans>}
-        glyph="◇"
+        glyph="download"
         heading={<Trans>NO ACTIVE LOANS</Trans>}
         body={
           <Trans>
             Nothing is out on loan right now. Loan an item to start tracking it.
           </Trans>
         }
-        action={{ label: <Trans>⊕ NEW LOAN</Trans>, onClick: goNew }}
+        action={{
+          label: (
+            <>
+              <PixelIcon name="plus" size={16} /> <Trans>NEW LOAN</Trans>
+            </>
+          ),
+          onClick: goNew,
+        }}
       />
     );
   }
@@ -215,10 +223,10 @@ export function LoansListPage() {
               disabled={visible.length === 0}
               aria-disabled={visible.length === 0 || undefined}
             >
-              <Trans>⤓ EXPORT CSV</Trans>
+              <PixelIcon name="download" size={16} /> <Trans>EXPORT CSV</Trans>
             </BevelButton>
             <BevelButton variant="mint" onClick={goNew}>
-              <Trans>⊕ NEW LOAN</Trans>
+              <PixelIcon name="plus" size={16} /> <Trans>NEW LOAN</Trans>
             </BevelButton>
           </span>
         }

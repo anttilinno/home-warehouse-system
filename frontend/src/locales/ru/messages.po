@@ -185,12 +185,12 @@ msgid "← BACK TO ITEMS"
 msgstr "← НАЗАД К ПРЕДМЕТАМ"
 
 #: src/features/inventory/components/InventoryRow.tsx
-msgid "↧"
-msgstr "↧"
+#~ msgid "↧"
+#~ msgstr "↧"
 
 #: src/features/loans/components/LoanRowActions.tsx
-msgid "↧ EDIT"
-msgstr "↧ ИЗМЕНИТЬ"
+#~ msgid "↧ EDIT"
+#~ msgstr "↧ ИЗМЕНИТЬ"
 
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "+ Add item"
@@ -202,75 +202,75 @@ msgstr "−{overdueBy}д"
 
 #: src/features/items/components/InventoryPanel.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
-msgid "⊕ ADD"
-msgstr "⊕ ДОБАВИТЬ"
+#~ msgid "⊕ ADD"
+#~ msgstr "⊕ ДОБАВИТЬ"
 
 #: src/features/borrowers/BorrowersListPage.tsx
-msgid "⊕ ADD BORROWER"
-msgstr "⊕ ДОБАВИТЬ ПОЛУЧАТЕЛЯ"
+#~ msgid "⊕ ADD BORROWER"
+#~ msgstr "⊕ ДОБАВИТЬ ПОЛУЧАТЕЛЯ"
 
 #: src/features/taxonomy/components/ContainersTab.tsx
-msgid "⊕ ADD CONTAINER"
-msgstr "⊕ ДОБАВИТЬ КОНТЕЙНЕР"
+#~ msgid "⊕ ADD CONTAINER"
+#~ msgstr "⊕ ДОБАВИТЬ КОНТЕЙНЕР"
 
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/components/InventoryPanel.tsx
-msgid "⊕ ADD ENTRY"
-msgstr "⊕ ДОБАВИТЬ ЗАПИСЬ"
+#~ msgid "⊕ ADD ENTRY"
+#~ msgstr "⊕ ДОБАВИТЬ ЗАПИСЬ"
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
-msgid "⊕ ADD FILE"
-msgstr "⊕ ДОБАВИТЬ ФАЙЛ"
+#~ msgid "⊕ ADD FILE"
+#~ msgstr "⊕ ДОБАВИТЬ ФАЙЛ"
 
 #: src/features/items/components/ItemsResults.tsx
 #: src/features/items/ItemsListPage.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
-msgid "⊕ ADD ITEM"
-msgstr "⊕ ДОБАВИТЬ ПРЕДМЕТ"
+#~ msgid "⊕ ADD ITEM"
+#~ msgstr "⊕ ДОБАВИТЬ ПРЕДМЕТ"
 
 #: src/features/items/components/ItemLabels.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
-msgid "⊕ ADD LABEL"
-msgstr "⊕ ДОБАВИТЬ МЕТКУ"
+#~ msgid "⊕ ADD LABEL"
+#~ msgstr "⊕ ДОБАВИТЬ МЕТКУ"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/repairs/components/RepairPhotoPanel.tsx
-msgid "⊕ ADD PHOTOS"
-msgstr "⊕ ДОБАВИТЬ ФОТО"
+#~ msgid "⊕ ADD PHOTOS"
+#~ msgstr "⊕ ДОБАВИТЬ ФОТО"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
-msgid "⊕ ADD REPAIR"
-msgstr "⊕ ДОБАВИТЬ РЕМОНТ"
+#~ msgid "⊕ ADD REPAIR"
+#~ msgstr "⊕ ДОБАВИТЬ РЕМОНТ"
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
-msgid "⊕ ADD ROOT CATEGORY"
-msgstr "⊕ ДОБАВИТЬ КОРНЕВУЮ КАТЕГОРИЮ"
+#~ msgid "⊕ ADD ROOT CATEGORY"
+#~ msgstr "⊕ ДОБАВИТЬ КОРНЕВУЮ КАТЕГОРИЮ"
 
 #: src/features/taxonomy/components/LocationsTab.tsx
-msgid "⊕ ADD ROOT LOCATION"
-msgstr "⊕ ДОБАВИТЬ КОРНЕВОЕ МЕСТОПОЛОЖЕНИЕ"
+#~ msgid "⊕ ADD ROOT LOCATION"
+#~ msgstr "⊕ ДОБАВИТЬ КОРНЕВОЕ МЕСТОПОЛОЖЕНИЕ"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
-msgid "⊕ ADD SCHEDULE"
-msgstr "⊕ ДОБАВИТЬ ГРАФИК"
+#~ msgid "⊕ ADD SCHEDULE"
+#~ msgstr "⊕ ДОБАВИТЬ ГРАФИК"
 
 #: src/features/items/components/LoanPanels.tsx
-msgid "⊕ LOAN THIS ITEM"
-msgstr "⊕ ВЫДАТЬ ЭТОТ ПРЕДМЕТ"
+#~ msgid "⊕ LOAN THIS ITEM"
+#~ msgstr "⊕ ВЫДАТЬ ЭТОТ ПРЕДМЕТ"
 
 #: src/features/borrowers/BorrowersListPage.tsx
-msgid "⊕ NEW BORROWER"
-msgstr "⊕ НОВЫЙ ПОЛУЧАТЕЛЬ"
+#~ msgid "⊕ NEW BORROWER"
+#~ msgstr "⊕ НОВЫЙ ПОЛУЧАТЕЛЬ"
 
 #: src/features/loans/LoansListPage.tsx
-msgid "⊕ NEW LOAN"
-msgstr "⊕ НОВАЯ ВЫДАЧА"
+#~ msgid "⊕ NEW LOAN"
+#~ msgstr "⊕ НОВАЯ ВЫДАЧА"
 
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "▾ PRESETS"
-msgstr "▾ ПРЕСЕТЫ"
+#~ msgid "▾ PRESETS"
+#~ msgstr "▾ ПРЕСЕТЫ"
 
 #: src/features/items/components/PhotoTile.tsx
 msgid "★ PRIMARY"
@@ -316,30 +316,30 @@ msgid "✕ REJECT"
 msgstr "✕ ОТКЛОНИТЬ"
 
 #: src/features/inventory/components/InventoryRow.tsx
-msgid "⟳"
-msgstr "⟳"
+#~ msgid "⟳"
+#~ msgstr "⟳"
 
 #: src/features/items/components/PhotoGalleryToolbar.tsx
-msgid "⤓ DOWNLOAD {selectedCount}"
-msgstr "⤓ СКАЧАТЬ {selectedCount}"
+#~ msgid "⤓ DOWNLOAD {selectedCount}"
+#~ msgstr "⤓ СКАЧАТЬ {selectedCount}"
 
 #: src/features/items/components/PhotoGalleryToolbar.tsx
-msgid "⤓ DOWNLOAD ALL"
-msgstr "⤓ СКАЧАТЬ ВСЁ"
+#~ msgid "⤓ DOWNLOAD ALL"
+#~ msgstr "⤓ СКАЧАТЬ ВСЁ"
 
 #: src/features/items/ItemsListPage.tsx
-msgid "⤓ EXPORT"
-msgstr "⤓ ЭКСПОРТ"
+#~ msgid "⤓ EXPORT"
+#~ msgstr "⤓ ЭКСПОРТ"
 
 #: src/features/declutter/DeclutterPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/loans/LoansListPage.tsx
-msgid "⤓ EXPORT CSV"
-msgstr "⤓ ЭКСПОРТ CSV"
+#~ msgid "⤓ EXPORT CSV"
+#~ msgstr "⤓ ЭКСПОРТ CSV"
 
 #: src/features/inventory/components/InventoryRow.tsx
-msgid "🔧"
-msgstr "🔧"
+#~ msgid "🔧"
+#~ msgstr "🔧"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "14-day activity"
@@ -430,12 +430,30 @@ msgstr "Инициатор"
 msgid "Add"
 msgstr "Добавить"
 
+#: src/features/items/components/InventoryPanel.tsx
+#: src/features/wishlist/components/WishlistTable.tsx
+msgid "ADD"
+msgstr "ДОБАВИТЬ"
+
+#: src/features/borrowers/BorrowersListPage.tsx
+msgid "ADD BORROWER"
+msgstr "ДОБАВИТЬ ПОЛУЧАТЕЛЯ"
+
+#: src/features/taxonomy/components/ContainersTab.tsx
+msgid "ADD CONTAINER"
+msgstr "ДОБАВИТЬ КОНТЕЙНЕР"
+
+#: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/InventoryFormPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/components/InventoryPanel.tsx
 msgid "ADD ENTRY"
 msgstr "ДОБАВИТЬ ЗАПИСЬ"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
+#: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
+#: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "ADD FILE"
 msgstr "ДОБАВИТЬ ФАЙЛ"
 
@@ -444,18 +462,38 @@ msgstr "ДОБАВИТЬ ФАЙЛ"
 msgid "Add item"
 msgstr "Добавить предмет"
 
+#: src/features/items/components/ItemsResults.tsx
 #: src/features/items/ItemFormPage.tsx
+#: src/features/items/ItemsListPage.tsx
+#: src/features/wishlist/components/WishlistTable.tsx
 msgid "ADD ITEM"
 msgstr "ДОБАВИТЬ ПРЕДМЕТ"
 
+#: src/features/items/components/ItemLabels.tsx
+#: src/features/taxonomy/components/LabelsTab.tsx
+msgid "ADD LABEL"
+msgstr "ДОБАВИТЬ МЕТКУ"
+
 #: src/features/items/components/PhotoUpload.tsx
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/repairs/components/RepairPhotoPanel.tsx
 msgid "ADD PHOTOS"
 msgstr "ДОБАВИТЬ ФОТО"
 
 #: src/features/repairs/components/RepairForm.tsx
+#: src/features/repairs/components/RepairsDrawer.tsx
 msgid "ADD REPAIR"
 msgstr "ДОБАВИТЬ РЕМОНТ"
 
+#: src/features/taxonomy/components/CategoriesTab.tsx
+msgid "ADD ROOT CATEGORY"
+msgstr "ДОБАВИТЬ КОРНЕВУЮ КАТЕГОРИЮ"
+
+#: src/features/taxonomy/components/LocationsTab.tsx
+msgid "ADD ROOT LOCATION"
+msgstr "ДОБАВИТЬ КОРНЕВОЕ МЕСТОПОЛОЖЕНИЕ"
+
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "ADD SCHEDULE"
 msgstr "ДОБАВИТЬ ГРАФИК"
@@ -979,7 +1017,7 @@ msgstr "Контейнер"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "CONTAINER"
-msgstr ""
+msgstr "КОНТЕЙНЕР"
 
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
@@ -1830,10 +1868,18 @@ msgstr "ГОТОВО · График сохранён."
 msgid "DONE · Schedule updated."
 msgstr "ГОТОВО · График обновлён."
 
+#: src/features/items/components/PhotoGalleryToolbar.tsx
+msgid "DOWNLOAD {selectedCount}"
+msgstr "СКАЧАТЬ {selectedCount}"
+
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
 msgid "Download a backup copy of this workspace."
 msgstr "Скачайте резервную копию этого рабочего пространства."
+
+#: src/features/items/components/PhotoGalleryToolbar.tsx
+msgid "DOWNLOAD ALL"
+msgstr "СКАЧАТЬ ВСЁ"
 
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Download original"
@@ -1900,6 +1946,7 @@ msgstr "Изменить"
 #: src/features/items/components/InventoryPanel.tsx
 #: src/features/items/components/ItemRow.tsx
 #: src/features/items/ItemDetailPage.tsx
+#: src/features/loans/components/LoanRowActions.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 #: src/features/repairs/components/RepairsDrawer.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
@@ -2093,6 +2140,16 @@ msgstr "Дата истечения срока"
 #: src/features/settings/DataStoragePage.tsx
 msgid "Export"
 msgstr "Экспорт"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "EXPORT"
+msgstr "ЭКСПОРТ"
+
+#: src/features/declutter/DeclutterPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/loans/LoansListPage.tsx
+msgid "EXPORT CSV"
+msgstr "ЭКСПОРТ CSV"
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
@@ -2583,6 +2640,10 @@ msgstr "Напоминания о выдачах"
 msgid "Loan saved."
 msgstr "Выдача сохранена."
 
+#: src/features/items/components/LoanPanels.tsx
+msgid "LOAN THIS ITEM"
+msgstr "ВЫДАТЬ ЭТОТ ПРЕДМЕТ"
+
 #: src/features/loans/LoansListPage.tsx
 msgid "Loaned"
 msgstr "Выдано"
@@ -2868,6 +2929,7 @@ msgid "New borrower"
 msgstr ""
 
 #: src/features/borrowers/BorrowerFormPage.tsx
+#: src/features/borrowers/BorrowersListPage.tsx
 msgid "NEW BORROWER"
 msgstr "НОВЫЙ ПОЛУЧАТЕЛЬ"
 
@@ -2909,6 +2971,7 @@ msgid "New loan"
 msgstr ""
 
 #: src/features/loans/LoanFormPage.tsx
+#: src/features/loans/LoansListPage.tsx
 msgid "NEW LOAN"
 msgstr "НОВАЯ ВЫДАЧА"
 
@@ -3567,6 +3630,10 @@ msgstr "Заполнено из сканирования — измените п
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "Preset name"
 msgstr "Название пресета"
+
+#: src/components/retro/filters/SavedFilters.tsx
+msgid "PRESETS"
+msgstr "ПРЕСЕТЫ"
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "PREV"

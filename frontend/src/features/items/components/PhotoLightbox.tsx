@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useModalStack } from "@/components/modal";
-import { BevelButton } from "@/components/retro";
+import { BevelButton, PixelIcon } from "@/components/retro";
 import { downloadBlob } from "@/lib/api";
 import type { Photo } from "@/lib/types";
 
@@ -135,7 +135,7 @@ export function PhotoLightbox({ photos, index, onClose }: PhotoLightboxProps) {
             disabled={zoom <= ZOOM_MIN}
             onClick={() => zoomBy(-ZOOM_STEP)}
           >
-            ⊖
+            <PixelIcon name="minus" size={16} />
           </BevelButton>
           <span className="font-mono text-12 tabular-nums text-fg-ink">
             {pct}%
@@ -146,14 +146,14 @@ export function PhotoLightbox({ photos, index, onClose }: PhotoLightboxProps) {
             disabled={zoom >= ZOOM_MAX}
             onClick={() => zoomBy(ZOOM_STEP)}
           >
-            ⊕
+            <PixelIcon name="plus" size={16} />
           </BevelButton>
           <BevelButton
             aria-label={t`Download original`}
             title={t`Download original`}
             onClick={() => downloadBlob(photo.url, photo.filename)}
           >
-            ⤓
+            <PixelIcon name="download" size={16} />
           </BevelButton>
           <BevelButton onClick={onClose}>
             <Trans>✕ CLOSE</Trans>
@@ -169,7 +169,7 @@ export function PhotoLightbox({ photos, index, onClose }: PhotoLightboxProps) {
             onClick={() => go(-1)}
             className="absolute left-sp-3 z-10 !h-[44px] !w-[44px] !p-0"
           >
-            ◂
+            <PixelIcon name="chevron-left" size={16} />
           </BevelButton>
           <img
             src={photo.url}
@@ -184,7 +184,7 @@ export function PhotoLightbox({ photos, index, onClose }: PhotoLightboxProps) {
             onClick={() => go(1)}
             className="absolute right-sp-3 z-10 !h-[44px] !w-[44px] !p-0"
           >
-            ▸
+            <PixelIcon name="chevron-right" size={16} />
           </BevelButton>
         </div>
 

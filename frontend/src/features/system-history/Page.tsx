@@ -35,7 +35,7 @@ export function SyncHistoryPage() {
       <Window title={t`SYNC HISTORY`} titlebarVariant="blue">
         <RetroEmptyState
           eyebrow={<Trans>Sync</Trans>}
-          glyph="⇄"
+          glyph="reload"
           heading={<Trans>ONLINE ONLY</Trans>}
           body={
             <Trans>

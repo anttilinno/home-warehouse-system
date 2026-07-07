@@ -42,7 +42,8 @@ describe("ScanTorchToggle", () => {
     expect(btn).toHaveTextContent("TORCH");
     expect(btn).not.toHaveTextContent("TORCH ON");
     expect(btn).toHaveAttribute("aria-pressed", "false");
-    expect(btn).toHaveTextContent("⚡");
+    // The always-present glyph cue is now a Pixelarticons zap icon (aria-hidden svg).
+    expect(btn.querySelector("svg")).toBeInTheDocument();
   });
 
   it("ON state: shows TORCH ON word and aria-pressed=true", () => {

@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   BevelButton,
+  PixelIcon,
   RetroTable,
   RetroEmptyState,
   RetroConfirmDialog,
@@ -152,14 +153,14 @@ export function ContainersTab() {
       <div className="flex flex-col gap-sp-3">
         <div className="flex items-center">
           <BevelButton variant="mint" onClick={openCreate}>
-            <Trans>⊕ ADD CONTAINER</Trans>
+            <PixelIcon name="plus" size={16} /> <Trans>ADD CONTAINER</Trans>
           </BevelButton>
         </div>
 
         {rows.length === 0 ? (
           <RetroEmptyState
             eyebrow={<Trans>Containers</Trans>}
-            glyph="◇"
+            glyph="folder"
             heading={<Trans>NO CONTAINERS YET</Trans>}
             body={
               <Trans>
@@ -168,7 +169,12 @@ export function ContainersTab() {
               </Trans>
             }
             action={{
-              label: <Trans>⊕ ADD CONTAINER</Trans>,
+              label: (
+                <>
+                  <PixelIcon name="plus" size={16} />{" "}
+                  <Trans>ADD CONTAINER</Trans>
+                </>
+              ),
               onClick: openCreate,
             }}
           />

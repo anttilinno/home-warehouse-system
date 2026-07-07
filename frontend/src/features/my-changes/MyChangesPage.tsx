@@ -71,7 +71,7 @@ export function MyChangesPage() {
           <div className="p-sp-4">
             <RetroEmptyState
               eyebrow={<Trans>My changes</Trans>}
-              glyph="◇"
+              glyph="bulletlist"
               heading={<Trans>No changes yet</Trans>}
               body={
                 <Trans>

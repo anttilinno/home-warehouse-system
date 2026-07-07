@@ -1,4 +1,5 @@
 import { Trans } from "@lingui/react/macro";
+import { PixelIcon } from "@/components/retro";
 
 // Phase 7 Plan 06 — the INVENTORY side-rail slot (UI-SPEC §2 Inventory STUB).
 //
@@ -16,7 +17,7 @@ export function InventoryPanelStub() {
         <Trans>INVENTORY</Trans>
       </p>
       <span aria-hidden="true" className="text-32 leading-none text-fg-faint">
-        ◇
+        <PixelIcon name="grid-3x3" size={28} />
       </span>
       <p className="text-14 text-fg-muted">
         <Trans>Stock entries arrive in 7b.</Trans>

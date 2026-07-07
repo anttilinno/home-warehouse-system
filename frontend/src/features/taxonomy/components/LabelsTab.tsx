@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   BevelButton,
+  PixelIcon,
   RetroBadge,
   RetroEmptyState,
   RetroConfirmDialog,
@@ -63,14 +64,14 @@ export function LabelsTab() {
       <div className="flex flex-col gap-sp-3">
         <div className="flex items-center">
           <BevelButton variant="mint" onClick={openCreate}>
-            <Trans>⊕ ADD LABEL</Trans>
+            <PixelIcon name="plus" size={16} /> <Trans>ADD LABEL</Trans>
           </BevelButton>
         </div>
 
         {rows.length === 0 ? (
           <RetroEmptyState
             eyebrow={<Trans>Labels</Trans>}
-            glyph="◇"
+            glyph="bookmark"
             heading={<Trans>NO LABELS YET</Trans>}
             body={
               <Trans>
@@ -79,7 +80,11 @@ export function LabelsTab() {
               </Trans>
             }
             action={{
-              label: <Trans>⊕ ADD LABEL</Trans>,
+              label: (
+                <>
+                  <PixelIcon name="plus" size={16} /> <Trans>ADD LABEL</Trans>
+                </>
+              ),
               onClick: openCreate,
             }}
           />
@@ -142,7 +147,9 @@ export function LabelsTab() {
                           archiveLabel({ id: label.id, name: label.name })
                         }
                       >
-                        <span aria-hidden="true">⊟</span>
+                        <span aria-hidden="true">
+                          <PixelIcon name="minus-box" size={16} />
+                        </span>
                       </BevelButton>
                     </>
                   )}

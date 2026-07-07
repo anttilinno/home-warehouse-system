@@ -1,4 +1,5 @@
 import { useId, type ComponentPropsWithRef, type ReactNode } from "react";
+import { PixelIcon } from "@/components/retro";
 
 export interface RetroSelectProps extends ComponentPropsWithRef<"select"> {
   label: ReactNode;
@@ -52,7 +53,7 @@ export function RetroSelect({
           aria-hidden="true"
           className="pointer-events-none absolute right-[10px] top-1/2 -translate-y-1/2 text-12 text-fg-ink"
         >
-          ▾
+          <PixelIcon name="chevron-down" size={16} />
         </span>
       </div>
       {error && (

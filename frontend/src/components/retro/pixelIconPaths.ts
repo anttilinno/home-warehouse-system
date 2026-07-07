@@ -1,7 +1,8 @@
 // AUTO-GENERATED from pixelarticons@2.2.0 svgs — do not edit by hand.
 // Regenerate (from repo root): node scripts/gen-pixel-icons.mjs (paths use the 24x24 grid,
-// fill inherits currentColor). Only the 20 icons the
-// Navigator sidebar uses are bundled here — no runtime fetch, no CDN.
+// fill inherits currentColor). Only the 37 icons the
+// retro-OS chrome uses (sidebar nav + CTAs, toolbars, empty states) are
+// bundled here — no runtime fetch, no CDN.
 export type PixelIconName =
   | "app-windows"
   | "chart-bar-big"
@@ -22,7 +23,24 @@ export type PixelIconName =
   | "reload"
   | "settings-2"
   | "zap"
-  | "image";
+  | "image"
+  | "plus"
+  | "search"
+  | "menu"
+  | "chevron-down"
+  | "chevron-up"
+  | "chevron-left"
+  | "chevron-right"
+  | "pencil"
+  | "attachment"
+  | "file"
+  | "cancel"
+  | "tool-case"
+  | "repeat"
+  | "bell"
+  | "plus-box"
+  | "minus-box"
+  | "minus";
 
 export const PIXEL_ICON_PATHS: Record<PixelIconName, readonly string[]> = {
   "app-windows": [
@@ -90,4 +108,53 @@ export const PIXEL_ICON_PATHS: Record<PixelIconName, readonly string[]> = {
     "M4 2h16v2H4zm0 18h16v2H4zM2 4h2v16H2zm18 0h2v16h-2zm-4 8h2v2h-2zm-2 2h2v2h-2zm4 0h2v2h-2zm-8 0h2v2h-2zm2 2h2v2h-2zm2 2h2v2h-2z",
     "M20 16h2v2h-2zM8 16h2v2H8zm-2 2h2v2H6zM8 6h2v2H8zM6 8h2v2H6zm2 2h2v2H8zm2-2h2v2h-2z",
   ],
+  plus: ["M13 11h7v2h-7v7h-2v-7H4v-2h7V4h2v7Z"],
+  search: [
+    "M22 22h-2v-2h2v2Zm-2-2h-2v-2h2v2Zm-6-2H6v-2h8v2Zm4 0h-2v-2h2v2ZM6 16H4v-2h2v2Zm10 0h-2v-2h2v2ZM4 14H2V6h2v8Zm14 0h-2V6h2v8ZM6 6H4V4h2v2Zm10 0h-2V4h2v2Zm-2-2H6V2h8v2Z",
+  ],
+  menu: ["M20 18H4v-2h16v2Zm0-5H4v-2h16v2Zm0-5H4V6h16v2Z"],
+  "chevron-down": [
+    "M13 16h-2v-2h2v2Zm-2-2H9v-2h2v2Zm4 0h-2v-2h2v2Zm-6-2H7v-2h2v2Zm8 0h-2v-2h2v2ZM7 10H5V8h2v2Zm12 0h-2V8h2v2Z",
+  ],
+  "chevron-up": [
+    "M13 8h-2v2h2V8Zm-2 2H9v2h2v-2Zm4 0h-2v2h2v-2Zm-6 2H7v2h2v-2Zm8 0h-2v2h2v-2ZM7 14H5v2h2v-2Zm12 0h-2v2h2v-2Z",
+  ],
+  "chevron-left": [
+    "M8 13v-2h2v2H8Zm2-2V9h2v2h-2Zm0 4v-2h2v2h-2Zm2-6V7h2v2h-2Zm0 8v-2h2v2h-2Zm2-10V5h2v2h-2Zm0 12v-2h2v2h-2Z",
+  ],
+  "chevron-right": [
+    "M16 13v-2h-2v2h2Zm-2-2V9h-2v2h2Zm0 4v-2h-2v2h2Zm-2-6V7h-2v2h2Zm0 8v-2h-2v2h2ZM10 7V5H8v2h2Zm0 12v-2H8v2h2Z",
+  ],
+  pencil: [
+    "M4 16H6V18H8V20H10V22H2V14H4V16ZM12 20H10V18H12V20ZM14 18H12V16H14V18ZM10 16H8V14H10V16ZM16 16H14V14H16V16ZM6 14H4V12H6V14ZM12 14H10V12H12V14ZM18 14H16V12H18V14ZM8 12H6V10H8V12ZM14 12H12V10H14V12ZM20 12H18V10H20V12ZM10 10H8V8H10V10ZM18 10H16V8H18V10ZM22 10H20V8H22V10ZM12 8H10V6H12V8ZM16 8H14V6H16V8ZM20 8H18V6H20V8ZM14 6H12V4H14V6ZM18 6H16V4H18V6ZM16 4H14V2H16V4Z",
+  ],
+  attachment: [
+    "M7 7v10H5V7zm12 0v12h-2V7zm-8 2v10H9V9zm4 0v8h-2V9zm0-6v2H9V3zm-2 4v2h-2V7zm4 12v2h-6v-2zm0-14v2h-2V5zM9 5v2H7V5z",
+  ],
+  file: [
+    "M6 4H4v16h2zm10-2H6v2h10zm4 4h-2v14h2zm-2 14H6v2h12zM16 4h2v2h-2zm-4 0h2v6h-2z",
+    "M12 8h6v2h-6z",
+  ],
+  cancel: [
+    "M6 2h12v2H6zm0 18h12v2H6zM2 6h2v12H2zm18 0h2v12h-2zm-2-2h2v2h-2zm-2 2h2v2h-2zm-2 2h2v2h-2zm-2 2h2v2h-2zm-2 2h2v2h-2zm-2 2h2v2H8zm-2 2h2v2H6zm12 2h2v2h-2zM4 4h2v2H4zm0 14h2v2H4z",
+  ],
+  "tool-case": [
+    "M2 11h20v2H2zm0 2h2v8H2zm2 8h16v2H4zm16-8h2v8h-2zM9 15h6v2H9zM4 8h2v3H4zm2-2h6v2H6zm6 2h2v3h-2zM8 4h2v2H8zm10 0h2v7h-2zm-8-2h8v2h-8z",
+  ],
+  repeat: [
+    "M17 5h2v2h-2zM5 17h2v2H5zm6-14h2v6h-2zM9 1h2v8H9zm0 8h2v2H9zm10 8H9v2h10zM5 7H3v10h2z",
+    "M13 15h-2v6h2zm2-2h-2v8h2zm0 8h-2v2h2zM5 5h10v2H5zm14 12h2V7h-2z",
+  ],
+  bell: [
+    "M9 2h6v2H9zM7 4h2v2H7zm8 0h2v2h-2zM5 6h2v7H5zm12 0h2v7h-2zM3 13h2v4H3zm16 0h2v4h-2z",
+    "M3 15h18v2H3zm5 3h2v2H8zm6 0h2v2h-2zm-4 2h4v2h-4z",
+  ],
+  "plus-box": [
+    "M4 2h16v2H4zm0 18h16v2H4zM2 4h2v16H2zm18 0h2v16h-2zM7 11h10v2H7z",
+    "M11 17V7h2v10z",
+  ],
+  "minus-box": [
+    "M4 2h16v2H4zm0 18h16v2H4zM2 4h2v16H2zm18 0h2v16h-2zM8 11h8v2H8z",
+  ],
+  minus: ["M4 11h16v2H4z"],
 };

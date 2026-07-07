@@ -66,7 +66,7 @@ export function MonthlyLoanActivityChart({
     <Window title={<Trans>Monthly loan activity</Trans>} titlebarVariant="blue">
       {isEmpty ? (
         <RetroEmptyState
-          glyph="▤"
+          glyph="chart-bar-big"
           heading={<Trans>No data</Trans>}
           body={<Trans>No loan activity for this range yet.</Trans>}
         />

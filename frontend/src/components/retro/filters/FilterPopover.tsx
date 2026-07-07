@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from "react";
-import { BevelButton, RetroCheckbox } from "@/components/retro";
+import { BevelButton, PixelIcon, RetroCheckbox } from "@/components/retro";
 import { Popover } from "../overlay";
 
 export interface FilterFacetOption {
@@ -52,7 +52,7 @@ export function FilterPopover({
         onClick={() => setOpen((o) => !o)}
         className={className}
       >
-        {label} ▾
+        {label} <PixelIcon name="chevron-down" size={16} />
       </BevelButton>
 
       <Popover

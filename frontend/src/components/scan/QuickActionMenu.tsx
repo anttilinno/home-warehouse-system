@@ -1,7 +1,12 @@
 import { Link } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { BevelButton, RetroDialog, retroToast } from "@/components/retro";
+import {
+  BevelButton,
+  PixelIcon,
+  RetroDialog,
+  retroToast,
+} from "@/components/retro";
 import { itemsApi } from "@/lib/api/items";
 import { loansApi } from "@/lib/api/loans";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
@@ -86,7 +91,7 @@ export function QuickActionMenu({
               to={`/loans/new?itemId=${encodeURIComponent(item.id)}`}
               className={`${BEVEL_LINK} bg-titlebar-mint text-fg-ink`}
             >
-              ⊕ <Trans>LOAN</Trans>
+              <PixelIcon name="plus" size={16} /> <Trans>LOAN</Trans>
             </Link>
           )}
 
@@ -96,7 +101,7 @@ export function QuickActionMenu({
               disabled={restore.isPending}
               onClick={() => restore.mutate()}
             >
-              ↺ <Trans>UNARCHIVE</Trans>
+              <PixelIcon name="reload" size={16} /> <Trans>UNARCHIVE</Trans>
             </BevelButton>
           )}
 
@@ -113,7 +118,8 @@ export function QuickActionMenu({
           )}
 
           <BevelButton variant="neutral" onClick={onClose}>
-            ◂ <Trans>BACK TO SCAN</Trans>
+            <PixelIcon name="chevron-left" size={16} />{" "}
+            <Trans>BACK TO SCAN</Trans>
           </BevelButton>
         </div>
       </div>

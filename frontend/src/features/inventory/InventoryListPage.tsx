@@ -4,6 +4,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import {
   Window,
   BevelButton,
+  PixelIcon,
   FilterBar,
   FilterPopover,
   retroToast,
@@ -194,10 +195,11 @@ export function InventoryListPage() {
                 disabled={visible.length === 0}
                 aria-disabled={visible.length === 0 || undefined}
               >
-                <Trans>⤓ EXPORT CSV</Trans>
+                <PixelIcon name="download" size={16} />{" "}
+                <Trans>EXPORT CSV</Trans>
               </BevelButton>
               <BevelButton variant="mint" onClick={goNew}>
-                <Trans>⊕ ADD ENTRY</Trans>
+                <PixelIcon name="plus" size={16} /> <Trans>ADD ENTRY</Trans>
               </BevelButton>
             </span>
           }

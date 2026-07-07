@@ -148,8 +148,10 @@ describe("RepairsDrawer", () => {
     server.use(...repairHandlers);
     renderDrawer();
     await screen.findByText("Replace worn brake pads");
-    await userEvent.click(screen.getByText("⊕ ADD REPAIR"));
-    expect(await screen.findByText("ADD REPAIR")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /add repair/i }));
+    expect(
+      await screen.findByRole("dialog", { name: /add repair/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText("SAVE REPAIR")).toBeInTheDocument();
   });
 

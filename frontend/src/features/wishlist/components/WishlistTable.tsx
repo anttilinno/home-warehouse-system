@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   BevelButton,
+  PixelIcon,
   RetroBadge,
   type RetroBadgeVariant,
   RetroEmptyState,
@@ -85,7 +86,7 @@ export function WishlistTable({
     <>
       <div className="mb-sp-3 flex items-center justify-end">
         <BevelButton variant="mint" onClick={onAdd}>
-          <Trans>⊕ ADD</Trans>
+          <PixelIcon name="plus" size={16} /> <Trans>ADD</Trans>
         </BevelButton>
       </div>
 
@@ -105,12 +106,19 @@ export function WishlistTable({
         <div className="p-sp-4">
           <RetroEmptyState
             eyebrow={<Trans>Wishlist</Trans>}
-            glyph="◇"
+            glyph="heart"
             heading={<Trans>NOTHING HERE YET</Trans>}
             body={
               <Trans>No items in this list. Add something you're after.</Trans>
             }
-            action={{ label: <Trans>⊕ ADD ITEM</Trans>, onClick: onAdd }}
+            action={{
+              label: (
+                <>
+                  <PixelIcon name="plus" size={16} /> <Trans>ADD ITEM</Trans>
+                </>
+              ),
+              onClick: onAdd,
+            }}
           />
         </div>
       )}

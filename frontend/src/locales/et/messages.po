@@ -185,12 +185,12 @@ msgid "← BACK TO ITEMS"
 msgstr "← TAGASI ESEMETE JUURDE"
 
 #: src/features/inventory/components/InventoryRow.tsx
-msgid "↧"
-msgstr "↧"
+#~ msgid "↧"
+#~ msgstr "↧"
 
 #: src/features/loans/components/LoanRowActions.tsx
-msgid "↧ EDIT"
-msgstr "↧ MUUDA"
+#~ msgid "↧ EDIT"
+#~ msgstr "↧ MUUDA"
 
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "+ Add item"
@@ -202,75 +202,75 @@ msgstr "−{overdueBy}p"
 
 #: src/features/items/components/InventoryPanel.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
-msgid "⊕ ADD"
-msgstr "⊕ LISA"
+#~ msgid "⊕ ADD"
+#~ msgstr "⊕ LISA"
 
 #: src/features/borrowers/BorrowersListPage.tsx
-msgid "⊕ ADD BORROWER"
-msgstr "⊕ LISA LAENAJA"
+#~ msgid "⊕ ADD BORROWER"
+#~ msgstr "⊕ LISA LAENAJA"
 
 #: src/features/taxonomy/components/ContainersTab.tsx
-msgid "⊕ ADD CONTAINER"
-msgstr "⊕ LISA KONTEINER"
+#~ msgid "⊕ ADD CONTAINER"
+#~ msgstr "⊕ LISA KONTEINER"
 
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/components/InventoryPanel.tsx
-msgid "⊕ ADD ENTRY"
-msgstr "⊕ LISA KIRJE"
+#~ msgid "⊕ ADD ENTRY"
+#~ msgstr "⊕ LISA KIRJE"
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
-msgid "⊕ ADD FILE"
-msgstr "⊕ LISA FAIL"
+#~ msgid "⊕ ADD FILE"
+#~ msgstr "⊕ LISA FAIL"
 
 #: src/features/items/components/ItemsResults.tsx
 #: src/features/items/ItemsListPage.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
-msgid "⊕ ADD ITEM"
-msgstr "⊕ LISA ESE"
+#~ msgid "⊕ ADD ITEM"
+#~ msgstr "⊕ LISA ESE"
 
 #: src/features/items/components/ItemLabels.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
-msgid "⊕ ADD LABEL"
-msgstr "⊕ LISA SILT"
+#~ msgid "⊕ ADD LABEL"
+#~ msgstr "⊕ LISA SILT"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/repairs/components/RepairPhotoPanel.tsx
-msgid "⊕ ADD PHOTOS"
-msgstr "⊕ LISA FOTOSID"
+#~ msgid "⊕ ADD PHOTOS"
+#~ msgstr "⊕ LISA FOTOSID"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
-msgid "⊕ ADD REPAIR"
-msgstr "⊕ LISA REMONT"
+#~ msgid "⊕ ADD REPAIR"
+#~ msgstr "⊕ LISA REMONT"
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
-msgid "⊕ ADD ROOT CATEGORY"
-msgstr "⊕ LISA JUURKATEGOORIA"
+#~ msgid "⊕ ADD ROOT CATEGORY"
+#~ msgstr "⊕ LISA JUURKATEGOORIA"
 
 #: src/features/taxonomy/components/LocationsTab.tsx
-msgid "⊕ ADD ROOT LOCATION"
-msgstr "⊕ LISA JUURASUKOHT"
+#~ msgid "⊕ ADD ROOT LOCATION"
+#~ msgstr "⊕ LISA JUURASUKOHT"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
-msgid "⊕ ADD SCHEDULE"
-msgstr "⊕ LISA AJAKAVA"
+#~ msgid "⊕ ADD SCHEDULE"
+#~ msgstr "⊕ LISA AJAKAVA"
 
 #: src/features/items/components/LoanPanels.tsx
-msgid "⊕ LOAN THIS ITEM"
-msgstr "⊕ LAENUTA SEE ESE"
+#~ msgid "⊕ LOAN THIS ITEM"
+#~ msgstr "⊕ LAENUTA SEE ESE"
 
 #: src/features/borrowers/BorrowersListPage.tsx
-msgid "⊕ NEW BORROWER"
-msgstr "⊕ UUS LAENAJA"
+#~ msgid "⊕ NEW BORROWER"
+#~ msgstr "⊕ UUS LAENAJA"
 
 #: src/features/loans/LoansListPage.tsx
-msgid "⊕ NEW LOAN"
-msgstr "⊕ UUS LAENUTUS"
+#~ msgid "⊕ NEW LOAN"
+#~ msgstr "⊕ UUS LAENUTUS"
 
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "▾ PRESETS"
-msgstr "▾ EELSEADED"
+#~ msgid "▾ PRESETS"
+#~ msgstr "▾ EELSEADED"
 
 #: src/features/items/components/PhotoTile.tsx
 msgid "★ PRIMARY"
@@ -316,30 +316,30 @@ msgid "✕ REJECT"
 msgstr "✕ LÜKKA TAGASI"
 
 #: src/features/inventory/components/InventoryRow.tsx
-msgid "⟳"
-msgstr "⟳"
+#~ msgid "⟳"
+#~ msgstr "⟳"
 
 #: src/features/items/components/PhotoGalleryToolbar.tsx
-msgid "⤓ DOWNLOAD {selectedCount}"
-msgstr "⤓ LAE ALLA {selectedCount}"
+#~ msgid "⤓ DOWNLOAD {selectedCount}"
+#~ msgstr "⤓ LAE ALLA {selectedCount}"
 
 #: src/features/items/components/PhotoGalleryToolbar.tsx
-msgid "⤓ DOWNLOAD ALL"
-msgstr "⤓ LAE KÕIK ALLA"
+#~ msgid "⤓ DOWNLOAD ALL"
+#~ msgstr "⤓ LAE KÕIK ALLA"
 
 #: src/features/items/ItemsListPage.tsx
-msgid "⤓ EXPORT"
-msgstr "⤓ EKSPORDI"
+#~ msgid "⤓ EXPORT"
+#~ msgstr "⤓ EKSPORDI"
 
 #: src/features/declutter/DeclutterPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/loans/LoansListPage.tsx
-msgid "⤓ EXPORT CSV"
-msgstr "⤓ EKSPORDI CSV"
+#~ msgid "⤓ EXPORT CSV"
+#~ msgstr "⤓ EKSPORDI CSV"
 
 #: src/features/inventory/components/InventoryRow.tsx
-msgid "🔧"
-msgstr "🔧"
+#~ msgid "🔧"
+#~ msgstr "🔧"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "14-day activity"
@@ -430,12 +430,30 @@ msgstr "Tegija"
 msgid "Add"
 msgstr "Lisa"
 
+#: src/features/items/components/InventoryPanel.tsx
+#: src/features/wishlist/components/WishlistTable.tsx
+msgid "ADD"
+msgstr "LISA"
+
+#: src/features/borrowers/BorrowersListPage.tsx
+msgid "ADD BORROWER"
+msgstr "LISA LAENAJA"
+
+#: src/features/taxonomy/components/ContainersTab.tsx
+msgid "ADD CONTAINER"
+msgstr "LISA KONTEINER"
+
+#: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/InventoryFormPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/components/InventoryPanel.tsx
 msgid "ADD ENTRY"
 msgstr "LISA KIRJE"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
+#: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
+#: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "ADD FILE"
 msgstr "LISA FAIL"
 
@@ -444,18 +462,38 @@ msgstr "LISA FAIL"
 msgid "Add item"
 msgstr "Lisa ese"
 
+#: src/features/items/components/ItemsResults.tsx
 #: src/features/items/ItemFormPage.tsx
+#: src/features/items/ItemsListPage.tsx
+#: src/features/wishlist/components/WishlistTable.tsx
 msgid "ADD ITEM"
 msgstr "LISA ESE"
 
+#: src/features/items/components/ItemLabels.tsx
+#: src/features/taxonomy/components/LabelsTab.tsx
+msgid "ADD LABEL"
+msgstr "LISA SILT"
+
 #: src/features/items/components/PhotoUpload.tsx
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/repairs/components/RepairPhotoPanel.tsx
 msgid "ADD PHOTOS"
 msgstr "LISA FOTOSID"
 
 #: src/features/repairs/components/RepairForm.tsx
+#: src/features/repairs/components/RepairsDrawer.tsx
 msgid "ADD REPAIR"
 msgstr "LISA REMONT"
 
+#: src/features/taxonomy/components/CategoriesTab.tsx
+msgid "ADD ROOT CATEGORY"
+msgstr "LISA JUURKATEGOORIA"
+
+#: src/features/taxonomy/components/LocationsTab.tsx
+msgid "ADD ROOT LOCATION"
+msgstr "LISA JUURASUKOHT"
+
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "ADD SCHEDULE"
 msgstr "LISA AJAKAVA"
@@ -979,7 +1017,7 @@ msgstr "Konteiner"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "CONTAINER"
-msgstr ""
+msgstr "KONTEINER"
 
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
@@ -1830,10 +1868,18 @@ msgstr "VALMIS · Ajakava salvestatud."
 msgid "DONE · Schedule updated."
 msgstr "VALMIS · Ajakava uuendatud."
 
+#: src/features/items/components/PhotoGalleryToolbar.tsx
+msgid "DOWNLOAD {selectedCount}"
+msgstr "LAE ALLA {selectedCount}"
+
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
 msgid "Download a backup copy of this workspace."
 msgstr "Lae alla selle tööruumi varukoopia."
+
+#: src/features/items/components/PhotoGalleryToolbar.tsx
+msgid "DOWNLOAD ALL"
+msgstr "LAE KÕIK ALLA"
 
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Download original"
@@ -1900,6 +1946,7 @@ msgstr "Muuda"
 #: src/features/items/components/InventoryPanel.tsx
 #: src/features/items/components/ItemRow.tsx
 #: src/features/items/ItemDetailPage.tsx
+#: src/features/loans/components/LoanRowActions.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 #: src/features/repairs/components/RepairsDrawer.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
@@ -2093,6 +2140,16 @@ msgstr "Aegumiskuupäev"
 #: src/features/settings/DataStoragePage.tsx
 msgid "Export"
 msgstr "Ekspordi"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "EXPORT"
+msgstr "EKSPORDI"
+
+#: src/features/declutter/DeclutterPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/loans/LoansListPage.tsx
+msgid "EXPORT CSV"
+msgstr "EKSPORDI CSV"
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
@@ -2583,6 +2640,10 @@ msgstr "Laenutuste meeldetuletused"
 msgid "Loan saved."
 msgstr "Laenutus salvestatud."
 
+#: src/features/items/components/LoanPanels.tsx
+msgid "LOAN THIS ITEM"
+msgstr "LAENUTA SEE ESE"
+
 #: src/features/loans/LoansListPage.tsx
 msgid "Loaned"
 msgstr "Laenatud"
@@ -2868,6 +2929,7 @@ msgid "New borrower"
 msgstr ""
 
 #: src/features/borrowers/BorrowerFormPage.tsx
+#: src/features/borrowers/BorrowersListPage.tsx
 msgid "NEW BORROWER"
 msgstr "UUS LAENAJA"
 
@@ -2909,6 +2971,7 @@ msgid "New loan"
 msgstr ""
 
 #: src/features/loans/LoanFormPage.tsx
+#: src/features/loans/LoansListPage.tsx
 msgid "NEW LOAN"
 msgstr "UUS LAENUTUS"
 
@@ -3567,6 +3630,10 @@ msgstr "Eeltäidetud skannist — muuda vajadusel."
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "Preset name"
 msgstr "Eelseade nimi"
+
+#: src/components/retro/filters/SavedFilters.tsx
+msgid "PRESETS"
+msgstr "EELSEADED"
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "PREV"

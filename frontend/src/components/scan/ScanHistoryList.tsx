@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   BevelButton,
+  PixelIcon,
   RetroConfirmDialog,
   RetroEmptyState,
 } from "@/components/retro";
@@ -58,7 +59,7 @@ export function ScanHistoryList({
           </BevelButton>
         </div>
         <RetroEmptyState
-          glyph="◇"
+          glyph="camera"
           heading={t`NO SCANS YET`}
           body={t`Scanned and looked-up codes show up here for quick re-lookup.`}
         />
@@ -95,7 +96,7 @@ export function ScanHistoryList({
                   {relativeTime(entry.timestamp, now)}
                 </span>
                 <span aria-hidden="true" className="text-fg-muted">
-                  ▸
+                  <PixelIcon name="chevron-right" size={16} />
                 </span>
               </span>
             </button>

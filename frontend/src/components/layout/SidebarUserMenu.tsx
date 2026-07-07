@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { Trans } from "@lingui/react/macro";
+import { PixelIcon } from "@/components/retro";
 import type { User } from "@/lib/types";
 import { LogoutConfirm } from "./LogoutConfirm";
 
@@ -70,7 +71,11 @@ export function SidebarUserMenu({
           aria-hidden="true"
           className="nav-label flex-none font-mono text-12 text-fg-muted"
         >
-          {menuOpen ? "▾" : "▴"}
+          {menuOpen ? (
+            <PixelIcon name="chevron-down" size={16} />
+          ) : (
+            <PixelIcon name="chevron-up" size={16} />
+          )}
         </span>
       </button>
 

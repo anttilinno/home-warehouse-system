@@ -22,6 +22,24 @@ const map = {
   "settings-2": "settings-2",
   zap: "zap",
   image: "image",
+  // Chrome sweep (pictograph-glyph replacement): CTAs, toolbars, empty states.
+  plus: "plus",
+  search: "search",
+  menu: "menu",
+  "chevron-down": "chevron-down",
+  "chevron-up": "chevron-up",
+  "chevron-left": "chevron-left",
+  "chevron-right": "chevron-right",
+  pencil: "pencil",
+  attachment: "attachment",
+  file: "file",
+  cancel: "cancel",
+  "tool-case": "tool-case",
+  repeat: "repeat",
+  bell: "bell",
+  "plus-box": "plus-box",
+  "minus-box": "minus-box",
+  minus: "minus",
 };
 const out = {};
 for (const [name, file] of Object.entries(map)) {
@@ -34,7 +52,8 @@ const body =
   `// AUTO-GENERATED from pixelarticons@2.2.0 svgs — do not edit by hand.\n` +
   `// Regenerate (from repo root): node scripts/gen-pixel-icons.mjs (paths use the 24x24 grid,\n` +
   `// fill inherits currentColor). Only the ${Object.keys(out).length} icons the\n` +
-  `// Navigator sidebar uses are bundled here — no runtime fetch, no CDN.\n` +
+  `// retro-OS chrome uses (sidebar nav + CTAs, toolbars, empty states) are\n` +
+  `// bundled here — no runtime fetch, no CDN.\n` +
   `export type PixelIconName = ${Object.keys(out)
     .map((k) => `"${k}"`)
     .join(" | ")};\n\n` +

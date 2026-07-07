@@ -4,6 +4,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import {
   Window,
   BevelButton,
+  PixelIcon,
   useTableSelection,
   FilterBar,
   FilterPopover,
@@ -251,7 +252,7 @@ export function ItemsListPage() {
         bodyClassName=""
         actions={
           <BevelButton variant="neutral" onClick={onExport}>
-            <Trans>⤓ EXPORT</Trans>
+            <PixelIcon name="download" size={16} /> <Trans>EXPORT</Trans>
           </BevelButton>
         }
       >
@@ -291,7 +292,7 @@ export function ItemsListPage() {
           onClearAll={clearAllFilters}
           primaryAction={
             <BevelButton variant="mint" onClick={goNew}>
-              <Trans>⊕ ADD ITEM</Trans>
+              <PixelIcon name="plus" size={16} /> <Trans>ADD ITEM</Trans>
             </BevelButton>
           }
         />

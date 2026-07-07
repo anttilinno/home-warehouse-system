@@ -4,6 +4,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import {
   Window,
   BevelButton,
+  PixelIcon,
   RetroTable,
   RetroEmptyState,
   RetroPagination,
@@ -75,7 +76,7 @@ export function BorrowersListPage() {
       return (
         <RetroEmptyState
           eyebrow={<Trans>Borrowers</Trans>}
-          glyph="☺"
+          glyph="users"
           heading={<Trans>NO MATCHES</Trans>}
           body={<Trans>No borrowers match this search.</Trans>}
           action={{ label: <Trans>CLEAR ALL</Trans>, onClick: clearSearch }}
@@ -85,7 +86,7 @@ export function BorrowersListPage() {
     return (
       <RetroEmptyState
         eyebrow={<Trans>Borrowers</Trans>}
-        glyph="☺"
+        glyph="users"
         heading={<Trans>NO BORROWERS</Trans>}
         body={
           <Trans>
@@ -93,7 +94,14 @@ export function BorrowersListPage() {
             items.
           </Trans>
         }
-        action={{ label: <Trans>⊕ ADD BORROWER</Trans>, onClick: goNew }}
+        action={{
+          label: (
+            <>
+              <PixelIcon name="plus" size={16} /> <Trans>ADD BORROWER</Trans>
+            </>
+          ),
+          onClick: goNew,
+        }}
       />
     );
   }
@@ -118,7 +126,7 @@ export function BorrowersListPage() {
           onClearAll={clearSearch}
           primaryAction={
             <BevelButton variant="mint" onClick={goNew}>
-              <Trans>⊕ NEW BORROWER</Trans>
+              <PixelIcon name="plus" size={16} /> <Trans>NEW BORROWER</Trans>
             </BevelButton>
           }
         />

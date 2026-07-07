@@ -146,7 +146,7 @@ export function ClaimPage() {
             genuinely-empty "code not found" affordance, BACK TO SCAN → /scan. */}
         <div className="mt-sp-4 border-t-2 border-border-ink pt-sp-2">
           <RetroEmptyState
-            glyph="◎"
+            glyph="search"
             heading={<Trans>Code not found</Trans>}
             body={
               <Trans>

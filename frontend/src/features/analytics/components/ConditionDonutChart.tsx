@@ -21,7 +21,7 @@ export function ConditionDonutChart({
     <Window title={<Trans>Condition + Status</Trans>} titlebarVariant="blue">
       {isEmpty ? (
         <RetroEmptyState
-          glyph="▤"
+          glyph="chart-bar-big"
           heading={<Trans>No data</Trans>}
           body={<Trans>No condition data for this range yet.</Trans>}
         />

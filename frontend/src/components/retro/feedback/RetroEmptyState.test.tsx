@@ -16,16 +16,17 @@ describe("RetroEmptyState", () => {
   });
 
   it("renders eyebrow, glyph, heading, and body", () => {
-    renderEmpty(
+    const { container } = renderEmpty(
       <RetroEmptyState
         eyebrow="INVENTORY"
-        glyph="◇"
+        glyph="folder"
         heading="NOTHING HERE YET"
         body="This list is empty. Add your first item to get started."
       />,
     );
     expect(screen.getByText("INVENTORY")).toBeInTheDocument();
-    expect(screen.getByText("◇")).toBeInTheDocument();
+    // The glyph is an aria-hidden Pixelarticons svg in the thumb frame.
+    expect(container.querySelector("svg")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "NOTHING HERE YET" }),
     ).toBeInTheDocument();

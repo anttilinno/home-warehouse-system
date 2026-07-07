@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
-import { BevelButton, RetroSelect } from "@/components/retro";
+import { BevelButton, PixelIcon, RetroSelect } from "@/components/retro";
 import { PhotoUpload } from "@/features/items/components/PhotoUpload";
 import {
   PhotoGallery,
@@ -68,7 +68,7 @@ export function RepairPhotoPanel({
       {/* ⊕ ADD PHOTOS — mint primary, right-aligned (mirrors ItemDetail). */}
       <div className="flex justify-end">
         <BevelButton variant="mint" onClick={() => setUploadOpen(true)}>
-          <Trans>⊕ ADD PHOTOS</Trans>
+          <PixelIcon name="plus" size={16} /> <Trans>ADD PHOTOS</Trans>
         </BevelButton>
       </div>
 

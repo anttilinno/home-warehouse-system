@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react/macro";
 import { BrandMark } from "@/components/BrandMark";
-import { RetroStatusDot, StatusPill } from "@/components/retro";
+import { PixelIcon, RetroStatusDot, StatusPill } from "@/components/retro";
 import { useTheme } from "@/lib/useTheme";
 import { useSSEStatus } from "@/features/sse";
 import { useIsOnline } from "@/lib/offline/useIsOnline";
@@ -86,7 +86,7 @@ export function TopBar({
         title="Open navigation"
         className={`relative grid h-[28px] w-[28px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-14 leading-none bevel-raised-ink before:absolute before:-inset-2 before:content-[''] active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed md:hidden ${FOCUS_RING}`}
       >
-        <span aria-hidden="true">☰</span>
+        <PixelIcon name="menu" />
       </button>
 
       {/* Brand: 30x30 beveled square + WAREHOUSE.SYS mark. */}
@@ -95,7 +95,7 @@ export function TopBar({
           aria-hidden="true"
           className="grid h-[30px] w-[30px] place-items-center border-2 border-border-ink bg-bg-panel font-display text-16 bevel-raised-ink"
         >
-          ▦
+          <PixelIcon name="app-windows" size={16} />
         </span>
         <BrandMark className="hidden text-16 sm:inline-block" />
       </span>
@@ -136,7 +136,7 @@ export function TopBar({
         aria-keyshortcuts="Meta+K Control+K"
         className={`mx-sp-2 flex h-[28px] min-w-0 max-w-[420px] flex-1 items-center gap-sp-2 border-2 border-border-ink bg-bg-panel-2 px-sp-2 text-12 text-fg-muted bevel-pressed hover:text-fg-ink active:translate-x-px active:translate-y-px ${FOCUS_RING}`}
       >
-        <span aria-hidden="true">⌕</span>
+        <PixelIcon name="search" />
         <span className="truncate">
           <Trans>Search…</Trans>
         </span>

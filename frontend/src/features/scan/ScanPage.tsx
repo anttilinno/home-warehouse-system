@@ -206,7 +206,7 @@ export function ScanPage() {
         <div className={activeTab === "scan" ? "" : "hidden"}>
           {cameraBlocked ? (
             <RetroEmptyState
-              glyph="⛔"
+              glyph="cancel"
               heading={<Trans>CAMERA BLOCKED</Trans>}
               body={
                 <Trans>

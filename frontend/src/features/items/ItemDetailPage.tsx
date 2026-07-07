@@ -8,6 +8,7 @@ import {
   RetroTabs,
   RetroEmptyState,
   RetroConfirmDialog,
+  PixelIcon,
   retroToast,
   type RetroTab,
 } from "@/components/retro";
@@ -194,7 +195,7 @@ export function ItemDetailPage() {
         <div className="flex flex-col gap-sp-3">
           <div className="flex items-center gap-sp-2">
             <BevelButton variant="mint" onClick={() => setUploadOpen(true)}>
-              <Trans>⊕ ADD PHOTOS</Trans>
+              <PixelIcon name="plus" size={16} /> <Trans>ADD PHOTOS</Trans>
             </BevelButton>
           </div>
           <PhotoGallery
@@ -250,7 +251,7 @@ export function ItemDetailPage() {
               className="!px-[8px] !py-[2px] !text-11"
               onClick={() => setMenuOpen((o) => !o)}
             >
-              ↧
+              <PixelIcon name="download" size={16} />
             </BevelButton>
             <Popover
               open={menuOpen}

@@ -4,6 +4,7 @@ import {
   RetroCheckbox,
   RetroEmptyState,
   RetroPagination,
+  PixelIcon,
 } from "@/components/retro";
 import type { Item } from "@/lib/types";
 import { ItemRow, type ItemRowActions } from "./ItemRow";
@@ -101,7 +102,14 @@ export function ItemsResults({
                 it.
               </Trans>
             }
-            action={{ label: <Trans>⊕ ADD ITEM</Trans>, onClick: onAdd }}
+            action={{
+              label: (
+                <>
+                  <PixelIcon name="plus" size={16} /> <Trans>ADD ITEM</Trans>
+                </>
+              ),
+              onClick: onAdd,
+            }}
           />
         )}
       </div>

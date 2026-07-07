@@ -3,6 +3,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BevelButton,
+  PixelIcon,
   RetroBadge,
   RetroCheckbox,
   retroToast,
@@ -108,7 +109,7 @@ export function ItemLabels({ wsId, itemId }: Readonly<ItemLabelsProps>) {
         className="!px-[8px] !py-[2px] !text-11"
         onClick={() => setOpen((o) => !o)}
       >
-        <Trans>⊕ ADD LABEL</Trans>
+        <PixelIcon name="plus" size={16} /> <Trans>ADD LABEL</Trans>
       </BevelButton>
 
       <Popover

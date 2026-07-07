@@ -44,7 +44,7 @@ export function MovementsPanel({
       <div className="bg-bg-panel-2 p-sp-3">
         <RetroEmptyState
           eyebrow={<Trans>Movements</Trans>}
-          glyph="◇"
+          glyph="reload"
           heading={<Trans>NO MOVEMENTS</Trans>}
           body={<Trans>This item hasn't been moved yet.</Trans>}
         />

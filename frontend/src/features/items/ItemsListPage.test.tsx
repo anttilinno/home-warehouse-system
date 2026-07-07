@@ -158,10 +158,10 @@ describe("ItemsListPage", () => {
     // The ARCHIVED facet was removed from the FilterBar — only the CATEGORY
     // facet remains. Visibility is driven by Settings → Data & Storage.
     expect(
-      screen.queryByRole("button", { name: /archived ▾/i }),
+      screen.queryByRole("button", { name: /archived/i }),
     ).not.toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /category ▾/i }),
+      screen.getByRole("button", { name: /category/i }),
     ).toBeInTheDocument();
   });
 

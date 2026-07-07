@@ -5,6 +5,7 @@ import {
   RetroDialog,
   RetroConfirmDialog,
   BevelButton,
+  PixelIcon,
   StatusPill,
   RetroBadge,
   RetroEmptyState,
@@ -149,7 +150,7 @@ export function RepairsDrawer({
       <div className="bg-bg-panel-2 p-sp-3">
         <RetroEmptyState
           eyebrow={<Trans>Repairs</Trans>}
-          glyph="🔧"
+          glyph="tool-case"
           heading={<Trans>NO REPAIRS</Trans>}
           body={
             <Trans>
@@ -158,7 +159,11 @@ export function RepairsDrawer({
             </Trans>
           }
           action={{
-            label: <Trans>⊕ ADD REPAIR</Trans>,
+            label: (
+              <>
+                <PixelIcon name="plus" size={16} /> <Trans>ADD REPAIR</Trans>
+              </>
+            ),
             onClick: openCreate,
           }}
         />
@@ -303,7 +308,7 @@ export function RepairsDrawer({
         {/* (2) ⊕ ADD REPAIR — mint primary, right-aligned. */}
         <div className="flex justify-end">
           <BevelButton variant="mint" onClick={openCreate}>
-            <Trans>⊕ ADD REPAIR</Trans>
+            <PixelIcon name="plus" size={16} /> <Trans>ADD REPAIR</Trans>
           </BevelButton>
         </div>
 

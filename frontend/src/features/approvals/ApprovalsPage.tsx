@@ -205,7 +205,7 @@ export function ApprovalsPage() {
           <div className="p-sp-4">
             <RetroEmptyState
               eyebrow={<Trans>Approvals</Trans>}
-              glyph="⊘"
+              glyph="cancel"
               heading={<Trans>RESTRICTED</Trans>}
               body={
                 <Trans>
@@ -240,7 +240,7 @@ export function ApprovalsPage() {
           <div className="p-sp-4">
             <RetroEmptyState
               eyebrow={<Trans>Approvals</Trans>}
-              glyph="◇"
+              glyph="check"
               heading={<Trans>NOTHING PENDING</Trans>}
               body={
                 <Trans>

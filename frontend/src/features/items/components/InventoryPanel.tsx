@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { Trans } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
-import { BevelButton, StatusPill } from "@/components/retro";
+import { BevelButton, PixelIcon, StatusPill } from "@/components/retro";
 import { inventoryApi } from "@/lib/api/inventory";
 import { usePickerOptions } from "@/features/inventory/hooks/usePickerOptions";
 import { MoveDialog } from "@/features/inventory/components/MoveDialog";
@@ -129,13 +129,13 @@ export function InventoryPanel({
           <Trans>INVENTORY</Trans>
         </p>
         <span aria-hidden="true" className="text-32 leading-none text-fg-faint">
-          ◇
+          <PixelIcon name="grid-3x3" size={28} />
         </span>
         <p className="text-14 text-fg-muted">
           <Trans>No stock entries yet.</Trans>
         </p>
         <Link to={newHref} className={BEVEL_LINK}>
-          <Trans>⊕ ADD ENTRY</Trans>
+          <PixelIcon name="plus" size={16} /> <Trans>ADD ENTRY</Trans>
         </Link>
       </section>
     );
@@ -152,7 +152,7 @@ export function InventoryPanel({
           <Trans>INVENTORY</Trans>
         </p>
         <Link to={newHref} className={BEVEL_LINK}>
-          <Trans>⊕ ADD</Trans>
+          <PixelIcon name="plus" size={16} /> <Trans>ADD</Trans>
         </Link>
       </div>
 

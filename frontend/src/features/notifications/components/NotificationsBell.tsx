@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { RetroBadge } from "@/components/retro";
+import { PixelIcon, RetroBadge } from "@/components/retro";
 import { useUnreadCountQuery } from "../hooks/useNotifications";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 
@@ -48,7 +48,9 @@ export function NotificationsBell() {
         onClick={() => setOpen((v) => !v)}
         className={`grid h-[28px] w-[28px] place-items-center border-2 border-border-ink bg-bg-panel font-mono text-14 leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed ${FOCUS_RING}`}
       >
-        <span aria-hidden="true">▦</span>
+        <span aria-hidden="true">
+          <PixelIcon name="bell" size={16} />
+        </span>
         {hasUnread && (
           <RetroBadge
             variant="danger"

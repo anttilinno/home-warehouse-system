@@ -42,7 +42,7 @@ export function RetroChartFrame({
     <Window title={title} titlebarVariant={accent} actions={actions}>
       {isEmpty ? (
         <RetroEmptyState
-          glyph="▤"
+          glyph="chart-bar-big"
           heading={<Trans>No data</Trans>}
           body={
             emptyLabel ?? <Trans>Nothing to chart for this range yet.</Trans>

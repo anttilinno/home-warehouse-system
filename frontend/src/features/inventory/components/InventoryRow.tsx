@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { BevelButton, RetroBadge } from "@/components/retro";
+import { BevelButton, PixelIcon, RetroBadge } from "@/components/retro";
 import type { Condition, Inventory, InventoryStatus } from "@/lib/types";
 import { InlineEditCell } from "./InlineEditCell";
 
@@ -118,7 +118,7 @@ export function InventoryRow({
             title={t`Movement history`}
             onClick={() => onMovements(entry.id)}
           >
-            <Trans>↧</Trans>
+            <PixelIcon name="repeat" size={16} />
           </BevelButton>
           {!archived && (
             <BevelButton
@@ -126,7 +126,7 @@ export function InventoryRow({
               title={t`Repairs`}
               onClick={() => onRepairs(entry.id)}
             >
-              <Trans>🔧</Trans>
+              <PixelIcon name="tool-case" size={16} />
             </BevelButton>
           )}
           {!archived && (
@@ -135,7 +135,7 @@ export function InventoryRow({
               title={t`Maintenance`}
               onClick={() => onMaintenance(entry.id)}
             >
-              <Trans>⟳</Trans>
+              <PixelIcon name="reload" size={16} />
             </BevelButton>
           )}
         </span>

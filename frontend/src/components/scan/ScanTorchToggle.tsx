@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import { BevelButton } from "@/components/retro";
+import { BevelButton, PixelIcon } from "@/components/retro";
 
 export interface ScanTorchToggleProps {
   /**
@@ -20,7 +20,7 @@ export interface ScanTorchToggleProps {
  * Three non-color cues for the ON/OFF state so it reads without color perception:
  *  - color: butter fill + pressed bevel when ON, neutral bevel when OFF
  *  - word:  `TORCH` (OFF) vs `TORCH ON` (ON)
- *  - glyph: ⚡ (always present)
+ *  - glyph: zap icon (always present)
  *
  * Renders nothing when `supported` is false (iOS auto-hide). Touch floor 44×44.
  * Copy is wrapped in <Trans> (Lingui) — the consumer owns wording.
@@ -41,7 +41,7 @@ export function ScanTorchToggle({
         enabled ? "bg-titlebar-butter text-fg-ink bevel-pressed" : ""
       }`}
     >
-      <span aria-hidden="true">⚡</span>
+      <PixelIcon name="zap" size={16} />
       {enabled ? <Trans>TORCH ON</Trans> : <Trans>TORCH</Trans>}
     </BevelButton>
   );

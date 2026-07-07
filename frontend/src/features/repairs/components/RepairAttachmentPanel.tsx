@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   BevelButton,
+  PixelIcon,
   RetroBadge,
   RetroConfirmDialog,
   RetroEmptyState,
@@ -76,13 +77,17 @@ export function RepairAttachmentPanel({
       <div className="bg-bg-panel-2 p-sp-3">
         <RetroEmptyState
           eyebrow={<Trans>Files</Trans>}
-          glyph="◇"
+          glyph="attachment"
           heading={<Trans>NO FILES</Trans>}
           body={
             <Trans>No manuals, receipts, or warranties attached yet.</Trans>
           }
           action={{
-            label: <Trans>⊕ ADD FILE</Trans>,
+            label: (
+              <>
+                <PixelIcon name="plus" size={16} /> <Trans>ADD FILE</Trans>
+              </>
+            ),
             onClick: () => setAddOpen(true),
           }}
         />
@@ -128,7 +133,7 @@ export function RepairAttachmentPanel({
       {items.length > 0 && (
         <div className="flex justify-end">
           <BevelButton variant="mint" onClick={() => setAddOpen(true)}>
-            <Trans>⊕ ADD FILE</Trans>
+            <PixelIcon name="plus" size={16} /> <Trans>ADD FILE</Trans>
           </BevelButton>
         </div>
       )}

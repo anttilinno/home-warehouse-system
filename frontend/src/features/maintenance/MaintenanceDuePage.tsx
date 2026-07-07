@@ -81,7 +81,7 @@ export function MaintenanceDuePage() {
           <div className="p-sp-4">
             <RetroEmptyState
               eyebrow={<Trans>Maintenance</Trans>}
-              glyph="◇"
+              glyph="clock"
               heading={<Trans>NOTHING DUE</Trans>}
               body={
                 <Trans>

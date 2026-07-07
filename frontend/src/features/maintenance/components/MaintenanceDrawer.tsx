@@ -4,6 +4,7 @@ import {
   RetroDialog,
   RetroConfirmDialog,
   BevelButton,
+  PixelIcon,
   RetroEmptyState,
   retroToast,
 } from "@/components/retro";
@@ -92,7 +93,7 @@ export function MaintenanceDrawer({
       <div className="bg-bg-panel-2 p-sp-3">
         <RetroEmptyState
           eyebrow={<Trans>Maintenance</Trans>}
-          glyph="◇"
+          glyph="clock"
           heading={<Trans>NO SCHEDULES</Trans>}
           body={
             <Trans>
@@ -101,7 +102,11 @@ export function MaintenanceDrawer({
             </Trans>
           }
           action={{
-            label: <Trans>⊕ ADD SCHEDULE</Trans>,
+            label: (
+              <>
+                <PixelIcon name="plus" size={16} /> <Trans>ADD SCHEDULE</Trans>
+              </>
+            ),
             onClick: openCreate,
           }}
         />
@@ -176,7 +181,7 @@ export function MaintenanceDrawer({
         {/* (1) ⊕ ADD SCHEDULE — mint primary, right-aligned. */}
         <div className="flex justify-end">
           <BevelButton variant="mint" onClick={openCreate}>
-            <Trans>⊕ ADD SCHEDULE</Trans>
+            <PixelIcon name="plus" size={16} /> <Trans>ADD SCHEDULE</Trans>
           </BevelButton>
         </div>
 

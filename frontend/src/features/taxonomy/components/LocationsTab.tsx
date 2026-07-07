@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   BevelButton,
+  PixelIcon,
   RetroTree,
   RetroEmptyState,
   RetroConfirmDialog,
@@ -106,7 +107,8 @@ export function LocationsTab() {
           storageKey="taxonomy:tree:locations"
           leadingAction={
             <BevelButton variant="mint" onClick={openCreateRoot}>
-              <Trans>⊕ ADD ROOT LOCATION</Trans>
+              <PixelIcon name="plus" size={16} />{" "}
+              <Trans>ADD ROOT LOCATION</Trans>
             </BevelButton>
           }
           onAddChild={openAddChild}
@@ -116,7 +118,7 @@ export function LocationsTab() {
           emptyState={
             <RetroEmptyState
               eyebrow={<Trans>Locations</Trans>}
-              glyph="◇"
+              glyph="map-pin"
               heading={<Trans>NO LOCATIONS YET</Trans>}
               body={
                 <Trans>
@@ -125,7 +127,12 @@ export function LocationsTab() {
                 </Trans>
               }
               action={{
-                label: <Trans>⊕ ADD ROOT LOCATION</Trans>,
+                label: (
+                  <>
+                    <PixelIcon name="plus" size={16} />{" "}
+                    <Trans>ADD ROOT LOCATION</Trans>
+                  </>
+                ),
                 onClick: openCreateRoot,
               }}
             />

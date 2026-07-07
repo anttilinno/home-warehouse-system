@@ -1,5 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
+  PixelIcon,
   RetroTable,
   RetroEmptyState,
   RetroPagination,
@@ -114,7 +115,7 @@ export function InventoryResults({
         {hasFilters ? (
           <RetroEmptyState
             eyebrow={<Trans>Inventory</Trans>}
-            glyph="◇"
+            glyph="grid-3x3"
             heading={<Trans>NO MATCHES</Trans>}
             body={
               <Trans>
@@ -127,7 +128,7 @@ export function InventoryResults({
         ) : (
           <RetroEmptyState
             eyebrow={<Trans>Inventory</Trans>}
-            glyph="◇"
+            glyph="grid-3x3"
             heading={<Trans>NO STOCK ENTRIES</Trans>}
             body={
               <Trans>
@@ -135,7 +136,14 @@ export function InventoryResults({
                 tracking quantity, location, and condition.
               </Trans>
             }
-            action={{ label: <Trans>⊕ ADD ENTRY</Trans>, onClick: onAdd }}
+            action={{
+              label: (
+                <>
+                  <PixelIcon name="plus" size={16} /> <Trans>ADD ENTRY</Trans>
+                </>
+              ),
+              onClick: onAdd,
+            }}
           />
         )}
       </div>

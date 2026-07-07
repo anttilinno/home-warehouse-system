@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { BevelButton, RetroBadge } from "@/components/retro";
+import { BevelButton, PixelIcon, RetroBadge } from "@/components/retro";
 import type { GalleryPhoto } from "./PhotoGallery";
 
 // Phase 10b refactor — one PhotoGallery grid cell. Extracted from the gallery's
@@ -100,7 +100,7 @@ export function PhotoTile({
                   disabled={index === 0}
                   onClick={() => onMove(index, -1)}
                 >
-                  ◂
+                  <PixelIcon name="chevron-left" size={16} />
                 </BevelButton>
                 <BevelButton
                   className="!px-[5px] !py-px !text-10"
@@ -109,7 +109,7 @@ export function PhotoTile({
                   disabled={index === total - 1}
                   onClick={() => onMove(index, 1)}
                 >
-                  ▸
+                  <PixelIcon name="chevron-right" size={16} />
                 </BevelButton>
               </>
             )}
@@ -121,7 +121,7 @@ export function PhotoTile({
               title={t`Edit caption for ${photo.filename}`}
               onClick={() => onEditCaption(photo)}
             >
-              ✎
+              <PixelIcon name="pencil" size={16} />
             </BevelButton>
             <BevelButton
               variant="danger"

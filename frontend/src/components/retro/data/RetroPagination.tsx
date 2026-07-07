@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/react/macro";
+import { PixelIcon } from "@/components/retro";
 import { BevelButton } from "../BevelButton";
 
 export interface RetroPaginationProps {
@@ -50,7 +51,8 @@ export function RetroPagination({
       >
         {/* Icon-only below sm so the whole pager fits one row on mobile;
             the PREV/NEXT labels return from sm up. aria-label carries the name. */}
-        ◂<span className="hidden sm:inline"> {t`PREV`}</span>
+        <PixelIcon name="chevron-left" size={16} />
+        <span className="hidden sm:inline"> {t`PREV`}</span>
       </BevelButton>
 
       <div className="flex flex-wrap items-center gap-sp-1">
@@ -76,7 +78,8 @@ export function RetroPagination({
         disabled={page >= pageCount}
         onClick={() => onPageChange(page + 1)}
       >
-        <span className="hidden sm:inline">{t`NEXT`} </span>▸
+        <span className="hidden sm:inline">{t`NEXT`} </span>
+        <PixelIcon name="chevron-right" size={16} />
       </BevelButton>
 
       <span className="ml-auto font-mono text-12 tabular-nums text-fg-muted">

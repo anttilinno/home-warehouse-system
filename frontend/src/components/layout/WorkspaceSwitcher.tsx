@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Popover, retroToast } from "@/components/retro";
+import { PixelIcon, Popover, retroToast } from "@/components/retro";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 
 // WorkspaceSwitcher (AUTH-06): the live TopBar pill. Replaces the Phase 3
@@ -81,7 +81,7 @@ export function WorkspaceSwitcher() {
         className={`${PILL_BASE} bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed ${FOCUS_RING}`}
       >
         <span className="max-w-[160px] truncate">{label}</span>
-        <span aria-hidden="true">▾</span>
+        <PixelIcon name="chevron-down" />
       </button>
 
       <Popover

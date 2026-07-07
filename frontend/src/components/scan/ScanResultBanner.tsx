@@ -1,7 +1,11 @@
 import { Trans } from "@lingui/react/macro";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
-import { StatusPill, type StatusPillVariant } from "@/components/retro";
+import {
+  PixelIcon,
+  StatusPill,
+  type StatusPillVariant,
+} from "@/components/retro";
 import type { Item } from "@/lib/types";
 
 // SCAN-08 — the 5-state result banner. PRESENTATIONAL: it takes the resolved
@@ -112,7 +116,7 @@ export function ScanResultBanner({
 
         {status === "match" && (
           <button type="button" className={BEVEL_BTN} onClick={onOpenActions}>
-            ▸ <Trans>ACTIONS</Trans>
+            <PixelIcon name="chevron-right" size={16} /> <Trans>ACTIONS</Trans>
           </button>
         )}
         {(status === "not-found" || status === "offline") && (
@@ -125,19 +129,19 @@ export function ScanResultBanner({
               to={`/items/new?barcode=${encodeURIComponent(code)}`}
               className={BEVEL_BTN}
             >
-              ⊕ <Trans>ITEM</Trans>
+              <PixelIcon name="plus" size={16} /> <Trans>ITEM</Trans>
             </Link>
             <Link
               to={`/taxonomy?tab=containers&new_code=${encodeURIComponent(code)}`}
               className={BEVEL_BTN}
             >
-              ◇ <Trans>CONTAINER</Trans>
+              <PixelIcon name="folder" size={16} /> <Trans>CONTAINER</Trans>
             </Link>
           </span>
         )}
         {status === "error" && (
           <button type="button" className={BEVEL_BTN} onClick={onRetry}>
-            ↻ <Trans>TRY AGAIN</Trans>
+            <PixelIcon name="reload" size={16} /> <Trans>TRY AGAIN</Trans>
           </button>
         )}
       </div>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Trans } from "@lingui/react/macro";
-import { BevelButton } from "@/components/retro";
+import { BevelButton, PixelIcon } from "@/components/retro";
 import type { Loan } from "@/lib/types";
 import { ReturnLoanDialog } from "./ReturnLoanDialog";
 import { ExtendLoanDialog } from "./ExtendLoanDialog";
@@ -39,7 +39,7 @@ export function LoanRowActions({ loan, tab }: Readonly<LoanRowActionsProps>) {
         <Trans>EXTEND</Trans>
       </BevelButton>
       <BevelButton onClick={() => setOpenDialog("edit")}>
-        <Trans>↧ EDIT</Trans>
+        <PixelIcon name="pencil" size={16} /> <Trans>EDIT</Trans>
       </BevelButton>
 
       <ReturnLoanDialog

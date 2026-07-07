@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { BevelButton, RetroInput } from "@/components/retro";
+import { BevelButton, PixelIcon, RetroInput } from "@/components/retro";
 import { Popover, RetroConfirmDialog, RetroDialog } from "../overlay";
 import type { SavedFilter } from "./useSavedFilters";
 
@@ -77,7 +77,7 @@ export function SavedFilters({
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((o) => !o)}
       >
-        <Trans>▾ PRESETS</Trans>
+        <PixelIcon name="chevron-down" size={16} /> <Trans>PRESETS</Trans>
       </BevelButton>
 
       <Popover

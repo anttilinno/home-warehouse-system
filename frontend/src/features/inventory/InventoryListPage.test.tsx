@@ -218,7 +218,7 @@ describe("InventoryListPage", () => {
     const hitsBefore = inventoryHits;
 
     // Open the STATUS facet and pick "On loan".
-    await user.click(screen.getByRole("button", { name: /status ▾/i }));
+    await user.click(screen.getByRole("button", { name: "STATUS" }));
     await user.click(await screen.findByRole("checkbox", { name: /on loan/i }));
 
     await waitFor(() =>

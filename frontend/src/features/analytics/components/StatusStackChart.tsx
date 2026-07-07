@@ -27,7 +27,7 @@ export function StatusStackChart({
     <Window title={<Trans>Status mix</Trans>} titlebarVariant="blue">
       {isEmpty ? (
         <RetroEmptyState
-          glyph="▤"
+          glyph="chart-bar-big"
           heading={<Trans>No data</Trans>}
           body={<Trans>No status data for this range yet.</Trans>}
         />

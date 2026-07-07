@@ -2,6 +2,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useCallback, useMemo, useState } from "react";
 import {
   BevelButton,
+  PixelIcon,
   RetroBadge,
   type RetroBadgeVariant,
   RetroConfirmDialog,
@@ -177,7 +178,7 @@ export function DeclutterPage() {
             disabled={rows.length === 0}
             aria-disabled={rows.length === 0 || undefined}
           >
-            <Trans>⤓ EXPORT CSV</Trans>
+            <PixelIcon name="download" size={16} /> <Trans>EXPORT CSV</Trans>
           </BevelButton>
         </div>
 
@@ -197,7 +198,7 @@ export function DeclutterPage() {
           <div className="p-sp-4">
             <RetroEmptyState
               eyebrow={<Trans>Declutter</Trans>}
-              glyph="◇"
+              glyph="trash"
               heading={<Trans>NOTHING TO DECLUTTER</Trans>}
               body={
                 <Trans>

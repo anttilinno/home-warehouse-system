@@ -64,7 +64,7 @@ export function ImportHistory({
     return (
       <RetroEmptyState
         eyebrow={<Trans>Imports</Trans>}
-        glyph="◇"
+        glyph="upload"
         heading={<Trans>NO IMPORTS YET</Trans>}
         body={
           <Trans>

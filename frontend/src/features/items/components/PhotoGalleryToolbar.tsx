@@ -1,5 +1,5 @@
 import { Trans } from "@lingui/react/macro";
-import { BevelButton, RetroBadge } from "@/components/retro";
+import { BevelButton, PixelIcon, RetroBadge } from "@/components/retro";
 
 // Phase 10b refactor — the PhotoGallery toolbar: the SELECT/DOWNLOAD row plus
 // the bulk action bar. Extracted from the gallery body to lift the capability
@@ -40,10 +40,11 @@ export function PhotoGalleryToolbar({
           <span className="flex-1" />
           {canDownloadZip && (
             <BevelButton onClick={onDownload}>
+              <PixelIcon name="download" size={16} />{" "}
               {selectedCount ? (
-                <Trans>⤓ DOWNLOAD {selectedCount}</Trans>
+                <Trans>DOWNLOAD {selectedCount}</Trans>
               ) : (
-                <Trans>⤓ DOWNLOAD ALL</Trans>
+                <Trans>DOWNLOAD ALL</Trans>
               )}
             </BevelButton>
           )}

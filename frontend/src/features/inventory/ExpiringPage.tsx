@@ -136,7 +136,7 @@ export function ExpiringPage() {
           <div className="p-sp-4">
             <RetroEmptyState
               eyebrow={<Trans>Inventory</Trans>}
-              glyph="◇"
+              glyph="clock"
               heading={<Trans>NOTHING EXPIRING</Trans>}
               body={
                 <Trans>

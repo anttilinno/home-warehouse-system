@@ -59,7 +59,7 @@ export function NotificationsDropdown({
   } else if (items.length === 0) {
     body = (
       <RetroEmptyState
-        glyph="◇"
+        glyph="bell"
         heading={<Trans>No notifications</Trans>}
         body={<Trans>You're all caught up.</Trans>}
       />
