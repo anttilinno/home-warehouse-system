@@ -32,19 +32,20 @@ import type { ItemFormValues } from "../schema";
 // RHF's `dirtyFields` map ONLY. A dirty *string* field that the user cleared is
 // sent as "" (clear); an untouched field is OMITTED (unchanged) — NEVER sent as
 // "" by accident, so an edit can never silently null a field the user never
-// touched. uuid fields (category_id) have no "" clear path on the backend and
-// are never emitted here.
+// touched. category_id is a *uuid.UUID: it is emitted only when dirty AND a real
+// id remains — clearing it back to "none" has no backend clear path (omit =
+// unchanged), matching min_stock_level.
 
 /** Which top-level form keys are dirty (RHF formState.dirtyFields, flattened). */
 export type DirtyMap = Partial<Record<keyof ItemFormValues, boolean>>;
 
 // Map the form's resolved values to the backend create body. Only fields the
 // backend item entity actually owns are sent: sku, name, description, barcode,
-// min_stock_level. `sku` is REQUIRED by the backend createItemInput
+// category_id, min_stock_level. `sku` is REQUIRED by the backend createItemInput
 // (minLength:1) — omitting it returned 422 (D-07-07-A); zod guarantees a
-// non-empty trimmed string here. category/location are display-only (no uuid
-// resolution yet — documented stub) and are NOT submitted. Empty optional
-// strings are omitted on CREATE (a brand-new item has no field to "clear").
+// non-empty trimmed string here. category is a category UUID (or "" = none) —
+// sent as category_id when present. Empty optional strings are omitted on CREATE
+// (a brand-new item has no field to "clear").
 function buildCreateBody(values: ItemFormValues): Record<string, unknown> {
   const body: Record<string, unknown> = {
     sku: values.sku,
@@ -52,6 +53,7 @@ function buildCreateBody(values: ItemFormValues): Record<string, unknown> {
   };
   if (values.description) body.description = values.description;
   if (values.barcode) body.barcode = values.barcode;
+  if (values.category) body.category_id = values.category;
   if (values.minStock !== undefined) body.min_stock_level = values.minStock;
   return body;
 }
@@ -64,7 +66,8 @@ function buildCreateBody(values: ItemFormValues): Record<string, unknown> {
 // - sku: NEVER sent — SKU is immutable after create (the backend
 //   UpdateItemInput has no `sku` field), so it is read-only in edit mode and
 //   omitted here regardless of dirty state.
-// - category/location: never sent (display-only stub; category_id is a uuid).
+// - category (category_id, *uuid.UUID): dirty → send the id; cleared to "" is
+//   NOT sent (a uuid has no "" clear path — omit = unchanged, like min_stock).
 export function buildPatchBody(
   values: ItemFormValues,
   dirty: DirtyMap,
@@ -74,6 +77,8 @@ export function buildPatchBody(
   // *string fields: send the value verbatim when dirty — "" is an intentional clear.
   if (dirty.description) patch.description = values.description ?? "";
   if (dirty.barcode) patch.barcode = values.barcode ?? "";
+  // category_id: send only when dirty AND a real id remains (no "" clear path).
+  if (dirty.category && values.category) patch.category_id = values.category;
   // *int: only send when dirty AND a real number remains (no "" clear path).
   if (dirty.minStock && values.minStock !== undefined) {
     patch.min_stock_level = values.minStock;

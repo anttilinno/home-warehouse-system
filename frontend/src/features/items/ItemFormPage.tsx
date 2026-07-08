@@ -15,6 +15,7 @@ import {
 } from "@/components/retro";
 import type { UpcSuggestion } from "@/components/scan";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
+import { useCategoriesQuery } from "@/features/taxonomy/hooks/useCategoriesQuery";
 import { itemsApi } from "@/lib/api/items";
 import type { Item } from "@/lib/types";
 import {
@@ -47,7 +48,6 @@ const EMPTY_DEFAULTS: ItemFormInput = {
   description: "",
   barcode: "",
   category: "",
-  location: "",
   minStock: "",
 };
 
@@ -60,10 +60,9 @@ function itemToDefaults(item: Item): ItemFormInput {
     name: item.name,
     description: item.description ?? "",
     barcode: item.barcode ?? "",
-    // category_id is a uuid with no name lookup yet (no taxonomy hook) — leave
-    // the display field blank rather than show a raw uuid. Stub (see schema.ts).
-    category: "",
-    location: "",
+    // category_id is the stored uuid; the combobox resolves it to a name label
+    // from its options (useCategoriesQuery). "" when the item has no category.
+    category: item.category_id ?? "",
     minStock:
       item.min_stock_level === undefined ? "" : String(item.min_stock_level),
   };
@@ -73,6 +72,17 @@ export function ItemFormPage() {
   const { t } = useLingui();
   const navigate = useNavigate();
   const { currentWorkspaceId: wsId } = useWorkspace();
+  // Category options for the combobox — live category rows for this workspace,
+  // archived ones hidden. value = category uuid (submitted as category_id),
+  // label = name (also what the combobox shows for a prefilled edit value).
+  const { rows: categoryRows } = useCategoriesQuery();
+  const categoryOptions = useMemo(
+    () =>
+      categoryRows
+        .filter((c) => !c.is_archived)
+        .map((c) => ({ value: c.id, label: c.name })),
+    [categoryRows],
+  );
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const isEdit = Boolean(id);
@@ -264,23 +274,10 @@ export function ItemFormPage() {
               render={({ field }) => (
                 <RetroCombobox
                   label={<Trans>Category</Trans>}
-                  options={[]}
+                  options={categoryOptions}
                   value={field.value ?? ""}
                   onChange={field.onChange}
                   placeholder={t`Type a category…`}
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name="location"
-              render={({ field }) => (
-                <RetroCombobox
-                  label={<Trans>Location</Trans>}
-                  options={[]}
-                  value={field.value ?? ""}
-                  onChange={field.onChange}
-                  placeholder={t`Type a location…`}
                 />
               )}
             />

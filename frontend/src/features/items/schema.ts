@@ -4,12 +4,13 @@ import { z } from "zod";
 //
 // Field set mirrors the backend ItemResponse fields this form actually writes
 // (07-RESEARCH / handler.go createItemInput): name (required), description,
-// barcode (all `*string` on PATCH → clearable with ""), and minStock
-// (min_stock_level, `*int`). category/location are display-only free-text values
-// here: no taxonomy API/hook exists yet (verified — src/lib/api has no
-// categories/locations), and category_id is a backend uuid that can NOT be set
-// from a free-typed string, so those values are captured for UX continuity but
-// NOT submitted (documented stub — see useItemFormMutations + SUMMARY).
+// barcode (all `*string` on PATCH → clearable with ""), minStock
+// (min_stock_level, `*int`), and category (category_id, a *uuid.UUID). The
+// category value is a category UUID (or "" for none) chosen from a RetroCombobox
+// backed by useCategoriesQuery — the combobox only commits an existing option,
+// so this is always a valid id or empty. There is deliberately NO location field:
+// the backend item entity has no location column (location lives on inventory
+// entries, not items — see the InventoryPanel ADD ENTRY flow).
 //
 // All string fields default to "" (not undefined) so RHF's dirtyFields tracking
 // is meaningful and the edit PATCH builder can tell "" (cleared) from an
@@ -39,9 +40,9 @@ export const itemFormSchema = z.object({
   // Optional string fields. Empty string is a valid "no value / cleared" state.
   description: z.string().max(10000).optional().default(""),
   barcode: z.string().max(255).optional().default(""),
-  // Free-text display values (NOT submitted — no taxonomy uuid resolution yet).
+  // category_id UUID chosen from the category combobox ("" = none). Submitted as
+  // category_id on create/patch (see useItemFormMutations).
   category: z.string().optional().default(""),
-  location: z.string().optional().default(""),
   // min_stock_level — coerced from the numeric input. Optional; ≥ 0 when present.
   // An empty input coerces to undefined (omitted), not 0, so an untouched create
   // lets the backend apply its default:0.

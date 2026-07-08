@@ -124,18 +124,19 @@ describe("buildPatchBody (Pitfall 4 — omit=unchanged, ''=clear, uuid never cle
     expect(patch).toEqual({ name: "Renamed" });
   });
 
-  it("never emits category/location (display-only stub, uuid never cleared)", () => {
-    const values = resolve({
-      name: "Drill",
-      category: "Tools",
-      location: "Garage",
-    });
-    const dirty: DirtyMap = { category: true, location: true, name: true };
+  it("emits category_id when category is dirty and set (never the raw 'category' key)", () => {
+    const values = resolve({ name: "Drill", category: "cat-uuid-1" });
+    const dirty: DirtyMap = { category: true, name: true };
     const patch = buildPatchBody(values, dirty);
+    expect(patch).toEqual({ name: "Drill", category_id: "cat-uuid-1" });
     expect("category" in patch).toBe(false);
+  });
+
+  it("omits category_id when it was cleared to none (uuid has no '' clear path)", () => {
+    const values = resolve({ name: "Drill", category: "" });
+    const dirty: DirtyMap = { category: true };
+    const patch = buildPatchBody(values, dirty);
     expect("category_id" in patch).toBe(false);
-    expect("location" in patch).toBe(false);
-    expect(patch).toEqual({ name: "Drill" });
   });
 });
 
