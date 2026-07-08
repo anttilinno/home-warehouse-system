@@ -217,8 +217,10 @@ describe("InventoryListPage", () => {
     expect(screen.getByText("Hammer")).toBeInTheDocument();
     const hitsBefore = inventoryHits;
 
-    // Open the STATUS facet and pick "On loan".
-    await user.click(screen.getByRole("button", { name: "STATUS" }));
+    // Open the view menu, expand the Status filter, and pick "On loan".
+    await user.click(screen.getByRole("button", { name: /all inventory/i }));
+    const menu = screen.getByRole("menu");
+    await user.click(within(menu).getByRole("button", { name: /status/i }));
     await user.click(await screen.findByRole("checkbox", { name: /on loan/i }));
 
     await waitFor(() =>

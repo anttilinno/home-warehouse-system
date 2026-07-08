@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useSearchParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
+import { matchesFragments } from "@/components/retro";
 import { borrowersApi, type Borrower } from "@/lib/api/borrowers";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 
@@ -31,11 +32,13 @@ export interface UseBorrowersQueryResult {
  * invalidation covers it WITHOUT `exact:true`). `enabled` only when a workspace
  * is selected; `retry: false` so a load error surfaces immediately.
  *
- * Client-search filters name + email (lowercased substring, no debounce, no
- * /search call — OQ2 binding override #2). The current `?page` slice is the
+ * Client-search filters name + email (every fragment must match; no debounce,
+ * no /search call — OQ2 binding override #2). The current `?page` slice is the
  * deep-link + back-button surface.
  */
-export function useBorrowersQuery(search: string): UseBorrowersQueryResult {
+export function useBorrowersQuery(
+  fragments: string[],
+): UseBorrowersQueryResult {
   const { currentWorkspaceId: wsId } = useWorkspace();
   const [params] = useSearchParams();
   const page = Math.max(1, Number(params.get("page") ?? "1") || 1);
@@ -49,17 +52,12 @@ export function useBorrowersQuery(search: string): UseBorrowersQueryResult {
 
   const all = useMemo(() => query.data?.items ?? [], [query.data]);
 
-  // Client search (name + email substring, lowercased trim) — matches the
-  // loans list-page convention (OQ2). No debounce, no /search call.
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return all;
-    return all.filter(
-      (b) =>
-        b.name.toLowerCase().includes(q) ||
-        (b.email ?? "").toLowerCase().includes(q),
-    );
-  }, [all, search]);
+  // Client search over name + email — the live query + committed terms AND
+  // together (searchMatch), matching the Items server contract.
+  const filtered = useMemo(
+    () => all.filter((b) => matchesFragments([b.name, b.email], fragments)),
+    [all, fragments],
+  );
 
   const pageCount = Math.max(
     1,

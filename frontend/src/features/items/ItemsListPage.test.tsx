@@ -146,26 +146,13 @@ describe("ItemsListPage", () => {
     expect(lastSearch).toContain("page=1");
   });
 
-  it("has no per-page ARCHIVED facet (archived is a global preference now)", async () => {
-    server.use(
-      http.get("/api/workspaces/:wsId/items", () =>
-        HttpResponse.json(listOf([makeItem(1)])),
-      ),
-    );
-    renderPage();
-    await screen.findByText("Item 1");
+  // Open the ViewMenu (design 1c) — filters now live inside the ▾ view popover
+  // instead of standalone FilterBar facet triggers.
+  async function openViewMenu(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole("button", { name: /all items/i }));
+  }
 
-    // The ARCHIVED facet was removed from the FilterBar — only the CATEGORY
-    // facet remains. Visibility is driven by Settings → Data & Storage.
-    expect(
-      screen.queryByRole("button", { name: /archived/i }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /category/i }),
-    ).toBeInTheDocument();
-  });
-
-  it("populates the CATEGORY facet and chips the selected category NAME (not its id)", async () => {
+  it("has no ARCHIVED filter in the view menu (archived is a global preference now)", async () => {
     const user = userEvent.setup();
     server.use(
       http.get("/api/workspaces/:wsId/items", () =>
@@ -175,8 +162,29 @@ describe("ItemsListPage", () => {
     renderPage();
     await screen.findByText("Item 1");
 
+    await openViewMenu(user);
+    // The ARCHIVED filter was removed; only Category + the booleans remain.
+    expect(
+      screen.queryByRole("checkbox", { name: /archived/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /category/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("the CATEGORY filter sets ?category by id and pins a NAME token (not the id)", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get("/api/workspaces/:wsId/items", () =>
+        HttpResponse.json(listOf([makeItem(1)])),
+      ),
+    );
+    renderPage();
+    await screen.findByText("Item 1");
+
+    await openViewMenu(user);
+    // Expand the Category tree, then pick a category (Electronics + child Phones).
     await user.click(screen.getByRole("button", { name: /category/i }));
-    // Options come from the workspace category tree (Electronics + child Phones).
     await user.click(
       await screen.findByRole("checkbox", { name: "Electronics" }),
     );
@@ -184,11 +192,14 @@ describe("ItemsListPage", () => {
     await waitFor(() =>
       expect(lastSearch).toContain("category=cat-electronics"),
     );
-    // The chip shows the human name, not the uuid (the URL still carries the id).
-    expect(screen.getByText("Electronics")).toBeInTheDocument();
+    // The token carries the human name (URL keeps the id): a "Remove Category
+    // filter" token appears in the field.
+    expect(
+      screen.getByRole("button", { name: /remove category filter/i }),
+    ).toBeInTheDocument();
   });
 
-  it("the INSURED boolean facet toggles ?insured and chips as Yes", async () => {
+  it("the INSURED boolean filter toggles ?insured and pins a Yes token", async () => {
     const user = userEvent.setup();
     server.use(
       http.get("/api/workspaces/:wsId/items", () =>
@@ -198,16 +209,39 @@ describe("ItemsListPage", () => {
     renderPage();
     await screen.findByText("Item 1");
 
-    await user.click(screen.getByRole("button", { name: "Insured" }));
+    await openViewMenu(user);
+    await user.click(screen.getByRole("checkbox", { name: "Insured" }));
     await waitFor(() => expect(lastSearch).toContain("insured=1"));
-    expect(screen.getByText("Yes")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /remove insured filter/i }),
+    ).toBeInTheDocument();
 
     // Toggling off clears the param.
-    await user.click(screen.getByRole("button", { name: "Insured" }));
+    await user.click(screen.getByRole("checkbox", { name: "Insured" }));
     await waitFor(() => expect(lastSearch).not.toContain("insured=1"));
   });
 
-  it("CLEAR ALL clears a search-only state (the search box carries no chip)", async () => {
+  it("pressing Enter in the field pins the live query as a SEARCH term", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get("/api/workspaces/:wsId/items", () =>
+        HttpResponse.json(listOf([makeItem(1)])),
+      ),
+    );
+    renderPage();
+    await screen.findByText("Item 1");
+
+    const field = screen.getByRole("searchbox", { name: /filter items/i });
+    await user.type(field, "drill{Enter}");
+    // The term moves to ?terms and out of the live ?q box.
+    await waitFor(() => expect(lastSearch).toContain("terms=drill"));
+    expect(lastSearch).not.toContain("q=drill");
+    expect(
+      screen.getByRole("button", { name: /remove search filter/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("CLEAR resets a search-only state (the live box carries no token)", async () => {
     const user = userEvent.setup();
     server.use(
       http.get("/api/workspaces/:wsId/items", () =>
@@ -217,7 +251,7 @@ describe("ItemsListPage", () => {
     renderPage(["/items?q=drill"]);
     await screen.findByText("Item 1");
 
-    await user.click(screen.getByRole("button", { name: /clear all/i }));
+    await user.click(screen.getByRole("button", { name: /^clear$/i }));
     await waitFor(() => expect(lastSearch).not.toContain("q=drill"));
   });
 

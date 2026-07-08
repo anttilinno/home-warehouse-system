@@ -6,13 +6,10 @@ import {
   BevelButton,
   PixelIcon,
   useTableSelection,
-  FilterBar,
+  ViewBar,
   type FilterDef,
   type FilterOption,
-  filterFacetsFor,
-  useUrlFilterState,
-  SavedFilters,
-  useSavedFilters,
+  useListViews,
   retroToast,
 } from "@/components/retro";
 import { useShortcuts } from "@/components/shortcuts";
@@ -29,7 +26,8 @@ import { ItemsBulkBar } from "./components/ItemsBulkBar";
 import { DeleteItemDialog } from "./components/DeleteItemDialog";
 import { BulkDeleteItemsDialog } from "./components/BulkDeleteItemsDialog";
 
-const SAVED_FILTERS_KEY = "items-list-filters/v1";
+const SAVED_VIEWS_KEY = "items-list-views/v2";
+const LEGACY_FILTERS_KEY = "items-list-filters/v1";
 
 // Depth-first flatten of the category forest into indented filter options
 // (root categories first, each child under its parent, indented by depth).
@@ -49,7 +47,7 @@ export function ItemsListPage() {
   const { t } = useLingui();
   const navigate = useNavigate();
   const { currentWorkspaceId: wsId, workspaces } = useWorkspace();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams();
 
   const { data, isLoading, isError, state } = useItemsQuery();
   const { archive, restore, del } = useItemMutations();
@@ -89,11 +87,13 @@ export function ItemsListPage() {
     ],
     [categoryTree, t],
   );
-  const filters = useUrlFilterState(filterDefs, { yesLabel: t`Yes` });
-  const filterFacets = useMemo(
-    () => filterFacetsFor(filterDefs, filters),
-    [filterDefs, filters],
-  );
+  // ── URL-backed filters + saved views (design 1c), bundled by useListViews.
+  const { filters, viewBar } = useListViews(filterDefs, {
+    storageKey: SAVED_VIEWS_KEY,
+    legacyKey: LEGACY_FILTERS_KEY,
+    yesLabel: t`Yes`,
+    allViewName: t`All items`,
+  });
 
   // ── URL param writer (Pattern 1): mutate one key, reset page on filter change.
   const setParam = useCallback(
@@ -195,38 +195,6 @@ export function ItemsListPage() {
   );
   useShortcuts("items", routeShortcuts);
 
-  // ── SavedFilters: serialize/restore the ?q&category&sort shape (archived is no
-  // longer URL-driven — it is the global show_archived preference).
-  const applyPreset = useCallback(
-    (filters: Record<string, unknown>) => {
-      setSearchParams(() => {
-        const next = new URLSearchParams();
-        for (const [k, v] of Object.entries(filters)) {
-          if (typeof v === "string" && v) next.set(k, v);
-        }
-        next.set("page", "1");
-        return next;
-      });
-    },
-    [setSearchParams],
-  );
-  const { savedFilters, saveFilter, deleteFilter, applyFilter } =
-    useSavedFilters({
-      storageKey: SAVED_FILTERS_KEY,
-      onApplyFilter: applyPreset,
-    });
-
-  const onSaveCurrent = useCallback(
-    (name: string) => {
-      const snapshot: Record<string, string> = {};
-      for (const [k, v] of searchParams.entries()) {
-        if (k !== "page") snapshot[k] = v;
-      }
-      saveFilter(name, snapshot);
-    },
-    [searchParams, saveFilter],
-  );
-
   // ── CSV export (blob download via the photosApi helper).
   const onExport = useCallback(() => {
     if (!wsId) return;
@@ -285,25 +253,10 @@ export function ItemsListPage() {
           </BevelButton>
         }
       >
-        {/* SavedFilters above the FilterBar, inside the same panel-2 region. */}
-        <div className="flex items-center gap-sp-2 bg-bg-panel-2 px-sp-3 pt-sp-3">
-          <SavedFilters
-            savedFilters={savedFilters}
-            onApply={(id) => applyFilter(id)}
-            onDelete={deleteFilter}
-            onSaveCurrent={onSaveCurrent}
-          />
-        </div>
-
-        <FilterBar
-          searchValue={state.q}
-          onSearchChange={(v) => setParam("q", v)}
-          searchPlaceholder={t`Search name, brand, model…`}
+        <ViewBar
+          {...viewBar}
           itemCount={data?.total ?? 0}
-          facets={filterFacets}
-          filterChips={filters.chips}
-          onRemoveFilter={filters.clear}
-          onClearAll={filters.clearAll}
+          searchPlaceholder={t`Search name, brand, model… ↵ to pin`}
           primaryAction={
             <BevelButton variant="mint" onClick={goNew}>
               <PixelIcon name="plus" size={16} /> <Trans>ADD ITEM</Trans>

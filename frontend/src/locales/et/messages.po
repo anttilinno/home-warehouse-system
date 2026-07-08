@@ -510,9 +510,25 @@ msgstr "Lisa oma esimene asukoht — tuba, riiul või ala. Loo alamasukohti, et 
 msgid "Added to wishlist."
 msgstr "Lisatud soovinimekirja."
 
+#: src/features/borrowers/BorrowersListPage.tsx
+msgid "All borrowers"
+msgstr ""
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "All inventory"
+msgstr ""
+
+#: src/features/items/ItemsListPage.tsx
+msgid "All items"
+msgstr ""
+
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "All items are in stock. Anything that drops below its minimum will surface here."
 msgstr "Kõik esemed on laos. Kõik, mis langeb alla miinimumi, ilmub siia."
+
+#: src/features/loans/LoansListPage.tsx
+msgid "All loans"
+msgstr ""
 
 #: src/features/settings/SecurityPage.tsx
 msgid "All other sessions revoked."
@@ -777,7 +793,7 @@ msgstr ""
 msgid "Cancel"
 msgstr "Tühista"
 
-#: src/components/retro/filters/SavedFilters.tsx
+#: src/components/retro/filters/ViewMenu.tsx
 #: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/items/components/CaptionDialog.tsx
 #: src/features/items/components/DuplicateWarningDialog.tsx
@@ -876,7 +892,10 @@ msgstr "Vali esmalt CSV-fail."
 msgid "Claim code"
 msgstr "Lunastuskood"
 
-#: src/components/retro/filters/FilterBar.tsx
+#: src/components/retro/filters/TokenField.tsx
+msgid "CLEAR"
+msgstr ""
+
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/items/components/ItemsResults.tsx
@@ -967,15 +986,14 @@ msgid "Completing sign-in…"
 msgstr "Sisselogimise lõpetamine…"
 
 #: src/features/inventory/components/InventoryResults.tsx
-#: src/features/inventory/hooks/useInventoryFilters.ts
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Condition"
 msgstr "Seisukord"
 
 #: src/features/inventory/InventoryListPage.tsx
-msgid "CONDITION"
-msgstr "SEISUKORD"
+#~ msgid "CONDITION"
+#~ msgstr "SEISUKORD"
 
 #: src/features/analytics/components/ConditionDonutChart.tsx
 msgid "Condition + Status"
@@ -1613,7 +1631,7 @@ msgstr "KORISTUS — {workspaceName}"
 msgid "Delete"
 msgstr "Kustutamine"
 
-#: src/components/retro/filters/SavedFilters.tsx
+#: src/components/retro/filters/ViewMenu.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/items/components/BulkDeleteItemsDialog.tsx
 #: src/features/items/components/DeleteItemDialog.tsx
@@ -1705,13 +1723,12 @@ msgid "DELETE PHOTOS?"
 msgstr "KUSTUTADA FOTOD?"
 
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "DELETE PRESET"
-msgstr "KUSTUTA EELSEADE"
+#~ msgid "DELETE PRESET"
+#~ msgstr "KUSTUTA EELSEADE"
 
-#. placeholder {0}: preset.name
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "Delete preset {0}"
-msgstr "Kustuta eelseade {0}"
+#~ msgid "Delete preset {0}"
+#~ msgstr "Kustuta eelseade {0}"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "DELETE REPAIR?"
@@ -1725,10 +1742,23 @@ msgstr "KUSTUTADA AJAKAVA?"
 #~ msgid "Delete selected?"
 #~ msgstr "Kustutada valitud?"
 
-#. placeholder {0}: pendingDelete?.name
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "Delete the “{0}” preset? This can't be undone."
-msgstr "Kas kustutada eelseade „{0}“? Seda ei saa tagasi võtta."
+#~ msgid "Delete the “{0}” preset? This can't be undone."
+#~ msgstr "Kas kustutada eelseade „{0}“? Seda ei saa tagasi võtta."
+
+#. placeholder {0}: pendingDelete?.name
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "Delete the “{0}” view? This can't be undone."
+msgstr ""
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "DELETE VIEW"
+msgstr ""
+
+#. placeholder {0}: view.name
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "Delete view {0}"
+msgstr ""
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "DELETE WISHLIST ITEM?"
@@ -1745,8 +1775,8 @@ msgid "Deleting your account is permanent and cannot be undone."
 msgstr "Konto kustutamine on lõplik ja seda ei saa tagasi võtta."
 
 #: src/components/layout/Sidebar.tsx
-msgid "Demo"
-msgstr "Demo"
+#~ msgid "Demo"
+#~ msgstr "Demo"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemFormPage.tsx
@@ -2228,24 +2258,32 @@ msgstr "FAILID"
 #~ msgstr "Filtriaatomid"
 
 #: src/features/borrowers/BorrowersListPage.tsx
-msgid "Filter borrowers…"
-msgstr "Filtreeri laenajaid…"
+#~ msgid "Filter borrowers…"
+#~ msgstr "Filtreeri laenajaid…"
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "Filter categories"
+msgstr ""
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "Filter categories…"
+msgstr ""
 
 #: src/features/inventory/InventoryListPage.tsx
-msgid "Filter inventory…"
-msgstr "Filtreeri laoseisu…"
+#~ msgid "Filter inventory…"
+#~ msgstr "Filtreeri laoseisu…"
 
-#: src/components/retro/filters/FilterBar.tsx
+#: src/components/retro/filters/TokenField.tsx
 msgid "Filter items"
 msgstr "Filtreeri esemeid"
 
 #: src/components/retro/filters/FilterBar.tsx
-msgid "Filter items…"
-msgstr "Filtreeri esemeid…"
+#~ msgid "Filter items…"
+#~ msgstr "Filtreeri esemeid…"
 
 #: src/features/loans/LoansListPage.tsx
-msgid "Filter loans…"
-msgstr "Filtreeri laenutusi…"
+#~ msgid "Filter loans…"
+#~ msgstr "Filtreeri laenutusi…"
 
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "FilterBar + FilterPopover — search, facets, chips, count, CTA."
@@ -2254,6 +2292,10 @@ msgstr "Filtreeri laenutusi…"
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "Filtered"
 #~ msgstr "Filtreeritud"
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "FILTERS"
+msgstr ""
 
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
@@ -2455,7 +2497,7 @@ msgstr "Ese salvestatud."
 msgid "Item unarchived."
 msgstr "Ese arhiivist taastatud."
 
-#: src/components/retro/filters/FilterBar.tsx
+#: src/components/retro/filters/ViewBar.tsx
 msgid "items"
 msgstr "eset"
 
@@ -3185,6 +3227,7 @@ msgstr "Juhendeid, tšekke ega garantiisid pole veel lisatud."
 #~ msgid "No matches"
 #~ msgstr "Vasteid pole"
 
+#: src/components/retro/filters/ViewMenu.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/items/components/ItemsResults.tsx
@@ -3237,8 +3280,8 @@ msgid "No results."
 msgstr "Tulemusi pole."
 
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "No saved filters yet."
-msgstr "Salvestatud filtreid veel pole."
+#~ msgid "No saved filters yet."
+#~ msgstr "Salvestatud filtreid veel pole."
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "NO SCANS YET"
@@ -3635,12 +3678,12 @@ msgid "Prefilled from scan — edit if needed."
 msgstr "Eeltäidetud skannist — muuda vajadusel."
 
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "Preset name"
-msgstr "Eelseade nimi"
+#~ msgid "Preset name"
+#~ msgstr "Eelseade nimi"
 
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "PRESETS"
-msgstr "EELSEADED"
+#~ msgid "PRESETS"
+#~ msgstr "EELSEADED"
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "PREV"
@@ -3784,7 +3827,7 @@ msgstr "Eemalda {0}"
 msgid "Remove {0} from this workspace? They'll lose access immediately."
 msgstr "Kas eemaldada {0} sellest tööruumist? Ta kaotab kohe juurdepääsu."
 
-#: src/components/retro/filters/FilterBar.tsx
+#: src/components/retro/filters/TokenField.tsx
 msgid "Remove {labelText} filter"
 msgstr "Eemalda filter {labelText}"
 
@@ -4016,7 +4059,7 @@ msgstr "Read"
 msgid "Save"
 msgstr "Salvesta"
 
-#: src/components/retro/filters/SavedFilters.tsx
+#: src/components/retro/filters/ViewMenu.tsx
 #: src/features/items/components/CaptionDialog.tsx
 msgid "SAVE"
 msgstr "SALVESTA"
@@ -4052,17 +4095,21 @@ msgstr "SALVESTA MUUDATUSED"
 msgid "Save container"
 msgstr "Salvesta konteiner"
 
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "SAVE CURRENT AS VIEW…"
+msgstr ""
+
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "SAVE CURRENT…"
-msgstr "SALVESTA PRAEGUNE…"
+#~ msgid "SAVE CURRENT…"
+#~ msgstr "SALVESTA PRAEGUNE…"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "Save entry"
 msgstr "Salvesta kirje"
 
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "SAVE FILTER"
-msgstr "SALVESTA FILTER"
+#~ msgid "SAVE FILTER"
+#~ msgstr "SALVESTA FILTER"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "Save item"
@@ -4083,6 +4130,10 @@ msgstr "SALVESTA REMONT"
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "SAVE SCHEDULE"
 msgstr "SALVESTA AJAKAVA"
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "SAVE VIEW"
+msgstr ""
 
 #: src/features/settings/ProfilePage.tsx
 msgid "Saved."
@@ -4115,6 +4166,7 @@ msgstr "Ajakava"
 msgid "Score"
 msgstr "Punktid"
 
+#: src/components/retro/filters/ViewBar.tsx
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Search"
@@ -4129,13 +4181,29 @@ msgstr "Otsi dokumente"
 msgid "Search failed. Try again."
 msgstr "Otsing ebaõnnestus. Proovi uuesti."
 
+#: src/features/inventory/InventoryListPage.tsx
+msgid "Search item name… ↵ to pin"
+msgstr ""
+
+#: src/features/loans/LoansListPage.tsx
+msgid "Search item, borrower… ↵ to pin"
+msgstr ""
+
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Search locations…"
 msgstr "Otsi asukohti…"
 
 #: src/features/items/ItemsListPage.tsx
-msgid "Search name, brand, model…"
-msgstr "Otsi nime, brändi, mudelit…"
+#~ msgid "Search name, brand, model…"
+#~ msgstr "Otsi nime, brändi, mudelit…"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Search name, brand, model… ↵ to pin"
+msgstr ""
+
+#: src/features/borrowers/BorrowersListPage.tsx
+msgid "Search name, email… ↵ to pin"
+msgstr ""
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
@@ -4148,6 +4216,10 @@ msgstr "Otsi marsruute, tööruume, esemeid…"
 
 #: src/components/layout/TopBar.tsx
 msgid "Search…"
+msgstr ""
+
+#: src/components/retro/filters/TokenField.tsx
+msgid "Search… ↵ to pin"
 msgstr ""
 
 #: src/features/command-palette/CommandPalette.tsx
@@ -4322,7 +4394,6 @@ msgstr "ALUSTA"
 #: src/features/dashboard/components/RecentActivityCard.tsx
 #: src/features/imports/components/ImportHistory.tsx
 #: src/features/inventory/components/InventoryResults.tsx
-#: src/features/inventory/hooks/useInventoryFilters.ts
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/components/ItemsResults.tsx
@@ -4335,8 +4406,8 @@ msgid "Status"
 msgstr "Olek"
 
 #: src/features/inventory/InventoryListPage.tsx
-msgid "STATUS"
-msgstr "OLEK"
+#~ msgid "STATUS"
+#~ msgstr "OLEK"
 
 #: src/features/analytics/components/StatusStackChart.tsx
 msgid "Status mix"
@@ -4705,6 +4776,10 @@ msgstr "Kas ühendada {0} lahti? Sa ei saa enam sellega sisse logida."
 msgid "Untitled"
 msgstr "Pealkirjata"
 
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "UPDATE “{activeViewName}”"
+msgstr ""
+
 #: src/features/items/ItemDetailPage.tsx
 msgid "Updated"
 msgstr "Uuendatud"
@@ -4749,6 +4824,14 @@ msgstr "Vaata aktiivseid laenutusi"
 #: src/components/scan/QuickActionMenu.tsx
 msgid "VIEW ITEM"
 msgstr "VAATA ESET"
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "View name"
+msgstr ""
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "VIEWS"
+msgstr ""
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/components/WishlistTable.tsx

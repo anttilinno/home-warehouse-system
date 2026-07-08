@@ -1,9 +1,16 @@
-import type { FilterChip } from "./FilterBar";
+import type { ReactNode } from "react";
 
 // Generic filter model (Phase-14 filter system). A page declares a list of
 // FilterDefs; the adapter hook (useUrlFilterState) turns them into URL-backed
-// state, and filterFacetsFor renders the toolbar triggers. The model is pure
-// data so a future client-side adapter (inventory/loans) can reuse it verbatim.
+// state, and the ViewBar/TokenField render the tokens. The model is pure data so
+// any list page (items, inventory, loans, borrowers) reuses it verbatim.
+
+/** An active-filter chip: the applied state for one facet, as tokens/labels. */
+export interface FilterChip {
+  key: string;
+  label: ReactNode;
+  displayValue: ReactNode;
+}
 
 export interface FilterOption {
   value: string;

@@ -16,12 +16,21 @@ export const DEFAULT_SORT_DIR = "asc";
 /** The decoded, URL-driven list params (the single source of truth). */
 export interface ItemsListUrlState {
   q: string;
+  /** Committed `SEARCH:` tokens (`?terms=a,b`); AND-combined with `q`. */
+  terms: string[];
   category: string;
   insured: boolean;
   needsReview: boolean;
   sort: string;
   sortDir: string;
   page: number;
+}
+
+// The backend `search` runs through plainto_tsquery, which ANDs its lexemes, so
+// the live query + every committed term join with spaces into one AND search.
+function joinSearch(q: string, terms: string[]): string | undefined {
+  const parts = [q.trim(), ...terms].filter(Boolean);
+  return parts.length > 0 ? parts.join(" ") : undefined;
 }
 
 /**
@@ -32,8 +41,15 @@ export interface ItemsListUrlState {
  * preference, read from the shared ["me"] query in the hook below.
  */
 export function readItemsUrlState(params: URLSearchParams): ItemsListUrlState {
+  const termsRaw = params.get("terms") ?? "";
   return {
     q: params.get("q") ?? "",
+    terms: termsRaw
+      ? termsRaw
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : [],
     category: params.get("category") ?? "",
     insured: params.get("insured") === "1",
     needsReview: params.get("needs_review") === "1",
@@ -46,7 +62,7 @@ export function readItemsUrlState(params: URLSearchParams): ItemsListUrlState {
 /** Map the decoded URL state to the itemsApi list params (archived set separately). */
 export function toListParams(state: ItemsListUrlState): ItemListParams {
   return {
-    search: state.q || undefined,
+    search: joinSearch(state.q, state.terms),
     category_id: state.category || undefined,
     is_insured: state.insured || undefined,
     needs_review: state.needsReview || undefined,

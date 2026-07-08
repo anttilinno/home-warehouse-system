@@ -5,8 +5,9 @@ import {
   Window,
   BevelButton,
   PixelIcon,
-  FilterBar,
-  FilterPopover,
+  ViewBar,
+  type FilterDef,
+  useListViews,
   retroToast,
 } from "@/components/retro";
 import { useShortcuts } from "@/components/shortcuts";
@@ -24,7 +25,7 @@ import { inventoryToCsvBlob, triggerCsvDownload } from "./inventoryCsv";
 import { useInventoryQuery, INVENTORY_LIMIT } from "./hooks/useInventoryQuery";
 import { useInventoryMutations } from "./hooks/useInventoryMutations";
 import { usePickerOptions } from "./hooks/usePickerOptions";
-import { useInventoryFilters } from "./hooks/useInventoryFilters";
+import { useInventoryVisible } from "./hooks/useInventoryFilters";
 import { InventoryResults } from "./components/InventoryResults";
 import { InventoryDrawers } from "./components/InventoryDrawers";
 import { MoveDialog } from "./components/MoveDialog";
@@ -83,22 +84,42 @@ export function InventoryListPage() {
   const workspaceName =
     workspaces?.find((w) => w.id === wsId)?.name ?? t`Workspace`;
 
-  // ── Client-side filter/sort machine (R1 — none of this round-trips to the URL).
-  const {
-    search,
-    setSearch,
-    statusFilter,
-    setStatusFilter,
-    conditionFilter,
-    setConditionFilter,
-    visible,
-    onSort,
-    sortGlyph,
-    hasFilters,
-    clearAllFilters,
-    filterChips,
-    removeFilter,
-  } = useInventoryFilters(entries, itemName);
+  // ── URL-backed filters + saved views (design 1c). Status/condition are enum
+  // defs; search + committed terms filter the item name. Actual row filtering is
+  // still CLIENT-side (R1 — the list endpoint has no server filter params).
+  const filterDefs = useMemo<FilterDef[]>(
+    () => [
+      {
+        key: "status",
+        label: t`Status`,
+        kind: "enum",
+        multi: true,
+        options: STATUSES.map((s) => ({ value: s, label: STATUS_LABEL[s] })),
+      },
+      {
+        key: "condition",
+        label: t`Condition`,
+        kind: "enum",
+        multi: true,
+        options: CONDITIONS.map((c) => ({
+          value: c,
+          label: CONDITION_LABEL[c],
+        })),
+      },
+    ],
+    [t],
+  );
+  const { filters, fragments, viewBar } = useListViews(filterDefs, {
+    storageKey: "inventory-list-views/v2",
+    allViewName: t`All inventory`,
+  });
+  const statusFilter = (filters.values.status ?? []) as InventoryStatus[];
+  const conditionFilter = (filters.values.condition ?? []) as Condition[];
+  const { visible, onSort, sortGlyph, hasFilters } = useInventoryVisible(
+    entries,
+    itemName,
+    { statusFilter, conditionFilter, fragments },
+  );
 
   // ── Movements drawer + the MOVE target (Plan 04 wires MoveDialog here).
   const [movementsId, setMovementsId] = useState<string | null>(null);
@@ -146,48 +167,10 @@ export function InventoryListPage() {
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">
       <Window title={t`INVENTORY — ${workspaceName}`} titlebarVariant="mint">
-        <FilterBar
-          searchValue={search}
-          onSearchChange={setSearch}
-          searchPlaceholder={t`Filter inventory…`}
+        <ViewBar
+          {...viewBar}
           itemCount={visible.length}
-          facets={[
-            {
-              key: "status",
-              label: t`Status`,
-              trigger: (
-                <FilterPopover
-                  label={<Trans>STATUS</Trans>}
-                  options={STATUSES.map((s) => ({
-                    value: s,
-                    label: STATUS_LABEL[s],
-                  }))}
-                  selected={statusFilter}
-                  onChange={(next) =>
-                    setStatusFilter(next as InventoryStatus[])
-                  }
-                />
-              ),
-            },
-            {
-              key: "condition",
-              label: t`Condition`,
-              trigger: (
-                <FilterPopover
-                  label={<Trans>CONDITION</Trans>}
-                  options={CONDITIONS.map((c) => ({
-                    value: c,
-                    label: CONDITION_LABEL[c],
-                  }))}
-                  selected={conditionFilter}
-                  onChange={(next) => setConditionFilter(next as Condition[])}
-                />
-              ),
-            },
-          ]}
-          filterChips={filterChips}
-          onRemoveFilter={removeFilter}
-          onClearAll={clearAllFilters}
+          searchPlaceholder={t`Search item name… ↵ to pin`}
           primaryAction={
             <span className="flex items-center gap-sp-2">
               <BevelButton
@@ -212,7 +195,7 @@ export function InventoryListPage() {
           itemName={itemName}
           hasFilters={hasFilters}
           onAdd={goNew}
-          onClearAll={clearAllFilters}
+          onClearAll={filters.clearAll}
           onSort={onSort}
           sortGlyph={sortGlyph}
           currentPage={currentPage}

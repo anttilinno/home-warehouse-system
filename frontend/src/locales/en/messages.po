@@ -510,9 +510,25 @@ msgstr "Add your first location — a room, shelf, or area. Nest sub-locations t
 msgid "Added to wishlist."
 msgstr "Added to wishlist."
 
+#: src/features/borrowers/BorrowersListPage.tsx
+msgid "All borrowers"
+msgstr "All borrowers"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "All inventory"
+msgstr "All inventory"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "All items"
+msgstr "All items"
+
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "All items are in stock. Anything that drops below its minimum will surface here."
 msgstr "All items are in stock. Anything that drops below its minimum will surface here."
+
+#: src/features/loans/LoansListPage.tsx
+msgid "All loans"
+msgstr "All loans"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "All other sessions revoked."
@@ -777,7 +793,7 @@ msgstr "Can't verify offline. Add anyway?"
 msgid "Cancel"
 msgstr "Cancel"
 
-#: src/components/retro/filters/SavedFilters.tsx
+#: src/components/retro/filters/ViewMenu.tsx
 #: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/items/components/CaptionDialog.tsx
 #: src/features/items/components/DuplicateWarningDialog.tsx
@@ -876,7 +892,10 @@ msgstr "Choose a CSV file first."
 msgid "Claim code"
 msgstr "Claim code"
 
-#: src/components/retro/filters/FilterBar.tsx
+#: src/components/retro/filters/TokenField.tsx
+msgid "CLEAR"
+msgstr "CLEAR"
+
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/items/components/ItemsResults.tsx
@@ -967,15 +986,14 @@ msgid "Completing sign-in…"
 msgstr "Completing sign-in…"
 
 #: src/features/inventory/components/InventoryResults.tsx
-#: src/features/inventory/hooks/useInventoryFilters.ts
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Condition"
 msgstr "Condition"
 
 #: src/features/inventory/InventoryListPage.tsx
-msgid "CONDITION"
-msgstr "CONDITION"
+#~ msgid "CONDITION"
+#~ msgstr "CONDITION"
 
 #: src/features/analytics/components/ConditionDonutChart.tsx
 msgid "Condition + Status"
@@ -1613,7 +1631,7 @@ msgstr "DECLUTTER — {workspaceName}"
 msgid "Delete"
 msgstr "Delete"
 
-#: src/components/retro/filters/SavedFilters.tsx
+#: src/components/retro/filters/ViewMenu.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/items/components/BulkDeleteItemsDialog.tsx
 #: src/features/items/components/DeleteItemDialog.tsx
@@ -1705,13 +1723,12 @@ msgid "DELETE PHOTOS?"
 msgstr "DELETE PHOTOS?"
 
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "DELETE PRESET"
-msgstr "DELETE PRESET"
+#~ msgid "DELETE PRESET"
+#~ msgstr "DELETE PRESET"
 
-#. placeholder {0}: preset.name
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "Delete preset {0}"
-msgstr "Delete preset {0}"
+#~ msgid "Delete preset {0}"
+#~ msgstr "Delete preset {0}"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "DELETE REPAIR?"
@@ -1725,10 +1742,23 @@ msgstr "DELETE SCHEDULE?"
 #~ msgid "Delete selected?"
 #~ msgstr "Delete selected?"
 
-#. placeholder {0}: pendingDelete?.name
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "Delete the “{0}” preset? This can't be undone."
-msgstr "Delete the “{0}” preset? This can't be undone."
+#~ msgid "Delete the “{0}” preset? This can't be undone."
+#~ msgstr "Delete the “{0}” preset? This can't be undone."
+
+#. placeholder {0}: pendingDelete?.name
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "Delete the “{0}” view? This can't be undone."
+msgstr "Delete the “{0}” view? This can't be undone."
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "DELETE VIEW"
+msgstr "DELETE VIEW"
+
+#. placeholder {0}: view.name
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "Delete view {0}"
+msgstr "Delete view {0}"
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "DELETE WISHLIST ITEM?"
@@ -1745,8 +1775,8 @@ msgid "Deleting your account is permanent and cannot be undone."
 msgstr "Deleting your account is permanent and cannot be undone."
 
 #: src/components/layout/Sidebar.tsx
-msgid "Demo"
-msgstr "Demo"
+#~ msgid "Demo"
+#~ msgstr "Demo"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemFormPage.tsx
@@ -2228,24 +2258,32 @@ msgstr "FILES"
 #~ msgstr "Filter Atoms"
 
 #: src/features/borrowers/BorrowersListPage.tsx
-msgid "Filter borrowers…"
-msgstr "Filter borrowers…"
+#~ msgid "Filter borrowers…"
+#~ msgstr "Filter borrowers…"
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "Filter categories"
+msgstr "Filter categories"
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "Filter categories…"
+msgstr "Filter categories…"
 
 #: src/features/inventory/InventoryListPage.tsx
-msgid "Filter inventory…"
-msgstr "Filter inventory…"
+#~ msgid "Filter inventory…"
+#~ msgstr "Filter inventory…"
 
-#: src/components/retro/filters/FilterBar.tsx
+#: src/components/retro/filters/TokenField.tsx
 msgid "Filter items"
 msgstr "Filter items"
 
 #: src/components/retro/filters/FilterBar.tsx
-msgid "Filter items…"
-msgstr "Filter items…"
+#~ msgid "Filter items…"
+#~ msgstr "Filter items…"
 
 #: src/features/loans/LoansListPage.tsx
-msgid "Filter loans…"
-msgstr "Filter loans…"
+#~ msgid "Filter loans…"
+#~ msgstr "Filter loans…"
 
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "FilterBar + FilterPopover — search, facets, chips, count, CTA."
@@ -2254,6 +2292,10 @@ msgstr "Filter loans…"
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "Filtered"
 #~ msgstr "Filtered"
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "FILTERS"
+msgstr "FILTERS"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
@@ -2455,7 +2497,7 @@ msgstr "Item saved."
 msgid "Item unarchived."
 msgstr "Item unarchived."
 
-#: src/components/retro/filters/FilterBar.tsx
+#: src/components/retro/filters/ViewBar.tsx
 msgid "items"
 msgstr "items"
 
@@ -3185,6 +3227,7 @@ msgstr "No manuals, receipts, or warranties attached yet."
 #~ msgid "No matches"
 #~ msgstr "No matches"
 
+#: src/components/retro/filters/ViewMenu.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/items/components/ItemsResults.tsx
@@ -3237,8 +3280,8 @@ msgid "No results."
 msgstr "No results."
 
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "No saved filters yet."
-msgstr "No saved filters yet."
+#~ msgid "No saved filters yet."
+#~ msgstr "No saved filters yet."
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "NO SCANS YET"
@@ -3635,12 +3678,12 @@ msgid "Prefilled from scan — edit if needed."
 msgstr "Prefilled from scan — edit if needed."
 
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "Preset name"
-msgstr "Preset name"
+#~ msgid "Preset name"
+#~ msgstr "Preset name"
 
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "PRESETS"
-msgstr "PRESETS"
+#~ msgid "PRESETS"
+#~ msgstr "PRESETS"
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "PREV"
@@ -3784,7 +3827,7 @@ msgstr "Remove {0}"
 msgid "Remove {0} from this workspace? They'll lose access immediately."
 msgstr "Remove {0} from this workspace? They'll lose access immediately."
 
-#: src/components/retro/filters/FilterBar.tsx
+#: src/components/retro/filters/TokenField.tsx
 msgid "Remove {labelText} filter"
 msgstr "Remove {labelText} filter"
 
@@ -4016,7 +4059,7 @@ msgstr "Rows"
 msgid "Save"
 msgstr "Save"
 
-#: src/components/retro/filters/SavedFilters.tsx
+#: src/components/retro/filters/ViewMenu.tsx
 #: src/features/items/components/CaptionDialog.tsx
 msgid "SAVE"
 msgstr "SAVE"
@@ -4052,17 +4095,21 @@ msgstr "SAVE CHANGES"
 msgid "Save container"
 msgstr "Save container"
 
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "SAVE CURRENT AS VIEW…"
+msgstr "SAVE CURRENT AS VIEW…"
+
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "SAVE CURRENT…"
-msgstr "SAVE CURRENT…"
+#~ msgid "SAVE CURRENT…"
+#~ msgstr "SAVE CURRENT…"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "Save entry"
 msgstr "Save entry"
 
 #: src/components/retro/filters/SavedFilters.tsx
-msgid "SAVE FILTER"
-msgstr "SAVE FILTER"
+#~ msgid "SAVE FILTER"
+#~ msgstr "SAVE FILTER"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "Save item"
@@ -4083,6 +4130,10 @@ msgstr "SAVE REPAIR"
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "SAVE SCHEDULE"
 msgstr "SAVE SCHEDULE"
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "SAVE VIEW"
+msgstr "SAVE VIEW"
 
 #: src/features/settings/ProfilePage.tsx
 msgid "Saved."
@@ -4115,6 +4166,7 @@ msgstr "Schedule"
 msgid "Score"
 msgstr "Score"
 
+#: src/components/retro/filters/ViewBar.tsx
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Search"
@@ -4129,13 +4181,29 @@ msgstr "Search documents"
 msgid "Search failed. Try again."
 msgstr "Search failed. Try again."
 
+#: src/features/inventory/InventoryListPage.tsx
+msgid "Search item name… ↵ to pin"
+msgstr "Search item name… ↵ to pin"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "Search item, borrower… ↵ to pin"
+msgstr "Search item, borrower… ↵ to pin"
+
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Search locations…"
 msgstr "Search locations…"
 
 #: src/features/items/ItemsListPage.tsx
-msgid "Search name, brand, model…"
-msgstr "Search name, brand, model…"
+#~ msgid "Search name, brand, model…"
+#~ msgstr "Search name, brand, model…"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Search name, brand, model… ↵ to pin"
+msgstr "Search name, brand, model… ↵ to pin"
+
+#: src/features/borrowers/BorrowersListPage.tsx
+msgid "Search name, email… ↵ to pin"
+msgstr "Search name, email… ↵ to pin"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
@@ -4149,6 +4217,10 @@ msgstr "Search routes, workspaces, items…"
 #: src/components/layout/TopBar.tsx
 msgid "Search…"
 msgstr "Search…"
+
+#: src/components/retro/filters/TokenField.tsx
+msgid "Search… ↵ to pin"
+msgstr "Search… ↵ to pin"
 
 #: src/features/command-palette/CommandPalette.tsx
 #: src/features/items/components/PaperlessLinkDialog.tsx
@@ -4322,7 +4394,6 @@ msgstr "START"
 #: src/features/dashboard/components/RecentActivityCard.tsx
 #: src/features/imports/components/ImportHistory.tsx
 #: src/features/inventory/components/InventoryResults.tsx
-#: src/features/inventory/hooks/useInventoryFilters.ts
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/components/ItemsResults.tsx
@@ -4335,8 +4406,8 @@ msgid "Status"
 msgstr "Status"
 
 #: src/features/inventory/InventoryListPage.tsx
-msgid "STATUS"
-msgstr "STATUS"
+#~ msgid "STATUS"
+#~ msgstr "STATUS"
 
 #: src/features/analytics/components/StatusStackChart.tsx
 msgid "Status mix"
@@ -4705,6 +4776,10 @@ msgstr "Unlink {0}? You'll no longer be able to sign in with it."
 msgid "Untitled"
 msgstr "Untitled"
 
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "UPDATE “{activeViewName}”"
+msgstr "UPDATE “{activeViewName}”"
+
 #: src/features/items/ItemDetailPage.tsx
 msgid "Updated"
 msgstr "Updated"
@@ -4749,6 +4824,14 @@ msgstr "View active loans"
 #: src/components/scan/QuickActionMenu.tsx
 msgid "VIEW ITEM"
 msgstr "VIEW ITEM"
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "View name"
+msgstr "View name"
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "VIEWS"
+msgstr "VIEWS"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
