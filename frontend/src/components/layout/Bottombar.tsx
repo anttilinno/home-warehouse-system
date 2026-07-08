@@ -49,7 +49,11 @@ export function Bottombar({ onOpenHelp, onBack }: Readonly<BottombarProps>) {
   const overflowShortcuts = shortcuts.slice(inlineCount);
 
   return (
-    <footer className="hidden md:flex h-9 min-w-0 items-center gap-sp-2 overflow-hidden border-t-2 border-border-ink bg-bg-panel-2 px-sp-3">
+    <footer
+      aria-label="Shortcuts"
+      role="contentinfo"
+      className="hidden md:flex h-9 min-w-0 items-center gap-sp-2 overflow-hidden border-t-2 border-border-ink bg-bg-panel-2 px-sp-3"
+    >
       {inlineShortcuts.map((s) => (
         <ShortcutChip
           key={s.key}

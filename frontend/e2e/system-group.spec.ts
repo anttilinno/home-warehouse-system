@@ -22,13 +22,21 @@ test("the SYSTEM nav group routes to approvals, wishlist, and sync-history", asy
 }) => {
   await login(page);
 
-  // Approvals — the route Phase 13's PendingApprovalsPanel "Review" link targets.
-  await page.getByRole("link", { name: /^approvals$/i }).click();
+  // Plan 1D: PLANNING (Wishlist) and SYSTEM (Approvals / Sync History) start
+  // collapsed — expand both before their rows are reachable. The header names
+  // are prefix-matched (not `/^…$/`): a pending count rides the collapsed
+  // SYSTEM header (e.g. "System 16"), so an anchored match would miss it.
+  await page.getByRole("button", { name: /^planning/i }).click();
+  await page.getByRole("button", { name: /^system/i }).click();
+
+  // Approvals — the route Phase 13's PendingApprovalsPanel "Review" link
+  // targets. Prefix match: a pending count appends to the link name.
+  await page.getByRole("link", { name: /^approvals/i }).click();
   await expect(page).toHaveURL(/\/approvals$/);
   await expect(page.getByText(/approvals/i).first()).toBeVisible();
 
   // Wishlist — status tabs (WANTED / ORDERED / ACQUIRED).
-  await page.getByRole("link", { name: /^wishlist$/i }).click();
+  await page.getByRole("link", { name: /^wishlist/i }).click();
   await expect(page).toHaveURL(/\/wishlist$/);
   await expect(page.getByRole("tab", { name: /wanted/i })).toBeVisible();
 

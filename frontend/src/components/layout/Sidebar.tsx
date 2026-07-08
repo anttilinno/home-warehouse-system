@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
-import { NavLink, Link, useLocation } from "react-router";
+import { type ReactNode, useEffect, useState } from "react";
+import { NavLink, useLocation } from "react-router";
 import { Trans } from "@lingui/react/macro";
 import type { DashboardStats, User } from "@/lib/types";
 import { PixelIcon, type PixelIconName, Window } from "@/components/retro";
@@ -59,38 +59,10 @@ function NavBody({ icon, label, count }: Readonly<Omit<NavItemProps, "to">>) {
 const NAV_ACTIVE = `${NAV_BASE} border border-border-ink bg-selection-fill shadow-hard-ink`;
 const NAV_INACTIVE = `${NAV_BASE} border border-transparent text-fg-ink hover:border-border-ink hover:bg-bg-panel-2 active:bg-bg-pressed`;
 
-// /taxonomy with no ?tab renders the Categories tab (TaxonomyPage default).
-const TAXONOMY_DEFAULT_TAB = "categories";
-
 function NavItem({ icon, label, count, to }: Readonly<NavItemProps>) {
-  const location = useLocation();
-  // Query-tab links (e.g. /taxonomy?tab=locations) all share one pathname, so
-  // NavLink — which ignores the query string — would mark ALL of them active at
-  // once. Match the `tab` param explicitly instead.
-  const qIndex = to.indexOf("?");
-  if (qIndex !== -1) {
-    const path = to.slice(0, qIndex);
-    const linkTab = new URLSearchParams(to.slice(qIndex + 1)).get("tab");
-    const currentTab =
-      new URLSearchParams(location.search).get("tab") ?? TAXONOMY_DEFAULT_TAB;
-    // Active on the tab itself (/taxonomy?tab=X) AND on that tab's sub-routes
-    // (e.g. /taxonomy/categories/new keeps Categories highlighted, the way
-    // /items/new keeps Items highlighted under NavLink's prefix match).
-    const subPath = `${path}/${linkTab}`;
-    const isActive =
-      (location.pathname === path && currentTab === linkTab) ||
-      location.pathname === subPath ||
-      location.pathname.startsWith(`${subPath}/`);
-    return (
-      <Link
-        to={to}
-        aria-current={isActive ? "page" : undefined}
-        className={isActive ? NAV_ACTIVE : NAV_INACTIVE}
-      >
-        <NavBody icon={icon} label={label} count={count} />
-      </Link>
-    );
-  }
+  // Every nav destination is a distinct pathname now (Organize collapsed the
+  // three /taxonomy ?tab links into one prefix match), so a plain NavLink —
+  // which prefix-matches the pathname and ignores the query — is all we need.
   return (
     <NavLink
       to={to}
@@ -102,19 +74,96 @@ function NavItem({ icon, label, count, to }: Readonly<NavItemProps>) {
   );
 }
 
-function NavGroup({
-  title,
-  children,
-}: Readonly<{
+// Collapsible-group persistence (Plan 1D §2.3): one localStorage object keyed by
+// group id → open bool. Per-user UI preference, no per-workspace scoping. Guarded
+// so private-mode / quota failures degrade to the defaults instead of throwing.
+const GROUPS_KEY = "hws.nav.groups.v1";
+
+function readGroupState(): Record<string, boolean> {
+  try {
+    const raw = localStorage.getItem(GROUPS_KEY);
+    return raw ? (JSON.parse(raw) as Record<string, boolean>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeGroupOpen(key: string, open: boolean) {
+  try {
+    const state = readGroupState();
+    state[key] = open;
+    localStorage.setItem(GROUPS_KEY, JSON.stringify(state));
+  } catch {
+    // ignore — the toggle still works in-session, it just isn't persisted.
+  }
+}
+
+interface NavGroupProps {
+  /** Stable id for the localStorage open/closed record + aria-controls target. */
+  groupKey: string;
   title: ReactNode;
+  /** Fallback open state when nothing is persisted. */
+  defaultOpen?: boolean;
+  /** Route prefixes that live in this group; a match forces it open (active-row
+   *  guard) so a deep-link never lands inside an invisible collapsed group. */
+  routes?: string[];
+  /** Shown at the header's right edge only while collapsed — e.g. a pending
+   *  count that must stay visible even when the group is closed. */
+  collapsedBadge?: ReactNode;
   children: ReactNode;
-}>) {
+}
+
+function NavGroup({
+  groupKey,
+  title,
+  defaultOpen = true,
+  routes,
+  collapsedBadge,
+  children,
+}: Readonly<NavGroupProps>) {
+  const { pathname } = useLocation();
+  const activeInside = !!routes?.some(
+    (r) => pathname === r || pathname.startsWith(`${r}/`),
+  );
+  const [open, setOpen] = useState(
+    () => activeInside || (readGroupState()[groupKey] ?? defaultOpen),
+  );
+  // Navigating into a collapsed group (deep link or in-app) re-opens it.
+  useEffect(() => {
+    if (activeInside) setOpen(true);
+  }, [activeInside]);
+
+  const listId = `nav-group-${groupKey}`;
+  const toggle = () =>
+    setOpen((prev) => {
+      const next = !prev;
+      writeGroupOpen(groupKey, next);
+      return next;
+    });
+
   return (
     <div className="mb-sp-3">
-      <h3 className="nav-label mx-sp-2 mb-sp-1 border-b border-dotted border-fg-faint pb-[3px] text-10 font-bold uppercase tracking-14 text-fg-muted">
-        {title}
+      <h3 className="mx-sp-2 mb-sp-1">
+        <button
+          type="button"
+          onClick={toggle}
+          aria-expanded={open}
+          aria-controls={listId}
+          className="flex w-full items-center gap-sp-2 border-b border-dotted border-fg-faint pb-[3px] max-md:py-sp-3 text-10 font-bold uppercase tracking-14 text-fg-muted hover:text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
+        >
+          <span
+            aria-hidden="true"
+            className="font-mono text-12 leading-none tabular-nums"
+          >
+            {open ? "−" : "+"}
+          </span>
+          <span className="nav-label truncate">{title}</span>
+          {!open && collapsedBadge && (
+            <span className="ml-auto">{collapsedBadge}</span>
+          )}
+        </button>
       </h3>
-      {children}
+      {open && <div id={listId}>{children}</div>}
     </div>
   );
 }
@@ -178,7 +227,11 @@ export function Sidebar({
       }
     >
       <nav aria-label="Primary">
-        <NavGroup title={<Trans>Overview</Trans>}>
+        <NavGroup
+          groupKey="overview"
+          title={<Trans>Overview</Trans>}
+          routes={["/", "/analytics", "/scan"]}
+        >
           <NavItem icon="app-windows" label={<Trans>Dashboard</Trans>} to="/" />
           <NavItem
             icon="chart-bar-big"
@@ -188,11 +241,17 @@ export function Sidebar({
           {/* Scan promoted to Overview — it is the primary capture action. */}
           <NavItem icon="camera" label={<Trans>Scan</Trans>} to="/scan" />
         </NavGroup>
-        <NavGroup title={<Trans>Inventory</Trans>}>
+        <NavGroup
+          groupKey="inventory"
+          title={<Trans>Inventory</Trans>}
+          routes={["/items", "/inventory", "/taxonomy", "/loans", "/borrowers"]}
+        >
+          {/* Zero counts render no badge (0 is noise) — same `|| undefined`
+              convention the Approvals count already used. */}
           <NavItem
             icon="archive"
             label={<Trans>Items</Trans>}
-            count={stats?.total_items}
+            count={stats?.total_items || undefined}
             to="/items"
           />
           <NavItem
@@ -200,38 +259,34 @@ export function Sidebar({
             label={<Trans>Inventory</Trans>}
             to="/inventory"
           />
+          {/* Organize folds the three /taxonomy tabs (Locations / Containers /
+              Categories) into one entry — they are already tabs of one page.
+              No count: the sum is not actionable. The palette keeps the three
+              direct-jump entries. */}
           <NavItem
             icon="map-pin"
-            label={<Trans>Locations</Trans>}
-            count={stats?.total_locations}
-            to="/taxonomy?tab=locations"
-          />
-          <NavItem
-            icon="folder"
-            label={<Trans>Containers</Trans>}
-            count={stats?.total_containers}
-            to="/taxonomy?tab=containers"
-          />
-          <NavItem
-            icon="bookmark"
-            label={<Trans>Categories</Trans>}
-            count={stats?.total_categories}
-            to="/taxonomy?tab=categories"
+            label={<Trans>Organize</Trans>}
+            to="/taxonomy"
           />
           <NavItem
             icon="download"
             label={<Trans>Loans</Trans>}
-            count={stats?.active_loans}
+            count={stats?.active_loans || undefined}
             to="/loans"
           />
           <NavItem
             icon="users"
             label={<Trans>Borrowers</Trans>}
-            count={stats?.total_borrowers}
+            count={stats?.total_borrowers || undefined}
             to="/borrowers"
           />
         </NavGroup>
-        <NavGroup title={<Trans>Planning</Trans>}>
+        <NavGroup
+          groupKey="planning"
+          title={<Trans>Planning</Trans>}
+          defaultOpen={false}
+          routes={["/maintenance", "/wishlist", "/declutter"]}
+        >
           {/* Label honest to the only maintenance surface (/maintenance/due —
               there is no /maintenance index). */}
           <NavItem
@@ -250,7 +305,26 @@ export function Sidebar({
             to="/declutter"
           />
         </NavGroup>
-        <NavGroup title={<Trans>System</Trans>}>
+        <NavGroup
+          groupKey="system"
+          title={<Trans>System</Trans>}
+          defaultOpen={false}
+          routes={[
+            "/approvals",
+            "/my-changes",
+            "/imports",
+            "/sync-history",
+            "/settings",
+          ]}
+          // Pending approvals must stay visible even when System is collapsed.
+          collapsedBadge={
+            pendingApprovals ? (
+              <span className="font-mono text-10 leading-none tabular-nums border border-border-ink bg-selection-fill px-[3px] py-px text-fg-ink">
+                {pendingApprovals}
+              </span>
+            ) : undefined
+          }
+        >
           {/* Phase 14 System pages (14-08 wiring). Distinct retro glyphs;
               all labels via <Trans>. The Approvals count is threaded in from
               AppShell (shared cache) — no query is added here. `|| undefined`

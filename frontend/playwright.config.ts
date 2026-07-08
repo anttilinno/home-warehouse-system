@@ -18,14 +18,13 @@ export default defineConfig({
     screenshot: "only-on-failure",
     locale: "en-US", // deterministic banner text; specs accept ET translation as fallback
   },
+  // Chromium only. The firefox project was dropped — Playwright drives its own
+  // bundled browser builds (never system Firefox/Zen), so a second project just
+  // forces an extra ~100 MB download for no added coverage on this app.
   projects: [
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
-    },
-    {
-      name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
     },
   ],
   // No auto-launch of the dev server — expect the developer to have

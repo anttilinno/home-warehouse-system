@@ -37,7 +37,8 @@ For debugging with a visible browser window:
 ### Add a new spec
 
 Drop new files in `frontend/e2e/*.spec.ts`. The config (`playwright.config.ts`)
-has two projects (`chromium` + `firefox`) — specs run in both by default.
+has one project (`chromium`) — Playwright drives its own bundled browser, never
+system Firefox/Zen, so a second project only adds a download for no coverage.
 `baseURL` defaults to `http://localhost:5173`; override with
 `E2E_BASE_URL=...` if you need to point at a deployed environment.
 

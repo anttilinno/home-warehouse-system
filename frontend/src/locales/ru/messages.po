@@ -827,7 +827,6 @@ msgstr "Подпись"
 #~ msgstr "Осторожно."
 
 #: src/components/layout/breadcrumbs.tsx
-#: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/components/DashboardStatTiles.tsx
 #: src/features/taxonomy/components/CategoriesTab.tsx
@@ -1039,7 +1038,6 @@ msgid "CONTAINER"
 msgstr "КОНТЕЙНЕР"
 
 #: src/components/layout/breadcrumbs.tsx
-#: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/CommandPalette.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/components/DashboardStatTiles.tsx
@@ -2735,7 +2733,6 @@ msgid "Location value"
 msgstr "Значение местоположения"
 
 #: src/components/layout/breadcrumbs.tsx
-#: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/CommandPalette.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/components/DashboardStatTiles.tsx
@@ -3502,6 +3499,10 @@ msgstr "Заказано"
 #: src/features/wishlist/WishlistPage.tsx
 msgid "ORDERED"
 msgstr "ЗАКАЗАНО"
+
+#: src/components/layout/Sidebar.tsx
+msgid "Organize"
+msgstr "Упорядочить"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "OUT"
