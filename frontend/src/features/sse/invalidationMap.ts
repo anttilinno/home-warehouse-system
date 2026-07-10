@@ -20,6 +20,8 @@ export const INVALIDATION_MAP: Record<string, readonly (readonly unknown[])[]> =
     inventory: [["inventory"]],
     loan: [["loans"]],
     borrower: [["borrowers"]],
+    maintenance: [["maintenance"]],
+    wishlist: [["wishlist"]],
     // Phases 7-10 APPEND rows here (and document in sse-invalidation-contract.md).
   };
 
@@ -51,6 +53,7 @@ export const KNOWN_EVENT_TYPES: readonly string[] = [
   "inventory.updated",
   "inventory.deleted",
   "inventory.marked_used",
+  "inventory.moved",
   "item.created",
   "item.updated",
   "item.deleted",
@@ -66,9 +69,13 @@ export const KNOWN_EVENT_TYPES: readonly string[] = [
   "loan.created",
   "loan.updated",
   "loan.returned",
+  "loan.deleted",
   "location.created",
   "location.updated",
   "location.deleted",
+  "maintenance.created",
+  "maintenance.updated",
+  "maintenance.completed",
   "maintenance.deleted",
   "pendingchange.created",
   "pendingchange.approved",
@@ -83,6 +90,8 @@ export const KNOWN_EVENT_TYPES: readonly string[] = [
   "repair_photo.created",
   "repair_photo.updated",
   "repair_photo.deleted",
+  "wishlist.created",
+  "wishlist.updated",
   "wishlist.deleted",
 ];
 

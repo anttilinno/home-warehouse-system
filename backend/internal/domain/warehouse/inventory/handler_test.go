@@ -872,12 +872,13 @@ func TestInventoryHandler_Move_PublishesEvent(t *testing.T) {
 	testutil.AssertStatus(t, rec, http.StatusOK)
 	mockSvc.AssertExpectations(t)
 
-	// Wait for event - Move emits inventory.updated (not a specialized event type)
+	// Move emits its own event type: the activity tap maps inventory.moved to a MOVE
+	// audit row, where inventory.updated would be logged as a generic UPDATE.
 	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
 
 	event := capture.GetLastEvent()
 	assert.NotNil(t, event)
-	assert.Equal(t, "inventory.updated", event.Type)
+	assert.Equal(t, "inventory.moved", event.Type)
 	assert.Equal(t, "inventory", event.EntityType)
 	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
 	assert.Equal(t, setup.UserID, event.UserID)

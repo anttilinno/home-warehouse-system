@@ -14,7 +14,10 @@ import (
 )
 
 const (
-	eventInventoryUpdated    = "inventory.updated"
+	eventInventoryUpdated = "inventory.updated"
+	// A move is audited as a MOVE action rather than a generic UPDATE (see
+	// activity.NewEventTap), so it needs its own event name.
+	eventInventoryMoved      = "inventory.moved"
 	msgFailedToListInventory = "failed to list inventory"
 	msgInventoryNotFound     = "inventory not found"
 )
@@ -337,13 +340,14 @@ func updateInventory(svc ServiceInterface, broadcaster *events.Broadcaster) func
 }
 
 // mutateInventory runs a single-entry mutation that returns the updated entry,
-// applies the standard not-found/domain error mapping, publishes the
-// "inventory.updated" SSE event with the supplied data map, and returns the
-// update output. It collapses the otherwise byte-identical bodies of the
-// status/quantity/move handlers into one place.
+// applies the standard not-found/domain error mapping, publishes eventType as an
+// SSE event with the supplied data map, and returns the update output. It
+// collapses the otherwise byte-identical bodies of the status/quantity/move
+// handlers into one place.
 func mutateInventory(
 	ctx context.Context,
 	broadcaster *events.Broadcaster,
+	eventType string,
 	mutate func(ctx context.Context, workspaceID uuid.UUID) (*Inventory, error),
 	data func(inv *Inventory) map[string]any,
 ) (*UpdateInventoryOutput, error) {
@@ -360,7 +364,7 @@ func mutateInventory(
 		return nil, appMiddleware.MapDomainError(err)
 	}
 
-	publishInventoryEvent(ctx, broadcaster, workspaceID, eventInventoryUpdated, inv.ID().String(), data(inv))
+	publishInventoryEvent(ctx, broadcaster, workspaceID, eventType, inv.ID().String(), data(inv))
 
 	return &UpdateInventoryOutput{Body: toInventoryResponse(inv)}, nil
 }
@@ -368,7 +372,7 @@ func mutateInventory(
 // updateInventoryStatus updates an inventory entry's status.
 func updateInventoryStatus(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *UpdateStatusInput) (*UpdateInventoryOutput, error) {
 	return func(ctx context.Context, input *UpdateStatusInput) (*UpdateInventoryOutput, error) {
-		return mutateInventory(ctx, broadcaster,
+		return mutateInventory(ctx, broadcaster, eventInventoryUpdated,
 			func(ctx context.Context, workspaceID uuid.UUID) (*Inventory, error) {
 				return svc.UpdateStatus(ctx, input.ID, workspaceID, input.Body.Status)
 			},
@@ -382,7 +386,7 @@ func updateInventoryStatus(svc ServiceInterface, broadcaster *events.Broadcaster
 // updateInventoryQuantity updates an inventory entry's quantity.
 func updateInventoryQuantity(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *UpdateQuantityInput) (*UpdateInventoryOutput, error) {
 	return func(ctx context.Context, input *UpdateQuantityInput) (*UpdateInventoryOutput, error) {
-		return mutateInventory(ctx, broadcaster,
+		return mutateInventory(ctx, broadcaster, eventInventoryUpdated,
 			func(ctx context.Context, workspaceID uuid.UUID) (*Inventory, error) {
 				return svc.UpdateQuantity(ctx, input.ID, workspaceID, input.Body.Quantity)
 			},
@@ -396,7 +400,7 @@ func updateInventoryQuantity(svc ServiceInterface, broadcaster *events.Broadcast
 // moveInventory moves an inventory entry to a new location/container.
 func moveInventory(svc ServiceInterface, broadcaster *events.Broadcaster) func(context.Context, *MoveInventoryInput) (*UpdateInventoryOutput, error) {
 	return func(ctx context.Context, input *MoveInventoryInput) (*UpdateInventoryOutput, error) {
-		return mutateInventory(ctx, broadcaster,
+		return mutateInventory(ctx, broadcaster, eventInventoryMoved,
 			func(ctx context.Context, workspaceID uuid.UUID) (*Inventory, error) {
 				return svc.Move(ctx, input.ID, workspaceID, input.Body.LocationID, input.Body.ContainerID)
 			},

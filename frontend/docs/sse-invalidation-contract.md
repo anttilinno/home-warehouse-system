@@ -80,6 +80,14 @@ does nothing until a phase registers it.
 | `inventory` | `["inventory"]` | Phase 6 (06-01) |
 | `loan` | `["loans"]` | Phase 6 (06-01) |
 | `borrower` | `["borrowers"]` | Phase 6 (06-01) |
+| `maintenance` | `["maintenance"]` | activity-log tap follow-up |
+| `wishlist` | `["wishlist"]` | activity-log tap follow-up |
+
+> `maintenance` and `wishlist` handlers had been publishing `*.created` /
+> `*.updated` all along, but those names were absent from `KNOWN_EVENT_TYPES`, so
+> `EventSource` — which matches event names EXACTLY — never delivered them, and
+> the map had no row to invalidate against. Both halves are needed: a listener
+> without a map row delivers an event that invalidates nothing.
 
 > The above are the bootstrap rows so the dispatcher is exercised from day one.
 > Phases 7-10 confirm their hook key shapes match `[entityPlural, wsId]` and

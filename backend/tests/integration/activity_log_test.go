@@ -185,6 +185,63 @@ func TestActivityLog_ApprovedChangeIsAudited(t *testing.T) {
 	assert.Len(t, all.Items, 1, "approved change must not double-log")
 }
 
+// TestActivityLog_InventoryMoveIsAuditedAsMove pins the one action the enum allows
+// that no code path used to reach: the move handler published inventory.updated, so
+// a MOVE row could never appear. It now publishes inventory.moved, which the tap
+// maps to MOVE — and this is the only test that inserts that enum value.
+func TestActivityLog_InventoryMoveIsAuditedAsMove(t *testing.T) {
+	ts := NewTestServer(t)
+
+	ts.SetToken(ts.AuthHelper(t, "owner_move_"+uuid.New().String()[:8]+"@example.com"))
+	wsID := newOwnedWorkspace(t, ts, "move")
+
+	resp := ts.Post(fmt.Sprintf("/workspaces/%s/items", wsID), map[string]interface{}{
+		"name": "Hammer", "sku": "HAM-001", "min_stock_level": 0,
+	})
+	RequireStatus(t, resp, http.StatusOK)
+	itemID := ParseResponse[struct {
+		ID uuid.UUID `json:"id"`
+	}](t, resp).ID
+
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/locations", wsID), map[string]interface{}{"name": "Shed"})
+	RequireStatus(t, resp, http.StatusOK)
+	fromID := ParseResponse[struct {
+		ID uuid.UUID `json:"id"`
+	}](t, resp).ID
+
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/locations", wsID), map[string]interface{}{"name": "Attic"})
+	RequireStatus(t, resp, http.StatusOK)
+	toID := ParseResponse[struct {
+		ID uuid.UUID `json:"id"`
+	}](t, resp).ID
+
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/inventory", wsID), map[string]interface{}{
+		"item_id": itemID, "location_id": fromID, "quantity": 1,
+		"condition": "GOOD", "status": "AVAILABLE",
+	})
+	requireCreated(t, resp)
+
+	resp = ts.Get(fmt.Sprintf("/workspaces/%s/inventory", wsID))
+	RequireStatus(t, resp, http.StatusOK)
+	inv := ParseResponse[struct {
+		Items []struct {
+			ID uuid.UUID `json:"id"`
+		} `json:"items"`
+	}](t, resp)
+	require.Len(t, inv.Items, 1)
+
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/inventory/%s/move", wsID, inv.Items[0].ID), map[string]interface{}{
+		"location_id": toID,
+	})
+	RequireStatus(t, resp, http.StatusOK)
+	resp.Body.Close()
+
+	row := awaitActivity(t, ts, wsID, func(r activityRow) bool {
+		return r.EntityType == "INVENTORY" && r.Action == "MOVE"
+	})
+	assert.Equal(t, inv.Items[0].ID, row.EntityID)
+}
+
 // TestActivityLog_EnumCoverage drives one real mutation per audited entity type so a
 // value the DB enum rejects surfaces here rather than as a silently dropped row in
 // production. Enum drift (a new Go EntityType, a renamed action) fails this test.
