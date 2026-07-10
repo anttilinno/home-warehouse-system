@@ -5,13 +5,22 @@ planning, architecture, and requirements see `.planning/`.
 
 ## E2E Tests (Playwright)
 
-The Phase 65 scan-lookup spec was wiped with the v2.2 frontend rebuild.
-The current v3.0 spec is `frontend/e2e/login-dashboard.spec.ts`
-(2026-06-11, retro-os sample screens): real `/login → / dashboard` flow
-against the real backend + Postgres. It guards the cookie-JWT login
-contract, the Vite `/api` → root proxy **rewrite** (backend routes live at
-root, e.g. `/auth/login` — the rewrite in `vite.config.ts` is load-bearing),
-and the dashboard's binding to `/analytics/dashboard` + `/analytics/activity`.
+19 specs live in `frontend/e2e/*.spec.ts`: a11y-sweep, analytics,
+attachments-paperless, auth, borrowers, command-palette, inventory, items,
+keyboard-nav, loans-lifecycle, login-dashboard, offline-replay,
+repairs-maintenance, responsive, scan-lookup, settings, sse-online,
+system-group, taxonomy. `.github/workflows/e2e-frontend.yml` runs all of
+them against a real backend + Postgres + vite preview build on every
+push/PR touching `frontend/**`; every spec is a hard merge gate except
+`a11y-sweep.spec.ts`, which stays `continue-on-error: true` (flaky against
+third-party component internals).
+
+`login-dashboard.spec.ts` (2026-06-11, retro-os sample screens) is the
+foundational one: real `/login → / dashboard` flow against the real
+backend + Postgres. It guards the cookie-JWT login contract, the Vite
+`/api` → root proxy **rewrite** (backend routes live at root, e.g.
+`/auth/login` — the rewrite in `vite.config.ts` is load-bearing), and the
+dashboard's binding to `/analytics/dashboard` + `/analytics/activity`.
 
 ### Run locally
 
@@ -62,6 +71,13 @@ Postgres via the `tests/testdb` harness. Any revert of Plan 65-09 breaks it;
 the cross-tenant 404 subtest also guards the
 `WHERE barcode = $2 AND workspace_id = $1` repo clause (Pitfall #5).
 
+Many more tests now sit behind the same `//go:build integration` tag (repo
+tests, `tests/integration/`). **They are NOT parallel-safe across
+packages** — they share the single `warehouse_test` DB and
+truncate/seed each other's rows, so a plain `go test -tags=integration
+./...` fails en masse. Always add `-p 1` to force serial package
+execution; that's the correctness requirement, not a perf knob.
+
 ### Run locally
 
 1. Start a Postgres instance with a `warehouse_test` database (override the
@@ -73,15 +89,34 @@ the cross-tenant 404 subtest also guards the
    ```
    cd backend
    TEST_DATABASE_URL=postgresql://wh:wh@localhost:5432/warehouse_test \
-     go test -tags=integration -count=1 \
-     ./internal/domain/warehouse/item/... -v
+     go test -tags=integration -count=1 -p 1 ./...
    ```
+   (swap `./...` for a single package path, e.g.
+   `./internal/domain/warehouse/item/...`, to scope a run — `-p 1` still
+   applies even to a single-package run since it shares the DB with CI).
 
-Without the `-tags=integration` flag the test is invisible to `go test ./...`,
-so the default CI path stays fast. Frontend-side barcode-lookup coverage is
-currently NOWHERE — the Phase 65 scan-lookup Playwright spec was wiped with
-the v2.2 frontend; when the scan feature is rebuilt (v3.0 Phase 11), a
-browser-level spec for the by-barcode flow must be re-added.
+Without the `-tags=integration` flag these tests are invisible to
+`go test ./...`, so the default local/CI path stays fast. Frontend-side
+barcode-lookup coverage now exists: `frontend/e2e/scan-lookup.spec.ts`
+(browser-level) plus unit coverage in `ScanPage.test.tsx`,
+`ClaimPage.test.tsx`, `useScanResolve.test.ts`, and `lib/api/items.test.ts`.
+
+## CI (GitHub Actions)
+
+`.github/workflows/`:
+
+- `test-backend.yml` — job `unit`: `go test ./...` (no tag, fast, no DB).
+  Job `integration`: postgres:18 service, dbmate migrate `warehouse_test`,
+  then `go test -tags=integration -count=1 -p 1 ./...`. Runs on PRs/pushes
+  touching `backend/**`.
+- `e2e-frontend.yml` — full Playwright suite (see above) against a real
+  backend + Postgres + vite preview build.
+- `lint-frontend.yml`, `security-backend.yml` — unchanged, lint/SAST only.
+
+Before this landed, no CI workflow ran `go test` at all and e2e ran only
+2/19 specs with `continue-on-error: true`; the 156 backend test files and
+17 other e2e specs were ungated. See `PLAN-test-gaps.md` for the gap
+analysis this closed.
 
 ## Pre-push quality gate
 
