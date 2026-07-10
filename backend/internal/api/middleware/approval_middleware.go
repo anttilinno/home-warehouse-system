@@ -35,7 +35,8 @@ type PendingChangeCreator interface {
 // This middleware enforces role-based change control:
 //   - Owner/Admin: Changes are applied immediately (bypass approval)
 //   - Member: Create/update/delete operations return 202 Accepted and create a pending change
-//   - Viewer: Read-only access (no interception needed, handled by permission checks)
+//   - Viewer: Read-only; writes are rejected upstream by ViewerReadOnly (this
+//     middleware never sees them), so a viewer falling through here can only be a GET
 //
 // The middleware:
 //  1. Checks the user's role from the request context (set by Workspace middleware)

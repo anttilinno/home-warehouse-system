@@ -490,6 +490,11 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 		r.Route("/workspaces/{workspace_id}", func(r chi.Router) {
 			r.Use(appMiddleware.Workspace(appMiddleware.NewMemberAdapter(memberRepo)))
 
+			// Deny viewers (read-only role) any state-changing request. Must run
+			// after Workspace (sets the role) and before ApprovalMiddleware so a
+			// viewer write is rejected outright, never queued for approval.
+			r.Use(appMiddleware.ViewerReadOnly())
+
 			// Apply approval middleware to intercept member operations
 			// This must come after Workspace middleware (which sets the role in context)
 			pendingChangeAdapter := pendingchange.NewMiddlewareAdapter(pendingChangeSvc)
