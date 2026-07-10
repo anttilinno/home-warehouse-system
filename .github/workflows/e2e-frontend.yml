@@ -1,17 +1,12 @@
 # ============================================================================
-# BEST-EFFORT — needs first-real-PR validation; not yet proven green in CI.
-# ----------------------------------------------------------------------------
-# Browser-level E2E (axe a11y sweep + keyboard-nav) for frontend, run against a
-# REAL stack: postgres service + go backend + vite preview. This is NEW CI
-# capability (17-CONTEXT OQ-1) — the orchestrator CANNOT execute GitHub Actions,
-# so per the "verification is REAL" rule this workflow is NOT claimed green. The
-# HARD, verified gate for POL-02/03 is LOCAL spec execution against :5173/:8080
-# (see CLAUDE.md §E2E Tests). Treat this file as scaffolding to be hardened on the
-# first real PR run; the a11y/keyboard step is `continue-on-error: true` so a
-# first-run failure surfaces logs without blocking the merge queue.
+# Browser-level E2E for the full frontend/e2e/ suite, run against a REAL stack:
+# postgres service + go backend + vite preview. All specs gate the merge
+# EXCEPT the axe a11y sweep, which stays `continue-on-error: true` (flaky
+# against third-party component internals we don't control). Every other
+# spec (auth, items, inventory, loans, offline-replay, scan-lookup, etc.) is
+# a hard gate.
 #
-# Does NOT touch lint-frontend.yml (17-01 owns it). Responsive (17-03) lands a
-# `e2e/responsive.spec.ts` later — add it to the spec step below once it exists.
+# Does NOT touch lint-frontend.yml (17-01 owns it).
 # ============================================================================
 name: e2e-frontend
 
@@ -111,16 +106,18 @@ jobs:
             sleep 1
           done
 
-      # --- playwright: install chromium, run a11y + keyboard specs -------------
+      # --- playwright: install chromium, run all specs --------------------------
       - name: Install Playwright chromium
         run: cd frontend && bunx playwright install --with-deps chromium
-      - name: Run a11y + keyboard E2E (best-effort)
-        continue-on-error: true # BEST-EFFORT — local run is the hard gate (OQ-1)
-        # Responsive (17-03) adds e2e/responsive.spec.ts — append it here once it lands.
+      - name: Run a11y sweep (best-effort)
+        continue-on-error: true # flaky against third-party component internals
         run: |
           cd frontend
-          bun run test:e2e --project=chromium \
-            e2e/a11y-sweep.spec.ts e2e/keyboard-nav.spec.ts
+          bun run test:e2e --project=chromium e2e/a11y-sweep.spec.ts
+      - name: Run E2E suite
+        run: |
+          cd frontend
+          bun run test:e2e --project=chromium $(ls e2e/*.spec.ts | grep -v a11y-sweep.spec.ts)
 
       - name: Upload Playwright report
         if: always()
