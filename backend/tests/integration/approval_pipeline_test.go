@@ -42,10 +42,89 @@ func addMemberToWorkspace(t *testing.T, ts *TestServer, workspaceID uuid.UUID, u
 // =============================================================================
 
 func TestApprovalPipeline_CompleteWorkflow_CreateApproveVerify(t *testing.T) {
-	t.Skip("Skipping: Approval middleware not yet integrated with Huma routes. See approval_middleware_integration_test.go for middleware unit tests.")
-	// NOTE: enable this test once approval middleware is integrated with Huma routing.
-	// Currently the middleware works in isolation (see approval_integration_test.go) but doesn't intercept Huma routes
-	// The pending change API endpoints themselves work correctly (tested in handler_integration_test.go)
+	ts := NewTestServer(t)
+
+	ownerEmail := "owner_approve_" + uuid.New().String()[:8] + "@example.com"
+	memberEmail := "member_approve_" + uuid.New().String()[:8] + "@example.com"
+
+	ownerToken := ts.AuthHelper(t, ownerEmail)
+	memberToken := ts.AuthHelper(t, memberEmail)
+
+	// Owner creates workspace
+	ts.SetToken(ownerToken)
+	ownerID := getUserID(t, ts)
+	slug := "approve-ws-" + uuid.New().String()[:8]
+	resp := ts.Post("/workspaces", map[string]interface{}{
+		"name":        "Approval Workspace",
+		"slug":        slug,
+		"is_personal": false,
+	})
+	RequireStatus(t, resp, http.StatusOK)
+	ws := ParseResponse[struct {
+		ID uuid.UUID `json:"id"`
+	}](t, resp)
+
+	// Invite member
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/members", ws.ID), map[string]interface{}{
+		"email": memberEmail,
+		"role":  "member",
+	})
+	resp.Body.Close()
+
+	// Member creates an item: intercepted into the approval queue, not applied.
+	ts.SetToken(memberToken)
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/items", ws.ID), map[string]interface{}{
+		"name":            "Approved Item",
+		"sku":             "APR-001",
+		"min_stock_level": 3,
+	})
+	RequireStatus(t, resp, http.StatusAccepted)
+
+	pendingResp := ParseResponse[struct {
+		PendingChangeID uuid.UUID `json:"pending_change_id"`
+	}](t, resp)
+
+	// Nothing exists until the change is reviewed.
+	resp = ts.Get(fmt.Sprintf("/workspaces/%s/items", ws.ID))
+	RequireStatus(t, resp, http.StatusOK)
+	before := ParseResponse[struct {
+		Total int `json:"total"`
+	}](t, resp)
+	require.Equal(t, 0, before.Total, "a pending change must not apply before approval")
+
+	// Owner approves the change
+	ts.SetToken(ownerToken)
+	resp = ts.Post(fmt.Sprintf("/workspaces/%s/pending-changes/%s/approve", ws.ID, pendingResp.PendingChangeID), nil)
+	RequireStatus(t, resp, http.StatusOK)
+
+	approveResp := ParseResponse[struct {
+		Status          string     `json:"status"`
+		ReviewedBy      *uuid.UUID `json:"reviewed_by"`
+		ReviewedAt      *time.Time `json:"reviewed_at"`
+		RejectionReason *string    `json:"rejection_reason"`
+	}](t, resp)
+	assert.Equal(t, "approved", approveResp.Status)
+	assert.Nil(t, approveResp.RejectionReason)
+	if assert.NotNil(t, approveResp.ReviewedBy) {
+		assert.Equal(t, ownerID, *approveResp.ReviewedBy)
+	}
+	assert.NotNil(t, approveResp.ReviewedAt)
+
+	// Verify the item was created, carrying the full payload the member submitted.
+	resp = ts.Get(fmt.Sprintf("/workspaces/%s/items", ws.ID))
+	RequireStatus(t, resp, http.StatusOK)
+	items := ParseResponse[struct {
+		Total int `json:"total"`
+		Items []struct {
+			Name          string `json:"name"`
+			SKU           string `json:"sku"`
+			MinStockLevel int    `json:"min_stock_level"`
+		} `json:"items"`
+	}](t, resp)
+	require.Equal(t, 1, items.Total)
+	assert.Equal(t, "Approved Item", items.Items[0].Name)
+	assert.Equal(t, "APR-001", items.Items[0].SKU)
+	assert.Equal(t, 3, items.Items[0].MinStockLevel, "approval must apply every submitted field, not just the required ones")
 }
 
 func TestApprovalPipeline_CompleteWorkflow_CreateRejectVerify(t *testing.T) {
