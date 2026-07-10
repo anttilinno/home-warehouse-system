@@ -155,6 +155,26 @@ func TestBroadcaster_PublishToNonExistentWorkspace(t *testing.T) {
 	})
 }
 
+func TestBroadcaster_TapFiresWithoutClients(t *testing.T) {
+	b := NewBroadcaster()
+	workspaceID := uuid.New()
+
+	var tapped []Event
+	b.SetTap(func(ws uuid.UUID, e Event) {
+		assert.Equal(t, workspaceID, ws)
+		tapped = append(tapped, e)
+	})
+
+	// No client is registered: Publish returns early, but the audit tap must still run.
+	b.Publish(workspaceID, Event{Type: "item.created", EntityType: "item"})
+
+	if assert.Len(t, tapped, 1) {
+		assert.Equal(t, "item.created", tapped[0].Type)
+		assert.Equal(t, workspaceID, tapped[0].WorkspaceID, "workspace/timestamp must be stamped before the tap")
+		assert.False(t, tapped[0].Timestamp.IsZero())
+	}
+}
+
 func TestBroadcaster_ChannelBuffer(t *testing.T) {
 	b := NewBroadcaster()
 	workspaceID := uuid.New()
