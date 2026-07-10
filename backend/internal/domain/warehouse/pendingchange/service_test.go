@@ -21,6 +21,8 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/label"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/maintenance"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/wishlist"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 	"github.com/antti/home-warehouse/go-backend/internal/testutil"
@@ -508,6 +510,67 @@ func (m *MockLabelService) ListByWorkspace(ctx context.Context, workspaceID uuid
 func (m *MockLabelService) Archive(ctx context.Context, id, workspaceID uuid.UUID) error { return nil }
 func (m *MockLabelService) Restore(ctx context.Context, id, workspaceID uuid.UUID) error { return nil }
 
+type MockMaintenanceService struct{ mock.Mock }
+
+func (m *MockMaintenanceService) Create(ctx context.Context, input maintenance.CreateInput) (*maintenance.Schedule, error) {
+	args := m.Called(ctx, input)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*maintenance.Schedule), args.Error(1)
+}
+func (m *MockMaintenanceService) GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*maintenance.Schedule, error) {
+	return nil, nil
+}
+func (m *MockMaintenanceService) Update(ctx context.Context, id, workspaceID uuid.UUID, input maintenance.UpdateInput) (*maintenance.Schedule, error) {
+	args := m.Called(ctx, id, workspaceID, input)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*maintenance.Schedule), args.Error(1)
+}
+func (m *MockMaintenanceService) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return m.Called(ctx, id, workspaceID).Error(0)
+}
+func (m *MockMaintenanceService) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*maintenance.Schedule, int, error) {
+	return nil, 0, nil
+}
+func (m *MockMaintenanceService) ListByInventory(ctx context.Context, workspaceID, inventoryID uuid.UUID) ([]*maintenance.Schedule, error) {
+	return nil, nil
+}
+func (m *MockMaintenanceService) ListDue(ctx context.Context, workspaceID uuid.UUID, withinDays int) ([]maintenance.DueSchedule, error) {
+	return nil, nil
+}
+func (m *MockMaintenanceService) Complete(ctx context.Context, id, workspaceID uuid.UUID, notes *string) (*maintenance.Schedule, error) {
+	return nil, nil
+}
+
+type MockWishlistService struct{ mock.Mock }
+
+func (m *MockWishlistService) Create(ctx context.Context, input wishlist.CreateInput) (*wishlist.Item, error) {
+	args := m.Called(ctx, input)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*wishlist.Item), args.Error(1)
+}
+func (m *MockWishlistService) GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*wishlist.Item, error) {
+	return nil, nil
+}
+func (m *MockWishlistService) Update(ctx context.Context, id, workspaceID uuid.UUID, input wishlist.UpdateInput) (*wishlist.Item, error) {
+	args := m.Called(ctx, id, workspaceID, input)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*wishlist.Item), args.Error(1)
+}
+func (m *MockWishlistService) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return m.Called(ctx, id, workspaceID).Error(0)
+}
+func (m *MockWishlistService) List(ctx context.Context, workspaceID uuid.UUID, status *wishlist.Status, pagination shared.Pagination) ([]*wishlist.Item, int, error) {
+	return nil, 0, nil
+}
+
 // Repository mocks used only for the inventory/loan delete paths.
 
 type MockInventoryRepository struct{ mock.Mock }
@@ -595,38 +658,42 @@ func (m *MockLoanRepository) Delete(ctx context.Context, id uuid.UUID) error {
 // ---------------------------------------------------------------------------
 
 type testMocks struct {
-	repo          *MockPendingChangeRepository
-	memberRepo    *MockMemberRepository
-	userRepo      *MockUserRepository
-	itemSvc       *MockItemService
-	categorySvc   *MockCategoryService
-	locationSvc   *MockLocationService
-	containerSvc  *MockContainerService
-	inventorySvc  *MockInventoryService
-	inventoryRepo *MockInventoryRepository
-	borrowerSvc   *MockBorrowerService
-	loanSvc       *MockLoanService
-	loanRepo      *MockLoanRepository
-	labelSvc      *MockLabelService
+	repo           *MockPendingChangeRepository
+	memberRepo     *MockMemberRepository
+	userRepo       *MockUserRepository
+	itemSvc        *MockItemService
+	categorySvc    *MockCategoryService
+	locationSvc    *MockLocationService
+	containerSvc   *MockContainerService
+	inventorySvc   *MockInventoryService
+	inventoryRepo  *MockInventoryRepository
+	borrowerSvc    *MockBorrowerService
+	loanSvc        *MockLoanService
+	loanRepo       *MockLoanRepository
+	labelSvc       *MockLabelService
+	maintenanceSvc *MockMaintenanceService
+	wishlistSvc    *MockWishlistService
 	// broadcaster is nil unless a test opts in (see TestApproveChangePublishesEntityEvent).
 	broadcaster *events.Broadcaster
 }
 
 func newMocks() *testMocks {
 	return &testMocks{
-		repo:          new(MockPendingChangeRepository),
-		memberRepo:    new(MockMemberRepository),
-		userRepo:      new(MockUserRepository),
-		itemSvc:       new(MockItemService),
-		categorySvc:   new(MockCategoryService),
-		locationSvc:   new(MockLocationService),
-		containerSvc:  new(MockContainerService),
-		inventorySvc:  new(MockInventoryService),
-		inventoryRepo: new(MockInventoryRepository),
-		borrowerSvc:   new(MockBorrowerService),
-		loanSvc:       new(MockLoanService),
-		loanRepo:      new(MockLoanRepository),
-		labelSvc:      new(MockLabelService),
+		repo:           new(MockPendingChangeRepository),
+		memberRepo:     new(MockMemberRepository),
+		userRepo:       new(MockUserRepository),
+		itemSvc:        new(MockItemService),
+		categorySvc:    new(MockCategoryService),
+		locationSvc:    new(MockLocationService),
+		containerSvc:   new(MockContainerService),
+		inventorySvc:   new(MockInventoryService),
+		inventoryRepo:  new(MockInventoryRepository),
+		borrowerSvc:    new(MockBorrowerService),
+		loanSvc:        new(MockLoanService),
+		loanRepo:       new(MockLoanRepository),
+		labelSvc:       new(MockLabelService),
+		maintenanceSvc: new(MockMaintenanceService),
+		wishlistSvc:    new(MockWishlistService),
 	}
 }
 
@@ -645,8 +712,8 @@ func (tm *testMocks) service() *Service {
 		tm.loanSvc,
 		tm.loanRepo,
 		tm.labelSvc,
-		nil, // maintenance service: not exercised by these unit tests
-		nil, // wishlist service: not exercised by these unit tests
+		tm.maintenanceSvc,
+		tm.wishlistSvc,
 		nil, // Transactor: nil -> noopTransactor (synchronous, no real tx in unit tests)
 		tm.broadcaster,
 	)
@@ -995,7 +1062,7 @@ func TestNewService(t *testing.T) {
 
 func TestServiceIsValidEntityType(t *testing.T) {
 	svc := &Service{}
-	for _, et := range []string{"item", "category", "location", "container", "inventory", "borrower", "loan", "label"} {
+	for _, et := range []string{"item", "category", "location", "container", "inventory", "borrower", "loan", "label", "maintenance", "wishlist"} {
 		assert.True(t, svc.isValidEntityType(et), et)
 	}
 	for _, et := range []string{"invalid", "user", "workspace", "member", "", "ITEM", "photo", "attachment"} {
@@ -1267,6 +1334,90 @@ func TestApplyLabelChange(t *testing.T) {
 		expect: func(tm *testMocks, ctx context.Context, ws, eid uuid.UUID) interface{ AssertExpectations(mock.TestingT) bool } {
 			tm.labelSvc.On("Delete", ctx, eid, ws).Return(nil)
 			return tm.labelSvc
+		},
+	})
+}
+
+func TestApplyMaintenanceChange(t *testing.T) {
+	invID := uuid.New()
+	nextDue := time.Now().Add(24 * time.Hour).UTC().Format(time.RFC3339)
+	runApply(t, applyCase{
+		entityType: "maintenance", action: ActionCreate,
+		payload: `{"inventory_id":"` + invID.String() + `","title":"Filter change","interval_days":90,"next_due":"` + nextDue + `"}`,
+		expect: func(tm *testMocks, ctx context.Context, ws, _ uuid.UUID) interface{ AssertExpectations(mock.TestingT) bool } {
+			tm.maintenanceSvc.On("Create", ctx, mock.MatchedBy(func(in maintenance.CreateInput) bool {
+				return in.WorkspaceID == ws && in.InventoryID == invID && in.Title == "Filter change" && in.IntervalDays == 90
+			})).Return(&maintenance.Schedule{}, nil)
+			return tm.maintenanceSvc
+		},
+	})
+	runApply(t, applyCase{
+		entityType: "maintenance", action: ActionUpdate, withEntity: true,
+		payload: `{"title":"Renamed","interval_days":30}`,
+		expect: func(tm *testMocks, ctx context.Context, ws, eid uuid.UUID) interface{ AssertExpectations(mock.TestingT) bool } {
+			tm.maintenanceSvc.On("Update", ctx, eid, ws, mock.MatchedBy(func(in maintenance.UpdateInput) bool {
+				return in.Title != nil && *in.Title == "Renamed" && in.IntervalDays != nil && *in.IntervalDays == 30
+			})).Return(&maintenance.Schedule{}, nil)
+			return tm.maintenanceSvc
+		},
+	})
+	runApply(t, applyCase{
+		entityType: "maintenance", action: ActionDelete, withEntity: true, payload: `{}`,
+		expect: func(tm *testMocks, ctx context.Context, ws, eid uuid.UUID) interface{ AssertExpectations(mock.TestingT) bool } {
+			tm.maintenanceSvc.On("Delete", ctx, eid, ws).Return(nil)
+			return tm.maintenanceSvc
+		},
+	})
+}
+
+func TestApplyWishlistChange(t *testing.T) {
+	catID := uuid.New()
+	runApply(t, applyCase{
+		entityType: "wishlist", action: ActionCreate,
+		payload: `{"name":"New drill","priority":2,"desired_category_id":"` + catID.String() + `"}`,
+		expect: func(tm *testMocks, ctx context.Context, ws, _ uuid.UUID) interface{ AssertExpectations(mock.TestingT) bool } {
+			tm.wishlistSvc.On("Create", ctx, mock.MatchedBy(func(in wishlist.CreateInput) bool {
+				return in.WorkspaceID == ws && in.Name == "New drill" && in.Priority == 2 &&
+					in.DesiredCategoryID != nil && *in.DesiredCategoryID == catID
+			})).Return(&wishlist.Item{}, nil)
+			return tm.wishlistSvc
+		},
+	})
+	runApply(t, applyCase{
+		entityType: "wishlist", action: ActionCreate,
+		payload: `{"name":"No priority given"}`,
+		expect: func(tm *testMocks, ctx context.Context, ws, _ uuid.UUID) interface{ AssertExpectations(mock.TestingT) bool } {
+			tm.wishlistSvc.On("Create", ctx, mock.MatchedBy(func(in wishlist.CreateInput) bool {
+				return in.Priority == wishlist.PriorityDefault
+			})).Return(&wishlist.Item{}, nil)
+			return tm.wishlistSvc
+		},
+	})
+	runApply(t, applyCase{
+		entityType: "wishlist", action: ActionUpdate, withEntity: true,
+		payload: `{"name":"Renamed"}`,
+		expect: func(tm *testMocks, ctx context.Context, ws, eid uuid.UUID) interface{ AssertExpectations(mock.TestingT) bool } {
+			tm.wishlistSvc.On("Update", ctx, eid, ws, mock.MatchedBy(func(in wishlist.UpdateInput) bool {
+				return in.Name != nil && *in.Name == "Renamed"
+			})).Return(&wishlist.Item{}, nil)
+			return tm.wishlistSvc
+		},
+	})
+	runApply(t, applyCase{
+		entityType: "wishlist", action: ActionUpdate, withEntity: true,
+		payload: `{"status":"acquired","acquired_item_id":"` + uuid.New().String() + `"}`,
+		expect: func(tm *testMocks, ctx context.Context, ws, eid uuid.UUID) interface{ AssertExpectations(mock.TestingT) bool } {
+			tm.wishlistSvc.On("Update", ctx, eid, ws, mock.MatchedBy(func(in wishlist.UpdateInput) bool {
+				return in.Status != nil && *in.Status == wishlist.StatusAcquired && in.AcquiredItemID != nil
+			})).Return(&wishlist.Item{}, nil)
+			return tm.wishlistSvc
+		},
+	})
+	runApply(t, applyCase{
+		entityType: "wishlist", action: ActionDelete, withEntity: true, payload: `{}`,
+		expect: func(tm *testMocks, ctx context.Context, ws, eid uuid.UUID) interface{ AssertExpectations(mock.TestingT) bool } {
+			tm.wishlistSvc.On("Delete", ctx, eid, ws).Return(nil)
+			return tm.wishlistSvc
 		},
 	})
 }
