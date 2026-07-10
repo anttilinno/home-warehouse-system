@@ -44,6 +44,7 @@ htmlcov/
 .tox/
 .hypothesis/
 *.out
+frontend/coverage/
 
 # Jujutsu
 .jj/
