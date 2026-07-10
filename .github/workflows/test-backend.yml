@@ -12,7 +12,7 @@ on:
       - ".github/workflows/test-backend.yml"
 
 jobs:
-  test:
+  unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,3 +21,46 @@ jobs:
           go-version-file: backend/go.mod
       - name: go test
         run: cd backend && go test ./...
+
+  integration:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: wh
+          POSTGRES_PASSWORD: wh
+          POSTGRES_DB: warehouse_test
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U wh -d warehouse_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DBMATE_DATABASE_URL: postgresql://wh:wh@localhost:5432/warehouse_test
+      TEST_DATABASE_URL: postgresql://wh:wh@localhost:5432/warehouse_test
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+
+      - name: Install dbmate
+        run: |
+          curl -fsSL -o /usr/local/bin/dbmate \
+            https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
+          chmod +x /usr/local/bin/dbmate
+      - name: Apply migrations
+        run: DATABASE_URL="$DBMATE_DATABASE_URL" dbmate -d backend/db/migrations up
+
+      # -p 1 is mandatory: integration tests share the warehouse_test DB across
+      # packages (truncate/seed each other's rows), so parallel package runs
+      # corrupt each other's fixtures. Serial execution is the correctness
+      # requirement, not a perf knob.
+      - name: go test (integration)
+        run: cd backend && go test -tags=integration -count=1 -p 1 ./...
