@@ -39,6 +39,7 @@ if grep -q '^backend/' <<<"$CHANGED"; then
     cd backend || exit 1
     golangci-lint run --new-from-merge-base="$REMOTE_BASE" ./... || exit 1
     go build ./... || exit 1
+    go test ./... || exit 1
     # Block pushing a known-exploitable dependency. Fast (reachability-pruned);
     # skipped with a notice if govulncheck isn't installed locally.
     if command -v govulncheck >/dev/null 2>&1; then
