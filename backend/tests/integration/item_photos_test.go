@@ -216,9 +216,9 @@ func TestItemPhotos_Delete(t *testing.T) {
 }
 
 // TestItemPhotos_DeleteItemCascades pins the item_photos -> items ON DELETE CASCADE
-// FK: deleting the parent item must remove its photo rows, not orphan them. The
-// row absence is asserted straight against the DB rather than via GET /photos/{id},
-// which currently maps not-found to 500 (a separate handler bug, out of scope here).
+// FK: deleting the parent item must remove its photo rows, not orphan them. Row
+// absence is asserted straight against the DB, keeping the cascade proof
+// independent of the read path.
 func TestItemPhotos_DeleteItemCascades(t *testing.T) {
 	ts, wsID, itemID := photoFixture(t)
 	photo := uploadPhoto(t, ts, wsID, itemID, "")
@@ -236,4 +236,33 @@ func TestItemPhotos_DeleteItemCascades(t *testing.T) {
 	require.NoError(t, ts.Pool.QueryRow(t.Context(),
 		`SELECT count(*) FROM warehouse.item_photos WHERE id = $1`, photo.ID).Scan(&after))
 	assert.Equal(t, 0, after, "deleting the item must cascade-delete its photo rows")
+}
+
+// TestItemPhotos_MissingPhotoIs404 pins the not-found mapping across every photo
+// route that first loads the photo. The repo returns a generic shared.ErrNotFound;
+// the service must translate it to ErrPhotoNotFound so the handler answers 404
+// instead of leaking a 500. Regression guard for that translation.
+func TestItemPhotos_MissingPhotoIs404(t *testing.T) {
+	ts, wsID, _ := photoFixture(t)
+	ghost := uuid.New()
+
+	cases := []struct {
+		name   string
+		method string
+		path   string
+		body   interface{}
+	}{
+		{"get", http.MethodGet, fmt.Sprintf("/workspaces/%s/photos/%s", wsID, ghost), nil},
+		{"set primary", http.MethodPut, fmt.Sprintf("/workspaces/%s/photos/%s/primary", wsID, ghost), nil},
+		{"update caption", http.MethodPut, fmt.Sprintf("/workspaces/%s/photos/%s/caption", wsID, ghost), map[string]interface{}{"caption": "x"}},
+		{"delete", http.MethodDelete, fmt.Sprintf("/workspaces/%s/photos/%s", wsID, ghost), nil},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			resp := ts.Request(c.method, c.path, c.body)
+			defer resp.Body.Close()
+			assert.Equal(t, http.StatusNotFound, resp.StatusCode,
+				"%s on a missing photo must be 404, not 500", c.name)
+		})
+	}
 }

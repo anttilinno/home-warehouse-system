@@ -313,10 +313,16 @@ func (s *Service) ListPhotos(ctx context.Context, itemID, workspaceID uuid.UUID)
 	return photos, nil
 }
 
-// GetPhoto returns a single photo by ID
-func (s *Service) GetPhoto(ctx context.Context, id uuid.UUID) (*ItemPhoto, error) {
+// fetchPhoto loads a photo by ID, translating the repository's generic not-found
+// (shared.ErrNotFound, or a nil row) into the domain-level ErrPhotoNotFound the
+// handlers map to 404. Without this translation the raw shared.ErrNotFound leaks
+// to the handler, which matches only ErrPhotoNotFound and falls through to 500.
+func (s *Service) fetchPhoto(ctx context.Context, id uuid.UUID) (*ItemPhoto, error) {
 	photo, err := s.repo.GetByID(ctx, id)
 	if err != nil {
+		if errors.Is(err, shared.ErrNotFound) {
+			return nil, ErrPhotoNotFound
+		}
 		return nil, err
 	}
 	if photo == nil {
@@ -325,15 +331,17 @@ func (s *Service) GetPhoto(ctx context.Context, id uuid.UUID) (*ItemPhoto, error
 	return photo, nil
 }
 
+// GetPhoto returns a single photo by ID
+func (s *Service) GetPhoto(ctx context.Context, id uuid.UUID) (*ItemPhoto, error) {
+	return s.fetchPhoto(ctx, id)
+}
+
 // SetPrimaryPhoto sets a photo as the primary photo for its item
 func (s *Service) SetPrimaryPhoto(ctx context.Context, photoID, workspaceID uuid.UUID) error {
 	// Verify photo exists and belongs to workspace
-	photo, err := s.repo.GetByID(ctx, photoID)
+	photo, err := s.fetchPhoto(ctx, photoID)
 	if err != nil {
 		return err
-	}
-	if photo == nil {
-		return ErrPhotoNotFound
 	}
 	if photo.WorkspaceID != workspaceID {
 		return ErrUnauthorized
@@ -350,12 +358,9 @@ func (s *Service) SetPrimaryPhoto(ctx context.Context, photoID, workspaceID uuid
 // UpdateCaption updates the caption of a photo
 func (s *Service) UpdateCaption(ctx context.Context, photoID, workspaceID uuid.UUID, caption *string) error {
 	// Get existing photo
-	photo, err := s.repo.GetByID(ctx, photoID)
+	photo, err := s.fetchPhoto(ctx, photoID)
 	if err != nil {
 		return err
-	}
-	if photo == nil {
-		return ErrPhotoNotFound
 	}
 	if photo.WorkspaceID != workspaceID {
 		return ErrUnauthorized
@@ -409,12 +414,9 @@ func (s *Service) ReorderPhotos(ctx context.Context, itemID, workspaceID uuid.UU
 // DeletePhoto deletes a photo and its files from storage
 func (s *Service) DeletePhoto(ctx context.Context, id, workspaceID uuid.UUID) error {
 	// Get photo to verify it exists and belongs to workspace
-	photo, err := s.repo.GetByID(ctx, id)
+	photo, err := s.fetchPhoto(ctx, id)
 	if err != nil {
 		return err
-	}
-	if photo == nil {
-		return ErrPhotoNotFound
 	}
 	if photo.WorkspaceID != workspaceID {
 		return ErrUnauthorized
