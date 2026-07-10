@@ -1,6 +1,6 @@
 module github.com/antti/home-warehouse/go-backend
 
-go 1.25.11
+go 1.25.12
 
 require (
 	github.com/SherClockHolmes/webpush-go v1.4.0
