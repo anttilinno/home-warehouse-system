@@ -31,6 +31,7 @@ type Client struct {
 type Broadcaster struct {
 	mu      sync.RWMutex
 	clients map[uuid.UUID]map[uuid.UUID]*Client // workspace_id -> client_id -> client
+	tap     func(workspaceID uuid.UUID, event Event)
 }
 
 // NewBroadcaster creates a new event broadcaster
@@ -78,13 +79,27 @@ func (b *Broadcaster) Unregister(workspaceID, clientID uuid.UUID) {
 	}
 }
 
+// SetTap registers a side-effect hook invoked for every published event, whether
+// or not any SSE client is connected. It is the chokepoint the activity log hangs
+// off (see activity.NewEventTap). Not safe for concurrent use with Publish — call
+// it once during single-goroutine startup wiring, before the server accepts traffic.
+func (b *Broadcaster) SetTap(tap func(workspaceID uuid.UUID, event Event)) {
+	b.tap = tap
+}
+
 // Publish broadcasts an event to all clients in a workspace
 func (b *Broadcaster) Publish(workspaceID uuid.UUID, event Event) {
-	b.mu.RLock()
-	defer b.mu.RUnlock()
-
 	event.WorkspaceID = workspaceID
 	event.Timestamp = time.Now().UTC()
+
+	// Tapped before the client lock: the audit write must not contend with the
+	// client map, and must happen even when no client is listening.
+	if b.tap != nil {
+		b.tap(workspaceID, event)
+	}
+
+	b.mu.RLock()
+	defer b.mu.RUnlock()
 
 	workspace, ok := b.clients[workspaceID]
 	if !ok {

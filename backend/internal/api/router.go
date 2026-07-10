@@ -320,6 +320,8 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	// upload dir, no new env var — CONTEXT OQ5).
 	attachmentSvc := attachment.NewService(fileRepo, attachmentRepo, photoStorage)
 	activitySvc := activity.NewService(activityRepo)
+	// Every entity SSE publish also writes an activity_log row (single chokepoint).
+	broadcaster.SetTap(activity.NewEventTap(activitySvc, logger))
 	deletedSvc := deleted.NewService(deletedRepo)
 	favoriteSvc := favorite.NewService(favoriteRepo)
 	// Analytics service

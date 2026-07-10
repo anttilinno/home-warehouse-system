@@ -21,7 +21,9 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/label"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
+	"github.com/antti/home-warehouse/go-backend/internal/testutil"
 )
 
 // ---------------------------------------------------------------------------
@@ -606,6 +608,8 @@ type testMocks struct {
 	loanSvc       *MockLoanService
 	loanRepo      *MockLoanRepository
 	labelSvc      *MockLabelService
+	// broadcaster is nil unless a test opts in (see TestApproveChangePublishesEntityEvent).
+	broadcaster *events.Broadcaster
 }
 
 func newMocks() *testMocks {
@@ -644,7 +648,7 @@ func (tm *testMocks) service() *Service {
 		nil, // maintenance service: not exercised by these unit tests
 		nil, // wishlist service: not exercised by these unit tests
 		nil, // Transactor: nil -> noopTransactor (synchronous, no real tx in unit tests)
-		nil, // broadcaster
+		tm.broadcaster,
 	)
 }
 
@@ -804,6 +808,103 @@ func TestApproveChange(t *testing.T) {
 		assert.Error(t, err)
 		// Because apply failed inside the tx, the approved change is never persisted.
 		tm.repo.AssertNotCalled(t, "Save", mock.Anything, mock.Anything)
+	})
+}
+
+// TestApproveChangePublishesEntityEvent guards the gap where an approved member
+// change applied the entity but only announced `pendingchange.approved`, leaving SSE
+// clients unaware the entity itself had appeared.
+func TestApproveChangePublishesEntityEvent(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	requesterID := uuid.New()
+	reviewerID := uuid.New()
+	changeID := uuid.New()
+
+	t.Run("item-create approval publishes item.created with the applied entity ID", func(t *testing.T) {
+		capture := testutil.NewEventCapture(workspaceID, reviewerID)
+		capture.Start()
+		defer capture.Stop()
+
+		tm := newMocks()
+		tm.broadcaster = capture.GetBroadcaster()
+
+		pc := pendingChange(changeID, workspaceID, requesterID, "item", nil, ActionCreate, `{"name":"Test Item","sku":"TEST-001","min_stock_level":5}`)
+		tm.memberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember(workspaceID, reviewerID), nil)
+		stubReviewerLookups(tm, ctx, requesterID, reviewerID)
+		tm.repo.On("FindByID", ctx, changeID).Return(pc, nil)
+		tm.repo.On("Save", ctx, mock.Anything).Return(nil)
+
+		createdItem, _ := item.NewItem(workspaceID, "Test Item", "TEST-001", 5)
+		tm.itemSvc.On("Create", ctx, mock.Anything).Return(createdItem, nil)
+
+		err := tm.service().ApproveChange(ctx, changeID, workspaceID, reviewerID)
+		assert.NoError(t, err)
+
+		assert.True(t, capture.WaitForEvents(2, time.Second), "expected pendingchange.approved + item.created")
+		var entityEvent *events.Event
+		for i, e := range capture.GetAllEvents() {
+			if e.Type == "item.created" {
+				entityEvent = &capture.GetAllEvents()[i]
+			}
+		}
+		if assert.NotNil(t, entityEvent, "no item.created event published") {
+			assert.Equal(t, "item", entityEvent.EntityType)
+			assert.Equal(t, createdItem.ID().String(), entityEvent.EntityID)
+			assert.Equal(t, reviewerID, entityEvent.UserID)
+		}
+	})
+
+	t.Run("delete approval publishes item.deleted for the target entity", func(t *testing.T) {
+		capture := testutil.NewEventCapture(workspaceID, reviewerID)
+		capture.Start()
+		defer capture.Stop()
+
+		tm := newMocks()
+		tm.broadcaster = capture.GetBroadcaster()
+
+		entityID := uuid.New()
+		pc := pendingChange(changeID, workspaceID, requesterID, "item", &entityID, ActionDelete, `{}`)
+		tm.memberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember(workspaceID, reviewerID), nil)
+		stubReviewerLookups(tm, ctx, requesterID, reviewerID)
+		tm.repo.On("FindByID", ctx, changeID).Return(pc, nil)
+		tm.repo.On("Save", ctx, mock.Anything).Return(nil)
+		tm.itemSvc.On("Delete", ctx, entityID, workspaceID).Return(nil)
+
+		err := tm.service().ApproveChange(ctx, changeID, workspaceID, reviewerID)
+		assert.NoError(t, err)
+
+		assert.True(t, capture.WaitForEvents(2, time.Second))
+		found := false
+		for _, e := range capture.GetAllEvents() {
+			if e.Type == "item.deleted" && e.EntityID == entityID.String() {
+				found = true
+			}
+		}
+		assert.True(t, found, "expected item.deleted for the approved delete")
+	})
+
+	t.Run("retried approval of a reviewed change publishes nothing", func(t *testing.T) {
+		capture := testutil.NewEventCapture(workspaceID, reviewerID)
+		capture.Start()
+		defer capture.Stop()
+
+		tm := newMocks()
+		tm.broadcaster = capture.GetBroadcaster()
+
+		pendingPC := pendingChange(changeID, workspaceID, requesterID, "item", nil, ActionCreate, `{"name":"x","sku":"s","min_stock_level":0}`)
+		reviewed := uuid.New()
+		now := time.Now()
+		approvedPC := Reconstruct(changeID, workspaceID, requesterID, "item", nil, ActionCreate, json.RawMessage(`{"name":"x"}`), StatusApproved, &reviewed, &now, nil, now, now)
+
+		tm.repo.On("FindByID", ctx, changeID).Return(pendingPC, nil).Once()
+		tm.memberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember(workspaceID, reviewerID), nil)
+		tm.repo.On("FindByID", ctx, changeID).Return(approvedPC, nil).Once()
+
+		err := tm.service().ApproveChange(ctx, changeID, workspaceID, reviewerID)
+		assert.NoError(t, err)
+
+		assert.False(t, capture.WaitForEvents(1, 100*time.Millisecond), "already-reviewed change must not re-announce")
 	})
 }
 
