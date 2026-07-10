@@ -5,13 +5,13 @@ package integration
 
 import (
 	"bytes"
-	"context"
-	"encoding/json"
 	"fmt"
+	"image"
+	"image/color"
+	"image/jpeg"
 	"mime/multipart"
 	"net/http"
-	"net/http/httptest"
-	"os"
+	"net/textproto"
 	"testing"
 
 	"github.com/google/uuid"
@@ -19,447 +19,221 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// testEnv is a placeholder for the integration test environment.
-// NOTE: full test environment setup is deferred (this struct is a stub).
-type testEnv struct {
-	router http.Handler
-}
+// Item photo coverage against the real router. Upload is a chi (non-Huma)
+// multipart route backed by real storage + pure-Go image processing
+// (disintegration/imaging, no external binary), so it is exercised end to end
+// here rather than in a handler unit test. The rest (set-primary, caption,
+// reorder, delete, FK cascade) are the Huma routes plus the ON DELETE CASCADE the
+// item_photos -> items foreign key promises.
+//
+// Replaces the pre-v3 stub whose whole testEnv was unimplemented (every helper
+// returned zero values behind a t.Skip). The viewer-cannot-upload case it also
+// stubbed now lives in viewer_readonly_test.go, which covers every mutating role.
 
-func setupTestEnv(t *testing.T, ctx interface{}) *testEnv {
-	t.Skip("item_photos_test.go needs to be rewritten to use NewTestServer pattern")
-	return nil
-}
-
-func (e *testEnv) cleanup() {}
-
-func (e *testEnv) createTestUser(t *testing.T, email, name string) struct{ ID uuid.UUID } {
-	return struct{ ID uuid.UUID }{}
-}
-
-func (e *testEnv) createTestWorkspace(t *testing.T, userID uuid.UUID, name string) struct{ ID uuid.UUID } {
-	return struct{ ID uuid.UUID }{}
-}
-
-func (e *testEnv) createTestItem(t *testing.T, workspaceID, userID uuid.UUID, name string) struct{ ID uuid.UUID } {
-	return struct{ ID uuid.UUID }{}
-}
-
-func (e *testEnv) generateToken(t *testing.T, userID, workspaceID uuid.UUID, role string) string {
-	return ""
-}
-
-func (e *testEnv) addWorkspaceMember(t *testing.T, workspaceID, userID uuid.UUID, role string) {}
-
-func TestItemPhotosIntegration(t *testing.T) {
-	// Setup test environment
-	ctx := context.Background()
-	env := setupTestEnv(t, ctx)
-	defer env.cleanup()
-
-	// Create test user and workspace
-	user := env.createTestUser(t, "phototest@example.com", "Photo Test User")
-	workspace := env.createTestWorkspace(t, user.ID, "Photo Test Workspace")
-
-	// Create test item
-	item := env.createTestItem(t, workspace.ID, user.ID, "Test Item for Photos")
-
-	// Generate JWT token
-	token := env.generateToken(t, user.ID, workspace.ID, "owner")
-
-	t.Run("Upload photo successfully", func(t *testing.T) {
-		// Create test image file
-		imgData := createTestImage(t, 800, 600)
-
-		// Create multipart form
-		body := &bytes.Buffer{}
-		writer := multipart.NewWriter(body)
-
-		// Add file
-		part, err := writer.CreateFormFile("file", "test-photo.jpg")
-		require.NoError(t, err)
-		_, err = part.Write(imgData)
-		require.NoError(t, err)
-
-		// Add caption
-		err = writer.WriteField("caption", "Test photo caption")
-		require.NoError(t, err)
-
-		err = writer.Close()
-		require.NoError(t, err)
-
-		// Make request
-		req := httptest.NewRequest(
-			http.MethodPost,
-			fmt.Sprintf("/api/workspaces/%s/items/%s/photos", workspace.ID, item.ID),
-			body,
-		)
-		req.Header.Set("Content-Type", writer.FormDataContentType())
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		rr := httptest.NewRecorder()
-		env.router.ServeHTTP(rr, req)
-
-		// Assert response
-		assert.Equal(t, http.StatusCreated, rr.Code)
-
-		var response map[string]interface{}
-		err = json.NewDecoder(rr.Body).Decode(&response)
-		require.NoError(t, err)
-
-		assert.NotEmpty(t, response["id"])
-		assert.Equal(t, "Test photo caption", response["caption"])
-		assert.NotEmpty(t, response["urls"])
-	})
-
-	t.Run("Upload multiple photos", func(t *testing.T) {
-		// Upload 3 photos
-		photoIDs := make([]string, 0, 3)
-
-		for i := 0; i < 3; i++ {
-			imgData := createTestImage(t, 800, 600)
-
-			body := &bytes.Buffer{}
-			writer := multipart.NewWriter(body)
-
-			part, err := writer.CreateFormFile("file", fmt.Sprintf("photo-%d.jpg", i))
-			require.NoError(t, err)
-			_, err = part.Write(imgData)
-			require.NoError(t, err)
-
-			err = writer.WriteField("caption", fmt.Sprintf("Photo %d", i+1))
-			require.NoError(t, err)
-
-			err = writer.Close()
-			require.NoError(t, err)
-
-			req := httptest.NewRequest(
-				http.MethodPost,
-				fmt.Sprintf("/api/workspaces/%s/items/%s/photos", workspace.ID, item.ID),
-				body,
-			)
-			req.Header.Set("Content-Type", writer.FormDataContentType())
-			req.Header.Set("Authorization", "Bearer "+token)
-
-			rr := httptest.NewRecorder()
-			env.router.ServeHTTP(rr, req)
-
-			assert.Equal(t, http.StatusCreated, rr.Code)
-
-			var response map[string]interface{}
-			err = json.NewDecoder(rr.Body).Decode(&response)
-			require.NoError(t, err)
-
-			photoIDs = append(photoIDs, response["id"].(string))
+// jpegBytes returns a small but genuinely decodable JPEG. The upload service
+// validates and reads dimensions via the image processor, so a fake header (what
+// the old stub used) would be rejected.
+func jpegBytes(t *testing.T) []byte {
+	t.Helper()
+	// Processor enforces a 100x100 minimum, so keep it above that.
+	const dim = 120
+	img := image.NewRGBA(image.Rect(0, 0, dim, dim))
+	for y := 0; y < dim; y++ {
+		for x := 0; x < dim; x++ {
+			img.Set(x, y, color.RGBA{R: 200, G: 100, B: 50, A: 255})
 		}
-
-		// List photos
-		req := httptest.NewRequest(
-			http.MethodGet,
-			fmt.Sprintf("/api/workspaces/%s/items/%s/photos", workspace.ID, item.ID),
-			nil,
-		)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		rr := httptest.NewRecorder()
-		env.router.ServeHTTP(rr, req)
-
-		assert.Equal(t, http.StatusOK, rr.Code)
-
-		var photos []map[string]interface{}
-		err := json.NewDecoder(rr.Body).Decode(&photos)
-		require.NoError(t, err)
-
-		assert.Len(t, photos, 3)
-	})
-
-	t.Run("Set primary photo", func(t *testing.T) {
-		// Upload two photos
-		photo1ID := uploadTestPhoto(t, env, workspace.ID, item.ID, token, "Photo 1")
-		photo2ID := uploadTestPhoto(t, env, workspace.ID, item.ID, token, "Photo 2")
-
-		// Set photo2 as primary
-		req := httptest.NewRequest(
-			http.MethodPatch,
-			fmt.Sprintf("/api/workspaces/%s/items/%s/photos/%s/primary", workspace.ID, item.ID, photo2ID),
-			nil,
-		)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		rr := httptest.NewRecorder()
-		env.router.ServeHTTP(rr, req)
-
-		assert.Equal(t, http.StatusOK, rr.Code)
-
-		// List photos and verify primary status
-		req = httptest.NewRequest(
-			http.MethodGet,
-			fmt.Sprintf("/api/workspaces/%s/items/%s/photos", workspace.ID, item.ID),
-			nil,
-		)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		rr = httptest.NewRecorder()
-		env.router.ServeHTTP(rr, req)
-
-		var photos []map[string]interface{}
-		err := json.NewDecoder(rr.Body).Decode(&photos)
-		require.NoError(t, err)
-
-		// Find photo2 and verify it's primary
-		for _, photo := range photos {
-			if photo["id"] == photo2ID {
-				assert.True(t, photo["is_primary"].(bool))
-			} else if photo["id"] == photo1ID {
-				assert.False(t, photo["is_primary"].(bool))
-			}
-		}
-	})
-
-	t.Run("Delete photo", func(t *testing.T) {
-		// Upload photo
-		photoID := uploadTestPhoto(t, env, workspace.ID, item.ID, token, "To be deleted")
-
-		// Delete photo
-		req := httptest.NewRequest(
-			http.MethodDelete,
-			fmt.Sprintf("/api/workspaces/%s/items/%s/photos/%s", workspace.ID, item.ID, photoID),
-			nil,
-		)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		rr := httptest.NewRecorder()
-		env.router.ServeHTTP(rr, req)
-
-		assert.Equal(t, http.StatusNoContent, rr.Code)
-
-		// Verify photo is deleted
-		req = httptest.NewRequest(
-			http.MethodGet,
-			fmt.Sprintf("/api/workspaces/%s/items/%s/photos", workspace.ID, item.ID),
-			nil,
-		)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		rr = httptest.NewRecorder()
-		env.router.ServeHTTP(rr, req)
-
-		var photos []map[string]interface{}
-		err := json.NewDecoder(rr.Body).Decode(&photos)
-		require.NoError(t, err)
-
-		// Verify photo is not in list
-		for _, photo := range photos {
-			assert.NotEqual(t, photoID, photo["id"])
-		}
-	})
-
-	t.Run("Reorder photos", func(t *testing.T) {
-		// Upload 3 photos
-		photo1ID := uploadTestPhoto(t, env, workspace.ID, item.ID, token, "Photo 1")
-		photo2ID := uploadTestPhoto(t, env, workspace.ID, item.ID, token, "Photo 2")
-		photo3ID := uploadTestPhoto(t, env, workspace.ID, item.ID, token, "Photo 3")
-
-		// Reorder: 3, 1, 2
-		newOrder := []string{photo3ID, photo1ID, photo2ID}
-		orderJSON, err := json.Marshal(map[string][]string{"photo_ids": newOrder})
-		require.NoError(t, err)
-
-		req := httptest.NewRequest(
-			http.MethodPut,
-			fmt.Sprintf("/api/workspaces/%s/items/%s/photos/reorder", workspace.ID, item.ID),
-			bytes.NewReader(orderJSON),
-		)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		rr := httptest.NewRecorder()
-		env.router.ServeHTTP(rr, req)
-
-		assert.Equal(t, http.StatusOK, rr.Code)
-
-		// Verify order
-		req = httptest.NewRequest(
-			http.MethodGet,
-			fmt.Sprintf("/api/workspaces/%s/items/%s/photos", workspace.ID, item.ID),
-			nil,
-		)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		rr = httptest.NewRecorder()
-		env.router.ServeHTTP(rr, req)
-
-		var photos []map[string]interface{}
-		err = json.NewDecoder(rr.Body).Decode(&photos)
-		require.NoError(t, err)
-
-		require.Len(t, photos, 3)
-		assert.Equal(t, photo3ID, photos[0]["id"])
-		assert.Equal(t, photo1ID, photos[1]["id"])
-		assert.Equal(t, photo2ID, photos[2]["id"])
-	})
-
-	t.Run("Update photo caption", func(t *testing.T) {
-		// Upload photo
-		photoID := uploadTestPhoto(t, env, workspace.ID, item.ID, token, "Original caption")
-
-		// Update caption
-		updateJSON, err := json.Marshal(map[string]string{"caption": "Updated caption"})
-		require.NoError(t, err)
-
-		req := httptest.NewRequest(
-			http.MethodPatch,
-			fmt.Sprintf("/api/workspaces/%s/items/%s/photos/%s", workspace.ID, item.ID, photoID),
-			bytes.NewReader(updateJSON),
-		)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		rr := httptest.NewRecorder()
-		env.router.ServeHTTP(rr, req)
-
-		assert.Equal(t, http.StatusOK, rr.Code)
-
-		var response map[string]interface{}
-		err = json.NewDecoder(rr.Body).Decode(&response)
-		require.NoError(t, err)
-
-		assert.Equal(t, "Updated caption", response["caption"])
-	})
-
-	t.Run("Delete item cascades to photos", func(t *testing.T) {
-		// Create new item for this test
-		testItem := env.createTestItem(t, workspace.ID, user.ID, "Item to delete")
-
-		// Upload photos
-		uploadTestPhoto(t, env, workspace.ID, testItem.ID, token, "Photo 1")
-		uploadTestPhoto(t, env, workspace.ID, testItem.ID, token, "Photo 2")
-
-		// Delete item
-		req := httptest.NewRequest(
-			http.MethodDelete,
-			fmt.Sprintf("/api/workspaces/%s/items/%s", workspace.ID, testItem.ID),
-			nil,
-		)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		rr := httptest.NewRecorder()
-		env.router.ServeHTTP(rr, req)
-
-		assert.Equal(t, http.StatusNoContent, rr.Code)
-
-		// Verify photos are also deleted
-		req = httptest.NewRequest(
-			http.MethodGet,
-			fmt.Sprintf("/api/workspaces/%s/items/%s/photos", workspace.ID, testItem.ID),
-			nil,
-		)
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		rr = httptest.NewRecorder()
-		env.router.ServeHTTP(rr, req)
-
-		// Should return 404 since item doesn't exist
-		assert.Equal(t, http.StatusNotFound, rr.Code)
-	})
-
-	t.Run("Authorization - viewer cannot upload photos", func(t *testing.T) {
-		// Create viewer user
-		viewer := env.createTestUser(t, "viewer@example.com", "Viewer User")
-		env.addWorkspaceMember(t, workspace.ID, viewer.ID, "viewer")
-		viewerToken := env.generateToken(t, viewer.ID, workspace.ID, "viewer")
-
-		// Try to upload photo
-		imgData := createTestImage(t, 800, 600)
-
-		body := &bytes.Buffer{}
-		writer := multipart.NewWriter(body)
-
-		part, err := writer.CreateFormFile("file", "test.jpg")
-		require.NoError(t, err)
-		_, err = part.Write(imgData)
-		require.NoError(t, err)
-
-		err = writer.Close()
-		require.NoError(t, err)
-
-		req := httptest.NewRequest(
-			http.MethodPost,
-			fmt.Sprintf("/api/workspaces/%s/items/%s/photos", workspace.ID, item.ID),
-			body,
-		)
-		req.Header.Set("Content-Type", writer.FormDataContentType())
-		req.Header.Set("Authorization", "Bearer "+viewerToken)
-
-		rr := httptest.NewRecorder()
-		env.router.ServeHTTP(rr, req)
-
-		assert.Equal(t, http.StatusForbidden, rr.Code)
-	})
+	}
+	var buf bytes.Buffer
+	require.NoError(t, jpeg.Encode(&buf, img, nil))
+	return buf.Bytes()
 }
 
-// Helper function to upload a test photo
-func uploadTestPhoto(t *testing.T, env *testEnv, workspaceID, itemID uuid.UUID, token, caption string) string {
-	imgData := createTestImage(t, 800, 600)
+// uploadPhoto posts a multipart photo to an item and returns the created photo.
+// The part's Content-Type is set explicitly: the handler validates the file's
+// declared MIME type, and multipart's default (application/octet-stream) would be
+// rejected.
+func uploadPhoto(t *testing.T, ts *TestServer, wsID, itemID uuid.UUID, caption string) PhotoResponse {
+	t.Helper()
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
-	part, err := writer.CreateFormFile("file", "test.jpg")
+	hdr := make(textproto.MIMEHeader)
+	hdr.Set("Content-Disposition", `form-data; name="photo"; filename="test.jpg"`)
+	hdr.Set("Content-Type", "image/jpeg")
+	part, err := writer.CreatePart(hdr)
 	require.NoError(t, err)
-	_, err = part.Write(imgData)
-	require.NoError(t, err)
-
-	err = writer.WriteField("caption", caption)
-	require.NoError(t, err)
-
-	err = writer.Close()
+	_, err = part.Write(jpegBytes(t))
 	require.NoError(t, err)
 
-	req := httptest.NewRequest(
-		http.MethodPost,
-		fmt.Sprintf("/api/workspaces/%s/items/%s/photos", workspaceID, itemID),
-		body,
-	)
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-	req.Header.Set("Authorization", "Bearer "+token)
+	if caption != "" {
+		require.NoError(t, writer.WriteField("caption", caption))
+	}
+	require.NoError(t, writer.Close())
 
-	rr := httptest.NewRecorder()
-	env.router.ServeHTTP(rr, req)
-
-	require.Equal(t, http.StatusCreated, rr.Code)
-
-	var response map[string]interface{}
-	err = json.NewDecoder(rr.Body).Decode(&response)
-	require.NoError(t, err)
-
-	return response["id"].(string)
+	resp := ts.PostRaw(fmt.Sprintf("/workspaces/%s/items/%s/photos", wsID, itemID), body, writer.FormDataContentType())
+	if resp.StatusCode != http.StatusCreated {
+		buf := new(bytes.Buffer)
+		_, _ = buf.ReadFrom(resp.Body)
+		resp.Body.Close()
+		t.Fatalf("upload: expected 201, got %d: %s", resp.StatusCode, buf.String())
+	}
+	return ParseResponse[PhotoResponse](t, resp)
 }
 
-// Helper function to create a test image
-func createTestImage(t *testing.T, width, height int) []byte {
-	// For testing, we'll create a simple JPEG file
-	// In a real scenario, you'd use image/jpeg to create a proper image
-	// For now, we'll just use a minimal JPEG header
+// PhotoResponse mirrors the handler's response shape (the fields these tests read).
+type PhotoResponse struct {
+	ID           uuid.UUID `json:"id"`
+	ItemID       uuid.UUID `json:"item_id"`
+	DisplayOrder int32     `json:"display_order"`
+	IsPrimary    bool      `json:"is_primary"`
+	Caption      *string   `json:"caption"`
+	URL          string    `json:"url"`
+}
 
-	// Create a temp file with actual image data
-	tmpfile, err := os.CreateTemp("", "test-image-*.jpg")
-	require.NoError(t, err)
-	defer os.Remove(tmpfile.Name())
-	defer tmpfile.Close()
+type photoList struct {
+	Items []PhotoResponse `json:"items"`
+}
 
-	// Copy a test fixture image or create a simple one
-	// For simplicity, we'll use a minimal valid JPEG
-	minimalJPEG := []byte{
-		0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46,
-		0x49, 0x46, 0x00, 0x01, 0x01, 0x01, 0x00, 0x48,
-		0x00, 0x48, 0x00, 0x00, 0xFF, 0xD9,
+// photoFixture spins up an owner-authenticated workspace with one item, into a
+// server whose photo storage points at test temp dirs (never the repo tree).
+func photoFixture(t *testing.T) (*TestServer, uuid.UUID, uuid.UUID) {
+	t.Helper()
+
+	// getUploadDir/getPhotoStorageDir read these at router construction.
+	t.Setenv("PHOTO_UPLOAD_DIR", t.TempDir())
+	t.Setenv("PHOTO_STORAGE_DIR", t.TempDir())
+
+	ts := NewTestServer(t)
+	ts.SetToken(ts.AuthHelper(t, "owner_photo_"+uuid.New().String()[:8]+"@example.com"))
+	wsID := newOwnedWorkspace(t, ts, "photo")
+
+	resp := ts.Post(fmt.Sprintf("/workspaces/%s/items", wsID), map[string]interface{}{
+		"name": "Photographed Item", "sku": "PHO-" + uuid.New().String()[:6], "min_stock_level": 0,
+	})
+	RequireStatus(t, resp, http.StatusOK)
+	itemID := ParseResponse[struct {
+		ID uuid.UUID `json:"id"`
+	}](t, resp).ID
+
+	return ts, wsID, itemID
+}
+
+func listPhotos(t *testing.T, ts *TestServer, wsID, itemID uuid.UUID) []PhotoResponse {
+	t.Helper()
+	resp := ts.Get(fmt.Sprintf("/workspaces/%s/items/%s/photos/list", wsID, itemID))
+	RequireStatus(t, resp, http.StatusOK)
+	return ParseResponse[photoList](t, resp).Items
+}
+
+func TestItemPhotos_UploadReturnsCreated(t *testing.T) {
+	ts, wsID, itemID := photoFixture(t)
+
+	photo := uploadPhoto(t, ts, wsID, itemID, "a caption")
+
+	assert.NotEqual(t, uuid.Nil, photo.ID)
+	assert.Equal(t, itemID, photo.ItemID)
+	assert.NotEmpty(t, photo.URL)
+	if assert.NotNil(t, photo.Caption) {
+		assert.Equal(t, "a caption", *photo.Caption)
 	}
+	// The first photo of an item is its primary by default.
+	assert.True(t, photo.IsPrimary, "first uploaded photo should be primary")
 
-	_, err = tmpfile.Write(minimalJPEG)
-	require.NoError(t, err)
+	require.Len(t, listPhotos(t, ts, wsID, itemID), 1)
+}
 
-	data, err := os.ReadFile(tmpfile.Name())
-	require.NoError(t, err)
+func TestItemPhotos_SetPrimaryIsExclusive(t *testing.T) {
+	ts, wsID, itemID := photoFixture(t)
 
-	return data
+	first := uploadPhoto(t, ts, wsID, itemID, "")
+	second := uploadPhoto(t, ts, wsID, itemID, "")
+	require.True(t, first.IsPrimary)
+	require.False(t, second.IsPrimary)
+
+	resp := ts.Put(fmt.Sprintf("/workspaces/%s/photos/%s/primary", wsID, second.ID), nil)
+	RequireStatus(t, resp, http.StatusNoContent)
+	resp.Body.Close()
+
+	// Primary must move to the second photo and leave exactly one primary.
+	primaries := map[uuid.UUID]bool{}
+	for _, p := range listPhotos(t, ts, wsID, itemID) {
+		primaries[p.ID] = p.IsPrimary
+	}
+	assert.False(t, primaries[first.ID], "old primary must be cleared")
+	assert.True(t, primaries[second.ID], "new primary must be set")
+}
+
+func TestItemPhotos_UpdateCaption(t *testing.T) {
+	ts, wsID, itemID := photoFixture(t)
+	photo := uploadPhoto(t, ts, wsID, itemID, "before")
+
+	newCaption := "after"
+	resp := ts.Put(fmt.Sprintf("/workspaces/%s/photos/%s/caption", wsID, photo.ID), map[string]interface{}{
+		"caption": newCaption,
+	})
+	RequireStatus(t, resp, http.StatusOK)
+	resp.Body.Close()
+
+	got := listPhotos(t, ts, wsID, itemID)
+	require.Len(t, got, 1)
+	if assert.NotNil(t, got[0].Caption) {
+		assert.Equal(t, "after", *got[0].Caption)
+	}
+}
+
+func TestItemPhotos_Reorder(t *testing.T) {
+	ts, wsID, itemID := photoFixture(t)
+	first := uploadPhoto(t, ts, wsID, itemID, "")
+	second := uploadPhoto(t, ts, wsID, itemID, "")
+
+	// Put the second photo first.
+	resp := ts.Put(fmt.Sprintf("/workspaces/%s/items/%s/photos/order", wsID, itemID), map[string]interface{}{
+		"photo_ids": []uuid.UUID{second.ID, first.ID},
+	})
+	RequireStatus(t, resp, http.StatusNoContent)
+	resp.Body.Close()
+
+	order := map[uuid.UUID]int32{}
+	for _, p := range listPhotos(t, ts, wsID, itemID) {
+		order[p.ID] = p.DisplayOrder
+	}
+	assert.Less(t, order[second.ID], order[first.ID], "reordered photo should sort first")
+}
+
+func TestItemPhotos_Delete(t *testing.T) {
+	ts, wsID, itemID := photoFixture(t)
+	keep := uploadPhoto(t, ts, wsID, itemID, "")
+	drop := uploadPhoto(t, ts, wsID, itemID, "")
+
+	resp := ts.Delete(fmt.Sprintf("/workspaces/%s/photos/%s", wsID, drop.ID))
+	RequireStatus(t, resp, http.StatusNoContent)
+	resp.Body.Close()
+
+	got := listPhotos(t, ts, wsID, itemID)
+	require.Len(t, got, 1)
+	assert.Equal(t, keep.ID, got[0].ID)
+}
+
+// TestItemPhotos_DeleteItemCascades pins the item_photos -> items ON DELETE CASCADE
+// FK: deleting the parent item must remove its photo rows, not orphan them. The
+// row absence is asserted straight against the DB rather than via GET /photos/{id},
+// which currently maps not-found to 500 (a separate handler bug, out of scope here).
+func TestItemPhotos_DeleteItemCascades(t *testing.T) {
+	ts, wsID, itemID := photoFixture(t)
+	photo := uploadPhoto(t, ts, wsID, itemID, "")
+
+	var before int
+	require.NoError(t, ts.Pool.QueryRow(t.Context(),
+		`SELECT count(*) FROM warehouse.item_photos WHERE id = $1`, photo.ID).Scan(&before))
+	require.Equal(t, 1, before, "photo row should exist before the item is deleted")
+
+	resp := ts.Delete(fmt.Sprintf("/workspaces/%s/items/%s", wsID, itemID))
+	RequireStatus(t, resp, http.StatusNoContent)
+	resp.Body.Close()
+
+	var after int
+	require.NoError(t, ts.Pool.QueryRow(t.Context(),
+		`SELECT count(*) FROM warehouse.item_photos WHERE id = $1`, photo.ID).Scan(&after))
+	assert.Equal(t, 0, after, "deleting the item must cascade-delete its photo rows")
 }
