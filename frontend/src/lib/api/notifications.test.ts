@@ -77,7 +77,12 @@ describe("notificationsApi.list (no {ws} segment — NOTIF-01)", () => {
 describe("notificationsApi unread views", () => {
   it("unread hits /notifications/unread", async () => {
     fetchMock.mockResolvedValueOnce(
-      jsonResponse({ items: [NOTIFICATION], total: 1, page: 1, total_pages: 1 }),
+      jsonResponse({
+        items: [NOTIFICATION],
+        total: 1,
+        page: 1,
+        total_pages: 1,
+      }),
     );
     await notificationsApi.unread();
     expect(fetchMock.mock.calls[0][0] as string).toContain(

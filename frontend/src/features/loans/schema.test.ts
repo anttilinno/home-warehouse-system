@@ -28,9 +28,7 @@ describe("loanFormSchema — inventory_id / borrower_id", () => {
     const r = loanFormSchema.safeParse({ ...base, inventory_id: "" });
     expect(r.success).toBe(false);
     if (!r.success) {
-      expect(r.error.issues[0].message).toBe(
-        "Inventory entry is required.",
-      );
+      expect(r.error.issues[0].message).toBe("Inventory entry is required.");
     }
   });
 
@@ -59,9 +57,7 @@ describe("loanFormSchema — due_date", () => {
     const r = loanFormSchema.safeParse({ ...base, due_date: "2000-01-01" });
     expect(r.success).toBe(false);
     if (!r.success) {
-      expect(r.error.issues[0].message).toBe(
-        "Due date can't be in the past.",
-      );
+      expect(r.error.issues[0].message).toBe("Due date can't be in the past.");
       expect(r.error.issues[0].path).toEqual(["due_date"]);
     }
   });

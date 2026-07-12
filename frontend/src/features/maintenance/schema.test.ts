@@ -62,9 +62,7 @@ describe("maintenanceFormSchema — next_due", () => {
     const r = maintenanceFormSchema.safeParse({ ...base, next_due: "" });
     expect(r.success).toBe(false);
     if (!r.success) {
-      expect(r.error.issues[0].message).toBe(
-        "Next due date is required.",
-      );
+      expect(r.error.issues[0].message).toBe("Next due date is required.");
     }
   });
 });

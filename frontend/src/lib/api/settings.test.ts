@@ -52,9 +52,7 @@ describe("settingsApi profile", () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toContain("/users/me/preferences");
     expect((init as RequestInit).method).toBe("PATCH");
-    expect((init as RequestInit).body).toBe(
-      JSON.stringify({ theme: "dark" }),
-    );
+    expect((init as RequestInit).body).toBe(JSON.stringify({ theme: "dark" }));
   });
 });
 
@@ -112,9 +110,7 @@ describe("settingsApi members", () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toContain("/workspaces/ws-1/members/u-1");
     expect((init as RequestInit).method).toBe("PATCH");
-    expect((init as RequestInit).body).toBe(
-      JSON.stringify({ role: "admin" }),
-    );
+    expect((init as RequestInit).body).toBe(JSON.stringify({ role: "admin" }));
   });
 
   it("removeMember DELETEs /members/{userId}", async () => {
@@ -155,8 +151,6 @@ describe("settingsApi.exportWorkspace", () => {
       new Response(new Blob(["z"]), { status: 200 }),
     );
     await settingsApi.exportWorkspace("ws-1", "json");
-    expect(fetchMock.mock.calls[0][0] as string).toContain(
-      "format=json",
-    );
+    expect(fetchMock.mock.calls[0][0] as string).toContain("format=json");
   });
 });

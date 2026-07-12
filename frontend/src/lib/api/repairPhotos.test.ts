@@ -75,9 +75,7 @@ describe("repairPhotosApi.updateCaption", () => {
     fetchMock.mockResolvedValueOnce(jsonResponse(PHOTO));
     await repairPhotosApi.updateCaption("ws-1", "rep-1", "rp-1", "hello");
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toContain(
-      "/workspaces/ws-1/repairs/rep-1/photos/rp-1/caption",
-    );
+    expect(url).toContain("/workspaces/ws-1/repairs/rep-1/photos/rp-1/caption");
     expect((init as RequestInit).method).toBe("PUT");
     expect((init as RequestInit).body).toBe(
       JSON.stringify({ caption: "hello" }),

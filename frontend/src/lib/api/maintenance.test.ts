@@ -51,17 +51,13 @@ describe("maintenanceApi.list (paginated envelope)", () => {
   it("clamps limit to 100 and defaults page=1&limit=50", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ items: [], total: 0 }));
     await maintenanceApi.list("ws-1", { limit: 500 });
-    expect(fetchMock.mock.calls[0][0] as string).toContain(
-      "page=1&limit=100",
-    );
+    expect(fetchMock.mock.calls[0][0] as string).toContain("page=1&limit=100");
   });
 
   it("defaults page=1&limit=50 when opts omitted", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ items: [], total: 0 }));
     await maintenanceApi.list("ws-1");
-    expect(fetchMock.mock.calls[0][0] as string).toContain(
-      "page=1&limit=50",
-    );
+    expect(fetchMock.mock.calls[0][0] as string).toContain("page=1&limit=50");
   });
 });
 

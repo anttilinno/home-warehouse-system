@@ -107,7 +107,11 @@ describe("loansApi lifecycle", () => {
     expect(url).toContain("/workspaces/ws-1/loans");
     expect((init as RequestInit).method).toBe("POST");
     expect((init as RequestInit).body).toBe(
-      JSON.stringify({ inventory_id: "inv-1", borrower_id: "b-1", quantity: 1 }),
+      JSON.stringify({
+        inventory_id: "inv-1",
+        borrower_id: "b-1",
+        quantity: 1,
+      }),
     );
   });
 
@@ -125,7 +129,9 @@ describe("loansApi lifecycle", () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toContain("/workspaces/ws-1/loans/loan-1");
     expect((init as RequestInit).method).toBe("PATCH");
-    expect((init as RequestInit).body).toBe(JSON.stringify({ notes: "careful" }));
+    expect((init as RequestInit).body).toBe(
+      JSON.stringify({ notes: "careful" }),
+    );
   });
 
   it("extend PATCHes /loans/{id}/extend with new_due_date", async () => {

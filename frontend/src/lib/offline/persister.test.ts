@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { get } from "idb-keyval";
-import type { PersistedClient } from "@tanstack/query-persist-client-core";
+import type { PersistedClient } from "@tanstack/react-query-persist-client";
 import { CACHE_BUSTER, persister, purgePersistedCache } from "./persister";
 
 // fake-indexeddb/auto is installed globally in src/test/setup.ts, so the real

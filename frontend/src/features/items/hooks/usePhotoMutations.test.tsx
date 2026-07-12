@@ -59,9 +59,8 @@ describe("usePhotoMutations", () => {
     const { client, wrapper } = makeHarness();
     const spy = vi.spyOn(client, "invalidateQueries");
     server.use(
-      http.post(
-        "/api/workspaces/:wsId/items/:itemId/photos",
-        () => HttpResponse.json(PHOTO),
+      http.post("/api/workspaces/:wsId/items/:itemId/photos", () =>
+        HttpResponse.json(PHOTO),
       ),
     );
 
@@ -100,9 +99,8 @@ describe("usePhotoMutations", () => {
   it("setPrimary surfaces a danger toast on error", async () => {
     const { wrapper } = makeHarness();
     server.use(
-      http.put(
-        "/api/workspaces/:wsId/photos/:photoId/primary",
-        () => HttpResponse.json({ message: "boom" }, { status: 500 }),
+      http.put("/api/workspaces/:wsId/photos/:photoId/primary", () =>
+        HttpResponse.json({ message: "boom" }, { status: 500 }),
       ),
     );
 
@@ -122,9 +120,8 @@ describe("usePhotoMutations", () => {
   it("updateCaption PUTs the caption body and surfaces a toast on error", async () => {
     const { wrapper } = makeHarness();
     server.use(
-      http.put(
-        "/api/workspaces/:wsId/photos/:photoId/caption",
-        () => HttpResponse.json({ message: "boom" }, { status: 500 }),
+      http.put("/api/workspaces/:wsId/photos/:photoId/caption", () =>
+        HttpResponse.json({ message: "boom" }, { status: 500 }),
       ),
     );
 
@@ -210,7 +207,9 @@ describe("usePhotoMutations", () => {
       ]);
     });
 
-    expect(sentBody).toEqual({ updates: [{ photo_id: "photo-1", caption: "New" }] });
+    expect(sentBody).toEqual({
+      updates: [{ photo_id: "photo-1", caption: "New" }],
+    });
     expect(spy).toHaveBeenCalledWith({ queryKey: ["items", "ws-A"] });
   });
 

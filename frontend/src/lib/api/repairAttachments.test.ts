@@ -64,9 +64,7 @@ describe("repairAttachmentsApi.del", () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
     await repairAttachmentsApi.del("ws-1", "rep-1", "att-1");
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toContain(
-      "/workspaces/ws-1/repairs/rep-1/attachments/att-1",
-    );
+    expect(url).toContain("/workspaces/ws-1/repairs/rep-1/attachments/att-1");
     expect((init as RequestInit).method).toBe("DELETE");
   });
 });

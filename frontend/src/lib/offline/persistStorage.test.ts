@@ -34,7 +34,9 @@ describe("requestPersistentStorage", () => {
 
     await requestPersistentStorage();
 
-    expect(debugSpy).toHaveBeenCalledWith("[offline] persistent storage: false");
+    expect(debugSpy).toHaveBeenCalledWith(
+      "[offline] persistent storage: false",
+    );
   });
 
   it("swallows a rejected persist() probe without throwing or logging", async () => {
