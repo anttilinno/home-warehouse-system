@@ -30,6 +30,7 @@ Thumbs.db
 
 # Compiled binaries (built at repo root of backend/)
 /main
+/mcp
 /photo-admin
 /server
 
