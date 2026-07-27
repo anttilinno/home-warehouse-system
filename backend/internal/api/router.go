@@ -127,6 +127,19 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 	// Global middleware
 	r.Use(middleware.RequestID) // Must be first to generate request IDs
+	// RealIP rewrites RemoteAddr from True-Client-IP / X-Real-IP / X-Forwarded-For
+	// (leftmost), trusting whichever it finds — it does NOT validate the peer.
+	// The auth rate limiter keys on RemoteAddr, so those headers are a trust
+	// boundary and the INGRESS is what enforces it: docker/angie/proxy_params.conf
+	// overwrites X-Forwarded-For with the real peer and clears True-Client-IP,
+	// so a client cannot supply any of them. Change either side and they must
+	// change together, or the limiter becomes bypassable by rotating a header.
+	//
+	// Upstream deprecated RealIP in chi v5.3.0 (GHSA-3fxj-6jh8-hvhx and friends)
+	// in favour of ClientIPFromXFFTrustedProxies + GetClientIP, which move the
+	// trust decision into the app via a proxy allowlist. Worth migrating to if a
+	// second proxy hop is ever introduced — the ingress guarantee above is what
+	// makes the deprecated call safe here, and it only holds for one hop.
 	r.Use(middleware.RealIP)
 	r.Use(appMiddleware.StructuredLogger(logger)) // Structured logging with user context
 	r.Use(middleware.Recoverer)

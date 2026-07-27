@@ -112,6 +112,13 @@ func RateLimit(limiter *RateLimiter) func(http.Handler) http.Handler {
 // earlier in the chain and rewrites RemoteAddr from proxy headers when
 // present. Parsing X-Forwarded-For here ourselves would let any client
 // rotate the header and bypass the limiter entirely.
+//
+// That reasoning only holds because the INGRESS sanitises those headers —
+// RealIP itself trusts them from anyone. See the comment on r.Use(RealIP) in
+// internal/api/router.go and docker/angie/proxy_params.conf: Angie overwrites
+// X-Forwarded-For with the real peer and clears True-Client-IP (which RealIP
+// consults FIRST and which nothing in the stack sets). Deploy the backend
+// without that ingress in front and this limiter is bypassable.
 func getClientIP(r *http.Request) string {
 	ip, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
