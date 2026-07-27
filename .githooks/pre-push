@@ -18,26 +18,73 @@ set -uo pipefail
 # Unset them so every child git invocation auto-discovers the repo from cwd.
 unset GIT_DIR GIT_WORK_TREE
 
-REMOTE_BASE="origin/master"
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT" || exit 1
 
-# Need the base ref to compute "new" code. If missing (offline / fresh clone),
-# skip rather than block or flag the whole legacy tree.
-if ! git rev-parse --verify --quiet "$REMOTE_BASE" >/dev/null; then
-  echo "pre-push: $REMOTE_BASE not found locally — skipping quality gate." >&2
-  exit 0
+# Git hooks do NOT run through an interactive shell, so a `mise activate` in
+# .zshrc never fires here and mise-managed tools are absent from PATH. Load the
+# env explicitly. Without this the hook either cannot find golangci-lint/bun at
+# all, or hits a mise shim that errors "No version is set" — both of which look
+# like a broken gate rather than a missing toolchain.
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise env -s bash 2>/dev/null)" || true
 fi
 
-BASE="$(git merge-base "$REMOTE_BASE" HEAD)"
-CHANGED="$(git diff --name-only "$BASE"...HEAD)"
+# Fail loudly on a missing toolchain. Previously a missing tool surfaced as a
+# bare 127 from deep inside a subshell, which reads like a lint failure; and the
+# whole gate used to skip itself when its base ref was absent. A gate that
+# cannot run must SAY so, never quietly pass.
+require_tools() {
+  local missing=()
+  for tool in "$@"; do
+    command -v "$tool" >/dev/null 2>&1 || missing+=("$tool")
+  done
+  if [ ${#missing[@]} -ne 0 ]; then
+    echo "pre-push: missing required tool(s): ${missing[*]}" >&2
+    echo "pre-push: run 'mise install' (see .mise.toml.example), or bypass with 'git push --no-verify'." >&2
+    return 1
+  fi
+  return 0
+}
+
+# The base ref for "what changed" and for golangci's --new-from-merge-base.
+# `origin` is the usual name but NOT guaranteed — a clone whose remote is called
+# something else (e.g. `github-personal`) has no `origin/master` at all. This
+# used to be hardcoded, and a missing ref made the hook exit 0: the entire gate
+# silently no-opped, which is how a tree whose `tsc -b` failed — and whose
+# frontend Docker image therefore could not build — reached master.
+REMOTE_BASE=""
+for candidate in "origin/master" $(git remote | sed 's|$|/master|') "master"; do
+  if git rev-parse --verify --quiet "$candidate" >/dev/null; then
+    REMOTE_BASE="$candidate"
+    break
+  fi
+done
+
 fail=0
+
+if [ -n "$REMOTE_BASE" ]; then
+  BASE="$(git merge-base "$REMOTE_BASE" HEAD)"
+  CHANGED="$(git diff --name-only "$BASE"...HEAD)"
+else
+  # No base ref anywhere. Do NOT skip: every gate below except golangci's
+  # new-code diff is a whole-tree absolute check that needs no baseline, and
+  # those are the ones that catch an unbuildable tree. Run both sides.
+  echo "pre-push: no master ref found (checked origin/, $(git remote | tr '\n' ' ')and local)." >&2
+  echo "pre-push: running whole-tree gates; golangci-lint new-code diff is skipped." >&2
+  CHANGED="$(printf 'backend/\nfrontend/\n')"
+fi
 
 if grep -q '^backend/' <<<"$CHANGED"; then
   echo "pre-push: backend changed — golangci-lint (new code) + go build + govulncheck…"
   (
     cd backend || exit 1
-    golangci-lint run --new-from-merge-base="$REMOTE_BASE" ./... || exit 1
+    require_tools go golangci-lint || exit 1
+    # Only meaningful with a baseline — without one it would report the whole
+    # legacy backlog as new and block every push.
+    if [ -n "$REMOTE_BASE" ]; then
+      golangci-lint run --new-from-merge-base="$REMOTE_BASE" ./... || exit 1
+    fi
     go build ./... || exit 1
     go test ./... || exit 1
     # Block pushing a known-exploitable dependency. Fast (reachability-pruned);
@@ -54,6 +101,13 @@ if grep -q '^frontend/' <<<"$CHANGED"; then
   echo "pre-push: frontend changed — biome format + lint + tsc + complexity + dup…"
   (
     cd frontend || exit 1
+    require_tools bun bunx || exit 1
+    # node_modules is not optional here: jscpd is invoked from it directly, and
+    # bun run <script> resolves biome/tsc/eslint/knip out of it too.
+    if [ ! -d node_modules ]; then
+      echo "pre-push: frontend/node_modules missing — run 'bun install' in frontend/." >&2
+      exit 1
+    fi
     # Format gate (read-only `biome format src`, NO --write). Mirrors the build's
     # `prebuild` + CI `format:check`: catches format drift HERE so it can never
     # sit unformatted in the working tree and dirty a deploy tag (`<sha>-dirty`).

@@ -51,6 +51,12 @@ system Firefox/Zen, so a second project only adds a download for no coverage.
 `baseURL` defaults to `http://localhost:5173`; override with
 `E2E_BASE_URL=...` if you need to point at a deployed environment.
 
+The specs ARE typechecked: `frontend/tsconfig.e2e.json` covers `e2e/` +
+`playwright.config.ts` and is referenced from the root `tsconfig.json`, so
+`bun run lint:tsc` (and the pre-push hook) compile them. Before that project
+existed no tsconfig included `e2e/`, and a bad locator or a wrong Playwright
+API was only discoverable by running the whole live stack.
+
 Auth contract (useful for future specs):
 
 - `/login` → fill `Email` + `Password` labels → click the submit button
@@ -133,10 +139,19 @@ A git `pre-push` hook (`.githooks/pre-push`) gates new-code quality before it
 reaches master. `mise run setup` enables it; otherwise run once:
 `git config core.hooksPath .githooks`.
 
-- **Backend:** `golangci-lint run --new-from-merge-base=origin/master`
+- **Base ref:** the hook resolves the master ref by trying `origin/master`, then
+  `<remote>/master` for every configured remote, then a local `master`. It is NOT
+  hardcoded to `origin` — this clone's remote is `github-personal`, and when the
+  name was hardcoded the missing ref made the hook `exit 0`, silently skipping
+  every gate. That is how a tree whose `tsc -b` failed (and whose frontend Docker
+  image therefore could not build) reached master. If no ref resolves at all the
+  hook now runs the whole-tree gates anyway and skips only golangci's new-code
+  diff, which is the one check that genuinely needs a baseline.
+- **Backend:** `golangci-lint run --new-from-merge-base=<resolved base>`
   (config `backend/.golangci.yml`: goconst/gocognit/dupl/gosec + standard) plus
-  `go build`. Only NEW regressions vs. master block; legacy findings don't. A
-  bare `golangci-lint run` audits the whole tree on demand.
+  `go build` and `go test`. Only NEW regressions vs. master block; legacy findings
+  don't. A bare `golangci-lint run` audits the whole tree on demand (~529
+  pre-existing findings — expected, not a regression).
 - **Frontend:** `format:check` (read-only `biome format src`, no `--write` —
   mirrors the build's `prebuild`/CI so format drift can't sit uncommitted and
   dirty a deploy tag), `biome lint --diagnostic-level=error` (blocks correctness

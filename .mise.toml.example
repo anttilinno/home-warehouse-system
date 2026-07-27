@@ -3,6 +3,11 @@ air = "latest"
 bun = "latest"
 dbmate = "latest"
 go = "1.25"
+# The pre-push hook runs govulncheck when it is present. Declared here so it
+# arrives with the rest of the toolchain instead of being silently skipped —
+# `go install` alone drops it in GOBIN, which is not on PATH, so the hook never
+# sees it.
+"go:golang.org/x/vuln/cmd/govulncheck" = "latest"
 "golangci-lint" = "latest"
 
 [env]
