@@ -1,0 +1,25 @@
+{
+  // Playwright specs were in no project's `include` — tsconfig.app.json covers
+  // `src`, tsconfig.node.json covers the three build configs, and nothing
+  // covered `e2e`. So a bad locator, a wrong Playwright API or a stale helper
+  // signature was caught only by running the whole live stack. This project
+  // puts them under `tsc -b` with the rest.
+  //
+  // Separate from tsconfig.node.json because these need DOM types (page
+  // evaluate callbacks, File/FormData) that the build-config project does not.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["e2e", "playwright.config.ts"]
+}
