@@ -13,6 +13,11 @@ import { MK } from "@/lib/offline/mutationKeys";
 import { newIdemKey } from "@/lib/offline/idempotency";
 import { generateShortCode } from "@/lib/offline/shortCode";
 import type { LocationCreateVars } from "@/lib/offline/mutationDefaults";
+import { formErrorMessage } from "@/lib/formError";
+import {
+  isShortCodeConflict,
+  SHORT_CODE_CONFLICT_TOAST_ID,
+} from "@/lib/useShortCodeConflict";
 
 // Phase 10 Plan 03 — the location write surface (TAX-03 create/edit, TAX-04
 // archive + restore). MIRRORS useCategoryMutations for shape; update/archive/
@@ -101,11 +106,16 @@ export function useLocationMutations() {
       });
       return { snapshots };
     },
-    onError: (_err, _vars, ctx) => {
+    onError: (err, _vars, ctx) => {
       ctx?.snapshots.forEach(([key, data]) => {
         qc.setQueryData(key, data);
       });
-      retroToast.error(t`Couldn't save this location.`);
+      // Tag a short-code conflict with the shared id so the form's enriched
+      // "already used by <name>" toast (which needs a resolve round trip)
+      // REPLACES this one rather than stacking on top of it.
+      retroToast.error(formErrorMessage(err, t`Couldn't save this location.`), {
+        id: isShortCodeConflict(err) ? SHORT_CODE_CONFLICT_TOAST_ID : undefined,
+      });
     },
     // onSettled (the real invalidate) lives in mutationDefaults.ts so a
     // resumed replay (no hook mounted) still refetches. This onSuccess is
