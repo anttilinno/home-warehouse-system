@@ -19,6 +19,7 @@ import { photosApi } from "@/lib/api/photos";
 import { locationPhotosApi } from "@/lib/api/locationPhotos";
 import type { Inventory, Item } from "@/lib/types";
 import { MK } from "./mutationKeys";
+import { dropCapturePhoto, getCapturePhoto } from "./photoStore";
 
 // Registered once at boot (App.tsx module scope). A resumed paused mutation
 // (page reload → drain) runs ONLY these defaults, never the hook's
@@ -70,41 +71,54 @@ export interface InventoryCreateVars {
 // /capture — one label becomes one queued unit: create the entity, then attach
 // the photo that was taken with it.
 //
-// `photo` is a File. The persister serialises with JSON.stringify, so a File
-// does NOT survive a page reload — an in-memory paused mutation keeps it and
-// drains fine on reconnect, but a reload-while-offline restores the capture
-// with `photo: undefined`. captureMutationFn treats that as "create anyway":
-// losing the photo is bad, silently losing the whole capture is worse.
+// `photoId` is a key into the idb blob side-store, NOT the File itself: the
+// persister serialises with JSON.stringify, so a File in these vars would come
+// back `undefined` after a reload-while-offline and the photo would vanish
+// silently. An id is a string, survives the round trip, and the bytes are read
+// back from IndexedDB when the mutation actually runs.
 //
-// ponytail: photos are dropped by a reload-while-offline. Storing the blob in
-// its own idb key and referencing it by id would fix it — do that when field
-// use shows people actually relaunching mid-capture.
+// It stays optional — a capture with no photo is the common case, and a
+// photoId whose blob has gone missing still creates the entity (losing the
+// photo beats losing the whole capture).
 export interface CaptureVars {
   wsId: string;
   idemKey: string;
   kind: "item" | "location";
   body: Record<string, unknown>;
-  photo?: File;
+  photoId?: string;
+  // The scanned label, carried verbatim alongside the body it was folded into
+  // (`sku`/`barcode` for an item, `name` for a location). It is what the
+  // already-queued check matches on: offline, short-code resolution cannot run,
+  // so the queue itself is the only place a second scan of the same label can
+  // be noticed.
+  code: string;
 }
 
 async function captureMutationFn(vars: CaptureVars): Promise<Item | Location> {
   const headers = { "Idempotency-Key": vars.idemKey };
+  // Read, don't take: a failed attempt must leave the bytes in place for the
+  // retry. dropCapturePhoto in onSettled is what finally clears them.
+  const photo = vars.photoId ? await getCapturePhoto(vars.photoId) : undefined;
 
   if (vars.kind === "location") {
     const location = await locationApi.create(
       vars.wsId,
-      vars.body as CreateLocationBody,
+      // Double cast: vars.body is the loose Record the capture page builds (it
+      // has to serialise through the persister), and Record<string, unknown>
+      // does not structurally overlap CreateLocationBody's required `name`.
+      // CapturePage always sets it — see captureLocationBody.
+      vars.body as unknown as CreateLocationBody,
       headers,
     );
-    if (vars.photo) {
-      await locationPhotosApi.upload(vars.wsId, location.id, vars.photo);
+    if (photo) {
+      await locationPhotosApi.upload(vars.wsId, location.id, photo);
     }
     return location;
   }
 
   const item = await itemsApi.create(vars.wsId, vars.body, headers);
-  if (vars.photo) {
-    await photosApi.upload(vars.wsId, item.id, vars.photo);
+  if (photo) {
+    await photosApi.upload(vars.wsId, item.id, photo);
   }
   return item;
 }
@@ -181,10 +195,14 @@ export function registerMutationDefaults(
       const name = (vars.body?.name as string | undefined) ?? "capture";
       retroToast.error(i18n._(msg`Couldn't sync "${name}".`));
     },
-    onSettled: (_data, _err, vars) =>
-      client.invalidateQueries({
+    onSettled: (_data, _err, vars) => {
+      // Settled means no further retry will read these bytes — drop them, or
+      // the side-store grows one orphan per photo capture forever.
+      if (vars.photoId) void dropCapturePhoto(vars.photoId);
+      return client.invalidateQueries({
         queryKey: [vars.kind === "location" ? "locations" : "items", vars.wsId],
-      }),
+      });
+    },
   });
 
   client.setMutationDefaults(MK.inventoryQuantity, {

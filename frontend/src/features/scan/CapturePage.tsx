@@ -17,9 +17,8 @@ import { BarcodeScanner } from "@/components/scan/BarcodeScanner";
 import { ManualBarcodeEntry } from "@/components/scan/ManualBarcodeEntry";
 import { ScanViewfinderOverlay } from "@/components/scan/ScanViewfinderOverlay";
 import { ScanTorchToggle } from "@/components/scan/ScanTorchToggle";
-import { useWorkspace } from "@/features/workspace/useWorkspace";
-import { shortCodeEntityPath } from "@/lib/api/shortCodes";
-import { newIdemKey } from "@/lib/offline/idempotency";
+import { shortCodeEntityPath, type ShortCodeMatch } from "@/lib/api/shortCodes";
+import type { Item } from "@/lib/types";
 import { generateShortCode } from "@/lib/offline/shortCode";
 import { useIsOnline } from "@/lib/offline/useIsOnline";
 import { useCaptureMutation } from "./useCaptureMutation";
@@ -106,8 +105,6 @@ function captureItemBody(code: string): Record<string, unknown> {
 
 export function CapturePage() {
   const { t } = useLingui();
-  const { currentWorkspaceId } = useWorkspace();
-  const wsId = currentWorkspaceId ?? "";
 
   const feedback = useScanFeedback();
   const torch = useTorch();
@@ -158,8 +155,9 @@ export function CapturePage() {
   // sync-failure toasts carry the outcome. Awaiting here would stall the whole
   // page for the entire time a device has no signal.
   function save(kind: "item" | "location") {
-    capture({
+    const queued = capture({
       kind,
+      code,
       body:
         kind === "item"
           ? captureItemBody(code)
@@ -169,7 +167,15 @@ export function CapturePage() {
             },
       photo: photo ?? undefined,
     });
-    setCaptured((n) => n + 1);
+    // Refused as a duplicate: the same label is already waiting to be written
+    // (the usual way to get here is scanning one twice while offline, where
+    // nothing else can catch it). Say so and re-arm — but do not count it, the
+    // counter tracks captures, not taps.
+    if (!queued) {
+      retroToast.info(t`Already captured — still waiting to sync.`);
+    } else {
+      setCaptured((n) => n + 1);
+    }
     next();
   }
 

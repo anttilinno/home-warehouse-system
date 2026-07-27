@@ -22,6 +22,10 @@ const (
 	// TypeCleanupOldActivity is the task type for cleaning up old activity logs.
 	TypeCleanupOldActivity = "cleanup:old_activity"
 
+	// TypeCleanupOrphanedFiles is the task type for removing warehouse.files
+	// rows (and their bytes) that no link table references any more.
+	TypeCleanupOrphanedFiles = "cleanup:orphaned_files"
+
 	// TypeThumbnailGeneration is the task type for generating photo thumbnails.
 	TypeThumbnailGeneration = "photo:generate_thumbnails"
 )

@@ -69,7 +69,9 @@ function BannerHeadline({
 }: Readonly<{
   status: ScanBannerStatus;
   item?: Item | null;
-  entity: ShortCodeMatch | null;
+  // `| undefined` because ScanResultBanner's entityMatch prop is optional and
+  // is passed straight through unnormalised; the body only truth-tests it.
+  entity: ShortCodeMatch | null | undefined;
 }>): ReactNode {
   const wrap = (children: ReactNode) => (
     <span className="font-body text-14 text-fg-ink">{children}</span>
@@ -108,7 +110,10 @@ export function ScanResultBanner({
 }: Readonly<ScanResultBannerProps>) {
   const s = STATE[status];
   // An item match wins: entityMatch is only consulted when the barcode lookup
-  // found nothing, so the two are never both set.
+  // found nothing, so the two are never both set. Stays `| undefined` (the
+  // prop is optional) rather than being normalised with `?? null` — every
+  // consumer below already truth-tests it, and this function sits exactly on
+  // the complexity ceiling, so the extra operator would break the gate.
   const entity = status === "match" && !item ? entityMatch : null;
 
   return (

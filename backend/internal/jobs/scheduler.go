@@ -113,7 +113,9 @@ func (s *Scheduler) RegisterHandlers(emailSender EmailSender, pushSender *webpus
 	mux.HandleFunc(TypeCleanupDeletedRecords, cleanupProcessor.ProcessDeletedRecordsCleanup)
 	mux.HandleFunc(TypeCleanupOldActivity, cleanupProcessor.ProcessActivityCleanup)
 
-	// Thumbnail processor (optional - only if config provided)
+	// Both of these need blob storage, which only the thumbnail config carries.
+	// The orphan sweep in particular MUST NOT run without it: it would delete
+	// file rows and strand their bytes forever — the opposite of its job.
 	if thumbnailConfig != nil {
 		thumbnailProcessor := NewThumbnailProcessor(
 			s.pool,
@@ -124,6 +126,10 @@ func (s *Scheduler) RegisterHandlers(emailSender EmailSender, pushSender *webpus
 		)
 		mux.HandleFunc(TypeThumbnailGeneration, thumbnailProcessor.ProcessTask)
 		log.Println("Registered thumbnail processor")
+
+		orphanProcessor := NewOrphanedFilesProcessor(s.pool, thumbnailConfig.Storage)
+		mux.HandleFunc(TypeCleanupOrphanedFiles, orphanProcessor.ProcessTask)
+		log.Println("Registered orphaned-file sweep")
 	}
 
 	return mux
@@ -184,6 +190,17 @@ func (s *Scheduler) RegisterScheduledTasks() error {
 		return err
 	}
 	log.Println("Registered scheduled task: activity logs cleanup (weekly Sunday 4 AM)")
+
+	// Sweep unreferenced files weekly on Sunday at 5 AM — after the two cleanups
+	// above, so anything they orphan is picked up in the same maintenance window
+	// (subject to the sweep's own grace period).
+	_, err = s.scheduler.Register("0 5 * * 0", NewCleanupOrphanedFilesTask(),
+		asynq.Queue(QueueLow),
+	)
+	if err != nil {
+		return err
+	}
+	log.Println("Registered scheduled task: orphaned-file sweep (weekly Sunday 5 AM)")
 
 	return nil
 }

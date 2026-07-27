@@ -1,4 +1,12 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
@@ -116,6 +124,35 @@ describe("ContainersTab", () => {
     // Dialog opens without an Add click, short_code prefilled from the scan.
     expect(await screen.findByText(/NEW CONTAINER/i)).toBeInTheDocument();
     expect(screen.getByDisplayValue("BOX9")).toBeInTheDocument();
+  });
+
+  it("?focus= tints the scanned container's row and scrolls it into view", async () => {
+    // jsdom implements no scrollIntoView at all — there is nothing to spy on,
+    // so define it, and take it back off afterwards rather than leaving a stub
+    // on Element for the rest of the suite (the component optional-calls it
+    // precisely because jsdom leaves it undefined).
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    onTestFinished(() => {
+      delete (Element.prototype as Partial<Element>).scrollIntoView;
+    });
+
+    renderTab(["/taxonomy?tab=containers&focus=cont-2"]);
+
+    const row = (await screen.findByText("Bin 3")).closest("tr");
+    expect(row).toHaveAttribute("data-focused", "true");
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: "center" });
+    // Only the focused row is tinted — cont-1 stays plain.
+    expect(screen.getByText("Toolbox A").closest("tr")).not.toHaveAttribute(
+      "data-focused",
+    );
+  });
+
+  it("?focus= with an id that isn't in the list tints nothing", async () => {
+    renderTab(["/taxonomy?tab=containers&focus=cont-does-not-exist"]);
+
+    await screen.findByText("Toolbox A");
+    expect(document.querySelectorAll("tr[data-focused]")).toHaveLength(0);
   });
 
   it("editing a container does NOT send short_code (immutable — would 422)", async () => {

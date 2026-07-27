@@ -148,10 +148,13 @@ describe("CapturePage", () => {
   it("routes a product barcode to `barcode`, not short_code", async () => {
     const user = userEvent.setup();
     installUnknownCode();
-    let body: Record<string, unknown> | null = null;
+    // Collected into an array, not a `let … = null`: TS narrows the latter to
+    // `null` (it does not see the handler's assignment as widening), so
+    // `body?.short_code` reads as `never` and fails the build.
+    const sent: Record<string, unknown>[] = [];
     server.use(
       http.post("/api/workspaces/:wsId/items", async ({ request }) => {
-        body = (await request.json()) as Record<string, unknown>;
+        sent.push((await request.json()) as Record<string, unknown>);
         return HttpResponse.json({ id: "it-new", name: "x" });
       }),
     );
@@ -163,18 +166,18 @@ describe("CapturePage", () => {
       await screen.findByRole("button", { name: /save as item/i }),
     );
 
-    await waitFor(() => expect(body).not.toBeNull());
-    expect(body).toMatchObject({ barcode: "4006381333931" });
-    expect(body?.short_code).not.toBe("4006381333931");
+    await waitFor(() => expect(sent).toHaveLength(1));
+    expect(sent[0]).toMatchObject({ barcode: "4006381333931" });
+    expect(sent[0].short_code).not.toBe("4006381333931");
   });
 
   it("treats a 9-char code as a barcode — the entity short_code cap is 8", async () => {
     const user = userEvent.setup();
     installUnknownCode();
-    let body: Record<string, unknown> | null = null;
+    const sent: Record<string, unknown>[] = [];
     server.use(
       http.post("/api/workspaces/:wsId/items", async ({ request }) => {
-        body = (await request.json()) as Record<string, unknown>;
+        sent.push((await request.json()) as Record<string, unknown>);
         return HttpResponse.json({ id: "it-new", name: "x" });
       }),
     );
@@ -188,10 +191,10 @@ describe("CapturePage", () => {
       await screen.findByRole("button", { name: /save as item/i }),
     );
 
-    await waitFor(() => expect(body).not.toBeNull());
-    expect(body?.short_code).not.toBe("ABCD12345");
-    expect(String(body?.short_code)).toHaveLength(8);
-    expect(body).toMatchObject({ barcode: "ABCD12345" });
+    await waitFor(() => expect(sent).toHaveLength(1));
+    expect(sent[0].short_code).not.toBe("ABCD12345");
+    expect(String(sent[0].short_code)).toHaveLength(8);
+    expect(sent[0]).toMatchObject({ barcode: "ABCD12345" });
   });
 
   it("blocks SAVE AS LOCATION for a code that can't be a short_code", async () => {
@@ -311,6 +314,44 @@ describe("CapturePage", () => {
     expect(posts).toBe(0);
 
     // Reconnecting drains the queue.
+    onlineManager.setOnline(true);
+    await waitFor(() => expect(posts).toBe(1));
+  });
+
+  it("queues the same code only once while offline (the duplicate check the registry can't do)", async () => {
+    const user = userEvent.setup();
+    installUnknownCode();
+    let posts = 0;
+    server.use(
+      http.post("/api/workspaces/:wsId/items", () => {
+        posts += 1;
+        return HttpResponse.json({ id: "it-new", name: "7F3K2A" });
+      }),
+    );
+
+    renderCapture();
+    onlineManager.setOnline(false);
+
+    // Scan and save the same label twice — offline, so short-code resolution
+    // cannot run and neither scan looks any different to the page.
+    for (let i = 0; i < 2; i++) {
+      triggerDecode("7F3K2A", "qr_code");
+      await user.click(
+        await screen.findByRole("button", { name: /save as item/i }),
+      );
+      await waitFor(() =>
+        expect(
+          screen.queryByRole("button", { name: /save as item/i }),
+        ).not.toBeInTheDocument(),
+      );
+    }
+
+    // The second save was refused: one capture counted, one queued write.
+    expect(await screen.findByText(/1 captured/i)).toBeInTheDocument();
+    expect(await screen.findByText(/already captured/i)).toBeInTheDocument();
+
+    // …and the drain confirms it — without the guard this posts twice, the
+    // second dying on a short-code conflict.
     onlineManager.setOnline(true);
     await waitFor(() => expect(posts).toBe(1));
   });

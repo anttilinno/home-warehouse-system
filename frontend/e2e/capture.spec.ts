@@ -15,7 +15,9 @@ import { test, expect, type Page } from "@playwright/test";
 //      verified through the API, not just the UI;
 //   2. the loop re-arms after a save (counter advances, panel closes), which is
 //      the whole point versus the ordinary item form;
-//   3. a label that is already registered offers OPEN instead of a second
+//   3. a capture WITH a photo lands the image against the entity the same
+//      capture created — the create and the upload are one queued unit;
+//   4. a label that is already registered offers OPEN instead of a second
 //      create — the duplicate guard.
 //
 // ONE LOGIN, ONE SPEC (Pitfall 5 / the 20/min auth limiter): a single test owns
@@ -44,7 +46,7 @@ async function firstWorkspaceId(page: Page): Promise<string> {
   return workspaces[0].id;
 }
 
-test("rapid capture: unknown label → item with needs_review, loop re-arms, known label refuses a duplicate", async ({
+test("rapid capture: unknown label → item with needs_review, loop re-arms, photo lands on its capture, known label refuses a duplicate", async ({
   page,
 }) => {
   await loginAsSeeder(page);
@@ -112,7 +114,60 @@ test("rapid capture: unknown label → item with needs_review, loop re-arms, kno
     expect(body.name).toBe(newCode);
   }).toPass({ timeout: 10000 });
 
-  // ── 3. ALREADY-REGISTERED LABEL: offer the owner, never a second create.
+  // ── 3. PHOTO PATH: capture a location WITH a photo attached. The create and
+  // the upload travel as one queued unit (the upload needs the id the create
+  // assigns), so this is the only place the pairing is proven in a real browser
+  // — the unit tests stub the file input, and a stub cannot catch a broken
+  // multipart body or a wrong upload URL.
+  const photoCode = `LP${stamp}`;
+  await page.getByLabel(/enter code/i).fill(photoCode);
+  await page.getByRole("button", { name: /look up code/i }).click();
+
+  const saveLocation = page.getByRole("button", { name: /save as location/i });
+  await expect(saveLocation).toBeVisible();
+
+  // The input is `.hidden` (a styled button clicks it) — setInputFiles drives
+  // it directly, which is exactly what the camera/file picker would do.
+  await page.getByLabel(/attach a photo/i).setInputFiles({
+    name: "shelf.png",
+    mimeType: "image/png",
+    // Smallest valid PNG: the backend sniffs the content type, so random bytes
+    // would be rejected rather than stored.
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+      "base64",
+    ),
+  });
+  await saveLocation.click();
+  await expect(saveLocation).toBeHidden();
+  await expect(page.getByText(/2 captured/i)).toBeVisible();
+
+  // The photo is only real if it landed against the location that was just
+  // created — that pairing is the whole feature.
+  await expect(async () => {
+    const res = await page.request.get(
+      `/api/workspaces/${wsId}/short-codes/${encodeURIComponent(photoCode)}`,
+    );
+    expect(res.status()).toBe(200);
+    const match = (await res.json()) as {
+      entity_type: string;
+      entity_id: string;
+    };
+    expect(match.entity_type).toBe("location");
+
+    const photos = await page.request.get(
+      `/api/workspaces/${wsId}/locations/${match.entity_id}/photos`,
+    );
+    expect(photos.status()).toBe(200);
+    const { items } = (await photos.json()) as {
+      items: Array<{ mime_type: string; size_bytes: number }>;
+    };
+    expect(items).toHaveLength(1);
+    expect(items[0].mime_type).toBe("image/png");
+    expect(items[0].size_bytes).toBeGreaterThan(0);
+  }).toPass({ timeout: 10000 });
+
+  // ── 4. ALREADY-REGISTERED LABEL: offer the owner, never a second create.
   await page.getByLabel(/enter code/i).fill(takenCode);
   await page.getByRole("button", { name: /look up code/i }).click();
 
