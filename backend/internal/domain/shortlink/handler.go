@@ -13,7 +13,6 @@ import (
 	"context"
 	"net/http"
 	"net/url"
-	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -37,6 +36,7 @@ type Match struct {
 	Type        string    // TypeItem | TypeContainer | TypeLocation
 	ID          uuid.UUID // entity primary key
 	WorkspaceID uuid.UUID // owning workspace
+	Name        string    // display name of the owning entity ("" if unreadable)
 }
 
 // Resolver resolves a short_code against the global registry, scoped to the
@@ -82,7 +82,6 @@ func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 	// Treat the path segment verbatim — short codes are case-sensitive
 	// alphanumeric, never lowercased.
 	code := chi.URLParam(r, "code")
-	locale := resolveLocale(r)
 
 	// --- Auth: read+validate the access_token cookie INLINE. ---
 	// A missing/invalid/expired cookie is not a 401 here (that JSON response is
@@ -90,12 +89,12 @@ func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 	// redirect the browser to login with a next that resumes the redirect.
 	cookie, err := r.Cookie(accessTokenCookie)
 	if err != nil || cookie.Value == "" {
-		h.redirectToLogin(w, r, locale, code)
+		h.redirectToLogin(w, r, code)
 		return
 	}
 	claims, err := h.jwtValidator.ValidateToken(cookie.Value)
 	if err != nil || claims == nil {
-		h.redirectToLogin(w, r, locale, code)
+		h.redirectToLogin(w, r, code)
 		return
 	}
 
@@ -104,7 +103,7 @@ func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// Treat a lookup failure as "no resolvable workspaces" -> claim wizard,
 		// rather than leaking a 500 to a scanning phone.
-		http.Redirect(w, r, claimPath(locale, code), http.StatusFound)
+		http.Redirect(w, r, claimPath(code), http.StatusFound)
 		return
 	}
 	workspaceIDs := make([]uuid.UUID, 0, len(wss))
@@ -117,80 +116,52 @@ func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 
 	match, err := h.resolver.Resolve(r.Context(), code, workspaceIDs)
 	if err != nil {
-		http.Redirect(w, r, claimPath(locale, code), http.StatusFound)
+		http.Redirect(w, r, claimPath(code), http.StatusFound)
 		return
 	}
 	if match == nil {
 		// No match (unknown code or foreign workspace) -> claim wizard with
 		// the short_code prefilled.
-		http.Redirect(w, r, claimPath(locale, code), http.StatusFound)
+		http.Redirect(w, r, claimPath(code), http.StatusFound)
 		return
 	}
-	http.Redirect(w, r, entityPath(locale, *match), http.StatusFound)
+	http.Redirect(w, r, entityPath(*match), http.StatusFound)
 }
 
-// redirectToLogin sends the browser to the locale-scoped login page with a next
+// redirectToLogin sends the browser to the login page with a next
 // param that resumes the /r/{code} resolution after authentication. The next
 // value is a fixed internal path built server-side (never echoed from the
 // client), closing the open-redirect threat T-uzt-04.
-func (h *Handler) redirectToLogin(w http.ResponseWriter, r *http.Request, locale, code string) {
+func (h *Handler) redirectToLogin(w http.ResponseWriter, r *http.Request, code string) {
 	next := "/r/" + code
-	dest := "/" + locale + "/login?next=" + url.QueryEscape(next)
+	dest := "/login?next=" + url.QueryEscape(next)
 	http.Redirect(w, r, dest, http.StatusFound)
 }
 
 // claimPath builds the claim-wizard path for an unresolved code.
-func claimPath(locale, code string) string {
-	return "/" + locale + "/dashboard/claim/" + code
+func claimPath(code string) string {
+	return "/claim/" + code
 }
 
-// entityPath maps a single match to its dashboard destination. Containers and
-// locations have no [id] detail route (list-only), so they deep-link via a
-// focus query param the list page reads; items have a real detail route.
-func entityPath(locale string, m Match) string {
+// entityPath maps a single match to its destination in the v3 route table
+// (frontend/src/routes/index.tsx). Containers and locations have no detail
+// route (the taxonomy tabs are list-only), so they deep-link via the tab's
+// ?focus= param; items have a real detail route.
+//
+// These were v2.1 Next.js paths ("/{locale}/dashboard/...") until the v3 SPA
+// replaced them — every scanned label 302'd into a 404. v3 has no locale path
+// segment at all (lingui switches locale in-app), so none is emitted.
+func entityPath(m Match) string {
 	switch m.Type {
 	case TypeItem:
-		return "/" + locale + "/dashboard/items/" + m.ID.String()
+		return "/items/" + m.ID.String()
 	case TypeContainer:
-		return "/" + locale + "/dashboard/containers?focus=" + m.ID.String()
+		return "/taxonomy?tab=containers&focus=" + m.ID.String()
 	case TypeLocation:
-		return "/" + locale + "/dashboard/locations?focus=" + m.ID.String()
+		return "/taxonomy?tab=locations&focus=" + m.ID.String()
 	default:
 		// Unknown type should never happen (repo emits only the three tags);
 		// fall back to the claim wizard rather than a broken link.
-		return "/" + locale + "/dashboard/claim/"
+		return "/claim/"
 	}
-}
-
-// resolveLocale picks the redirect locale: NEXT_LOCALE cookie -> first
-// Accept-Language tag -> "en".
-func resolveLocale(r *http.Request) string {
-	if c, err := r.Cookie("NEXT_LOCALE"); err == nil && c.Value != "" {
-		return sanitizeLocale(c.Value)
-	}
-	if al := r.Header.Get("Accept-Language"); al != "" {
-		// First tag, dropping any quality / region suffix: "et-EE,en;q=0.9" -> "et".
-		first := strings.TrimSpace(strings.SplitN(al, ",", 2)[0])
-		first = strings.SplitN(first, ";", 2)[0]
-		first = strings.SplitN(first, "-", 2)[0]
-		if loc := sanitizeLocale(first); loc != "" {
-			return loc
-		}
-	}
-	return "en"
-}
-
-// sanitizeLocale keeps only a short lowercase alpha tag, defending the
-// server-built redirect path from a tampered cookie/header (T-uzt-04).
-func sanitizeLocale(v string) string {
-	v = strings.ToLower(strings.TrimSpace(v))
-	if v == "" || len(v) > 8 {
-		return "en"
-	}
-	for _, ch := range v {
-		if ch < 'a' || ch > 'z' {
-			return "en"
-		}
-	}
-	return v
 }

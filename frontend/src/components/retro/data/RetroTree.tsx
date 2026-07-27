@@ -61,6 +61,23 @@ export interface RetroTreeProps {
   /** Optional control rendered at the START of the toolbar row (e.g. the
    *  consumer's "⊕ ADD ROOT" button). Expand/collapse-all sit opposite it. */
   leadingAction?: ReactNode;
+  /**
+   * Deep-link target (`?focus=<id>`): expands every ancestor so the row is
+   * visible, scrolls it into view, and tints it. Used by the scan/short-code
+   * links, which land on the tab and must point at one row in a big tree.
+   */
+  focusId?: string;
+}
+
+// The ancestor chain of `id`, so a deep-linked row can be revealed. `null` when
+// the id isn't in the tree (stale link) — distinct from `[]`, a root node.
+function ancestorsOf(nodes: RetroTreeNode[], id: string): string[] | null {
+  for (const node of nodes) {
+    if (node.id === id) return [];
+    const below = ancestorsOf(node.children, id);
+    if (below) return [node.id, ...below];
+  }
+  return null;
 }
 
 // A row in document order, carrying depth for indentation + a11y level.
@@ -94,6 +111,7 @@ export function RetroTree({
   onRestore,
   emptyState,
   leadingAction,
+  focusId,
 }: Readonly<RetroTreeProps>) {
   const [expanded, setExpanded] = useState<Set<string>>(
     () => new Set(getSet(storageKey)),
@@ -105,6 +123,29 @@ export function RetroTree({
   useEffect(() => {
     saveSet(storageKey, [...expanded]);
   }, [expanded, storageKey]);
+
+  // Reveal a deep-linked row: expand its ancestors, then scroll to it. Runs on
+  // the focusId/nodes pair only — `expanded` is deliberately NOT a dep (it is
+  // written here, and reading it would re-fire forever, Pitfall 1). The setter
+  // returns the previous Set unchanged when nothing needs opening, so a stale
+  // or already-visible target causes no re-render.
+  useEffect(() => {
+    if (!focusId) return;
+    const chain = ancestorsOf(nodes, focusId);
+    if (!chain) return; // id not in this tree
+    if (chain.length > 0) {
+      setExpanded((prev) => {
+        if (chain.every((id) => prev.has(id))) return prev;
+        return new Set([...prev, ...chain]);
+      });
+    }
+    // After the expand has painted the row.
+    const raf = requestAnimationFrame(() => {
+      // Optional-called: jsdom has no scrollIntoView.
+      rowRefs.current.get(focusId)?.scrollIntoView?.({ block: "center" });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [focusId, nodes]);
 
   function toggle(id: string) {
     setExpanded((prev) => {
@@ -253,7 +294,10 @@ export function RetroTree({
               }}
               onKeyDown={(e) => onKeyDown(e, row)}
               onClick={() => hasChildren && toggle(node.id)}
-              className="group relative flex cursor-default items-center gap-sp-1 py-[3px] pr-sp-2 hover:bg-bg-panel-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-[-2px]"
+              data-focused={node.id === focusId ? "true" : undefined}
+              className={`group relative flex cursor-default items-center gap-sp-1 py-[3px] pr-sp-2 hover:bg-bg-panel-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-[-2px] ${
+                node.id === focusId ? "bg-titlebar-butter" : ""
+              }`}
             >
               {/* Indent guides: one 1px sand rule per depth level. */}
               {Array.from(

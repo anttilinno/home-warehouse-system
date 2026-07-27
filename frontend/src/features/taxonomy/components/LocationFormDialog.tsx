@@ -16,6 +16,8 @@ import {
 } from "../hooks/useLocationMutations";
 import { buildTree, type TreeNode } from "@/features/taxonomy/lib/buildTree";
 import { generateShortCode } from "../generateShortCode";
+import { useShortCodeConflict } from "@/lib/useShortCodeConflict";
+import { LocationPhotoStrip } from "./LocationPhotoStrip";
 import { TaxonomyDialogForm } from "./TaxonomyDialogForm";
 import {
   DescriptionField,
@@ -88,6 +90,7 @@ export function LocationFormDialog({
 
   const { createLocation, update } = useLocationMutations();
   const updateLocation = update.mutateAsync;
+  const describeConflict = useShortCodeConflict();
 
   const {
     register,
@@ -147,8 +150,14 @@ export function LocationFormDialog({
         await createLocation(body);
       }
       onClose();
-    } catch {
-      setError("root", { message: t`Couldn't save this location.` });
+    } catch (err) {
+      setError("root", {
+        message: await describeConflict(
+          err,
+          values.short_code,
+          t`Couldn't save this location.`,
+        ),
+      });
     }
   }
 
@@ -194,6 +203,9 @@ export function LocationFormDialog({
         error={errors.short_code?.message}
         disabled={isEdit}
       />
+
+      {/* Whatever the phone captured (renders nothing when there are none). */}
+      {isEdit && location && <LocationPhotoStrip locationId={location.id} />}
     </TaxonomyDialogForm>
   );
 }

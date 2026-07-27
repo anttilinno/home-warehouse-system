@@ -21,6 +21,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { itemsApi } from "@/lib/api/items";
+import { shortCodesApi, type ShortCodeMatch } from "@/lib/api/shortCodes";
 import type { Item } from "@/lib/types";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 import { addToScanHistory, updateScanHistory } from "@/lib/scanner";
@@ -50,6 +51,15 @@ export interface UseScanResolveResult {
   banner: ScanBanner | null;
   /** The 4-state lookup query (status/data drive the banner state). */
   lookup: UseQueryResult<Item | null>;
+  /**
+   * The short-code registry fallback, consulted only once the barcode lookup
+   * comes back empty: a printed LOCATION or CONTAINER label is a short_code,
+   * not a barcode, so it misses `items/by-barcode` and used to render NOT
+   * FOUND even though the entity exists.
+   */
+  entityMatch: ShortCodeMatch | null;
+  /** True while that fallback is still in flight (keeps the banner LOADING). */
+  entityPending: boolean;
   /** Clear the banner + unpause — the "Back to Scan" action. */
   resume: () => void;
 }
@@ -85,6 +95,18 @@ export function useScanResolve({
     retry: false,
   });
 
+  // Registry fallback. Gated on the barcode lookup having returned NULL, so the
+  // common case (an item barcode) costs exactly one request, and a location/
+  // container label costs two. `null` here means genuinely unknown → NOT FOUND.
+  const barcodeMissed = lookup.status === "success" && lookup.data === null;
+  const entityLookup = useQuery<ShortCodeMatch | null>({
+    queryKey: ["short-code", wsId, banner?.code],
+    queryFn: () => shortCodesApi.resolve(wsId, banner!.code),
+    enabled: Boolean(wsId && banner?.code && barcodeMissed),
+    staleTime: 0,
+    retry: false,
+  });
+
   const handleResolveCode = useCallback(
     (code: string, format: string) => {
       if (!code) return; // empty decode → no-op (no banner, no pause, no feedback)
@@ -111,9 +133,24 @@ export function useScanResolve({
   useEffect(() => {
     if (lookupStatus === "success" && bannerCode) {
       // lookupData is Item on MATCH, null on NOT-FOUND.
+      // ponytail: a location/container hit stays entityType:"unknown" in the
+      // history — widening ScanHistoryEntry.entityType is a types+tests change
+      // for a label that only affects the history list's subtitle. Widen it
+      // when the history list starts deep-linking non-item entities.
       updateScanHistory(bannerCode, lookupData ?? null);
     }
   }, [lookupStatus, lookupData, bannerCode]);
 
-  return { handleResolveCode, paused, setPaused, banner, lookup, resume };
+  return {
+    handleResolveCode,
+    paused,
+    setPaused,
+    banner,
+    lookup,
+    entityMatch: entityLookup.data ?? null,
+    // Pending only counts while the fallback is actually enabled — a disabled
+    // query sits at status "pending" forever and would freeze the banner.
+    entityPending: barcodeMissed && entityLookup.status === "pending",
+    resume,
+  };
 }

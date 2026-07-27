@@ -45,6 +45,7 @@ const SECTIONS: ReadonlyArray<{
   { base: "/settings", group: "system", label: <Trans>Settings</Trans> },
   { base: "/imports", group: "system", label: <Trans>Imports</Trans> },
   { base: "/scan", group: "overview", label: <Trans>Scan</Trans> },
+  { base: "/capture", group: "overview", label: <Trans>Capture</Trans> },
   { base: "/loans", group: "inventory", label: <Trans>Loans</Trans> },
   { base: "/items", group: "inventory", label: <Trans>Items</Trans> },
 ];

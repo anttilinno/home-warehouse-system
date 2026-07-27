@@ -59,8 +59,16 @@ function bannerStatus(
   data: unknown,
   isOnline: boolean,
   fetchStatus: "fetching" | "paused" | "idle",
+  entity: { match: unknown; pending: boolean },
 ): ScanBannerStatus {
-  if (status === "success") return data ? "match" : "not-found";
+  if (status === "success") {
+    if (data) return "match";
+    // Barcode miss → the short-code registry fallback decides. Stay LOADING
+    // while it is in flight so the banner never flashes NOT FOUND at a label
+    // that does resolve.
+    if (entity.pending) return "loading";
+    return entity.match ? "match" : "not-found";
+  }
   if (!isOnline && (status === "error" || fetchStatus === "paused")) {
     return "offline";
   }
@@ -91,7 +99,15 @@ export function ScanPage() {
   // feedback's success() is injected into the funnel so every funneled code
   // beeps/haptics identically regardless of capture path (SCAN-03).
   const feedback = useScanFeedback();
-  const { handleResolveCode, paused, banner, lookup, resume } = useScanResolve({
+  const {
+    handleResolveCode,
+    paused,
+    banner,
+    lookup,
+    entityMatch,
+    entityPending,
+    resume,
+  } = useScanResolve({
     feedback: feedback.success,
   });
 
@@ -138,7 +154,10 @@ export function ScanPage() {
   const effectiveItem = lookup.data ?? offlineHit;
   const status = offlineHit
     ? "match"
-    : bannerStatus(lookup.status, lookup.data, isOnline, lookup.fetchStatus);
+    : bannerStatus(lookup.status, lookup.data, isOnline, lookup.fetchStatus, {
+        match: entityMatch,
+        pending: entityPending,
+      });
   const showBanner = banner !== null;
 
   // Opening the quick-action menu (MATCH only). Closing it = Back to Scan.
@@ -255,6 +274,7 @@ export function ScanPage() {
                 status={status}
                 code={banner.code}
                 item={effectiveItem}
+                entityMatch={entityMatch}
                 onOpenActions={openActions}
                 onRetry={retry}
               />

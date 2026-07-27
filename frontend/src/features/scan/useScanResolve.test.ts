@@ -121,6 +121,97 @@ describe("useScanResolve", () => {
     });
   });
 
+  it("falls back to the short-code registry when the barcode misses", async () => {
+    let resolveCalls = 0;
+    server.use(
+      http.get("/api/workspaces/:wsId/items/by-barcode/:code", () =>
+        HttpResponse.json({ detail: "not found" }, { status: 404 }),
+      ),
+      http.get("/api/workspaces/:wsId/short-codes/:code", ({ params }) => {
+        resolveCalls += 1;
+        return HttpResponse.json({
+          entity_type: "location",
+          entity_id: "loc-1",
+          name: `Shelf ${params.code}`,
+        });
+      }),
+    );
+    const { wrapper } = makeWrapper();
+    const { result } = renderHook(() => useScanResolve({ feedback: vi.fn() }), {
+      wrapper,
+    });
+
+    act(() => {
+      result.current.handleResolveCode("7F3K2A", "qr_code");
+    });
+
+    await waitFor(() =>
+      expect(result.current.entityMatch).toEqual({
+        entity_type: "location",
+        entity_id: "loc-1",
+        name: "Shelf 7F3K2A",
+      }),
+    );
+    expect(result.current.entityPending).toBe(false);
+    expect(resolveCalls).toBe(1);
+  });
+
+  it("does not hit the registry when the barcode already matched an item", async () => {
+    let resolveCalls = 0;
+    server.use(
+      http.get("/api/workspaces/:wsId/short-codes/:code", () => {
+        resolveCalls += 1;
+        return HttpResponse.json({
+          entity_type: "location",
+          entity_id: "loc-1",
+          name: "Shelf",
+        });
+      }),
+    );
+    const { wrapper } = makeWrapper();
+    const { result } = renderHook(() => useScanResolve({ feedback: vi.fn() }), {
+      wrapper,
+    });
+
+    act(() => {
+      result.current.handleResolveCode("CODE-MATCH", "qr_code");
+    });
+
+    await waitFor(() => expect(result.current.lookup.data).toBeTruthy());
+    expect(result.current.entityMatch).toBeNull();
+    expect(result.current.entityPending).toBe(false);
+    expect(resolveCalls).toBe(0);
+  });
+
+  it("stays NOT-FOUND when neither the barcode nor the registry knows the code", async () => {
+    let resolveCalls = 0;
+    server.use(
+      http.get("/api/workspaces/:wsId/items/by-barcode/:code", () =>
+        HttpResponse.json({ detail: "not found" }, { status: 404 }),
+      ),
+      http.get("/api/workspaces/:wsId/short-codes/:code", () => {
+        resolveCalls += 1;
+        return HttpResponse.json(
+          { detail: "short code not found" },
+          { status: 404 },
+        );
+      }),
+    );
+    const { wrapper } = makeWrapper();
+    const { result } = renderHook(() => useScanResolve({ feedback: vi.fn() }), {
+      wrapper,
+    });
+
+    act(() => {
+      result.current.handleResolveCode("ZZZZ99", "qr_code");
+    });
+
+    // The registry must actually be consulted before NOT-FOUND is final.
+    await waitFor(() => expect(resolveCalls).toBe(1));
+    await waitFor(() => expect(result.current.entityPending).toBe(false));
+    expect(result.current.entityMatch).toBeNull();
+  });
+
   it("maps a 500 to ERROR (lookup.status === 'error')", async () => {
     server.use(
       http.get("/api/workspaces/:wsId/items/by-barcode/:code", () =>

@@ -15,4 +15,10 @@ export const MK = {
   // Idempotency-Key (POST creates a row — not naturally idempotent, unlike the
   // absolute-set quantity PATCH above).
   inventoryCreate: ["inventory", "create"] as const,
+  // /capture: create an entity AND upload its photo as ONE queued unit. It
+  // cannot be two mutations — the photo upload needs the id the server only
+  // assigns when the create actually runs, and there is no temp-id remapping
+  // in this codebase. Chaining them in a single mutationFn sidesteps that
+  // entirely: on reconnect the create resolves first, in the same function.
+  captureCreate: ["capture", "create"] as const,
 };

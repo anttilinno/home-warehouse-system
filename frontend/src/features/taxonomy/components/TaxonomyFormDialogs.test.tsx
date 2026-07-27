@@ -63,6 +63,13 @@ function renderWithClient(ui: ReactElement) {
   );
 }
 
+// The location/container dialogs are inline (unrouted), but a short-code
+// conflict navigates to the entity already holding the code — so they need a
+// Router in context. The category dialog brings its own (it IS routed).
+function renderInRouter(ui: ReactElement) {
+  return renderWithClient(<MemoryRouter>{ui}</MemoryRouter>);
+}
+
 function renderCategoryDialog(mode: "create" | "edit") {
   return renderWithClient(
     <MemoryRouter
@@ -142,7 +149,7 @@ describe("ContainerFormDialog", () => {
     const created = vi.fn(() => HttpResponse.json(CONTAINER));
     server.use(http.post("/api/workspaces/:wsId/containers", created));
 
-    renderWithClient(<ContainerFormDialog open onClose={vi.fn()} />);
+    renderInRouter(<ContainerFormDialog open onClose={vi.fn()} />);
 
     await user.click(screen.getByRole("button", { name: /save container/i }));
 
@@ -164,7 +171,7 @@ describe("ContainerFormDialog", () => {
     );
     const onClose = vi.fn();
 
-    renderWithClient(
+    renderInRouter(
       <ContainerFormDialog open container={CONTAINER} onClose={onClose} />,
     );
 
@@ -226,7 +233,7 @@ describe("LocationFormDialog", () => {
     const created = vi.fn(() => HttpResponse.json({ id: "loc-new" }));
     server.use(http.post("/api/workspaces/:wsId/locations", created));
 
-    renderWithClient(<LocationFormDialog open onClose={vi.fn()} />);
+    renderInRouter(<LocationFormDialog open onClose={vi.fn()} />);
 
     await user.click(screen.getByRole("button", { name: /save location/i }));
 
@@ -245,12 +252,70 @@ describe("LocationFormDialog", () => {
       }),
     );
 
-    renderWithClient(<LocationFormDialog open onClose={onClose} />);
+    renderInRouter(<LocationFormDialog open onClose={onClose} />);
 
     await user.type(screen.getByLabelText(/^name$/i), "Attic");
     await user.click(screen.getByRole("button", { name: /save location/i }));
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(body).toMatchObject({ name: "Attic" });
+  });
+
+  it("names the owner of a duplicate short code instead of a generic error", async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    server.use(
+      http.post("/api/workspaces/:wsId/locations", () =>
+        HttpResponse.json(
+          { detail: "short code already exists" },
+          {
+            status: 400,
+          },
+        ),
+      ),
+      http.get("/api/workspaces/:wsId/short-codes/:code", () =>
+        HttpResponse.json({
+          entity_type: "location",
+          entity_id: "loc-1",
+          name: "Garage shelf B",
+        }),
+      ),
+    );
+
+    renderInRouter(<LocationFormDialog open onClose={onClose} />);
+
+    await user.type(screen.getByLabelText(/^name$/i), "Attic");
+    await user.click(screen.getByRole("button", { name: /save location/i }));
+
+    expect(
+      await screen.findByText(/already used by Garage shelf B/i),
+    ).toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it("keeps the plain conflict message when the code can't be resolved", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.post("/api/workspaces/:wsId/locations", () =>
+        HttpResponse.json(
+          { detail: "short code already exists" },
+          {
+            status: 400,
+          },
+        ),
+      ),
+      http.get("/api/workspaces/:wsId/short-codes/:code", () =>
+        HttpResponse.json({ detail: "not found" }, { status: 404 }),
+      ),
+    );
+
+    renderInRouter(<LocationFormDialog open onClose={vi.fn()} />);
+
+    await user.type(screen.getByLabelText(/^name$/i), "Attic");
+    await user.click(screen.getByRole("button", { name: /save location/i }));
+
+    expect(
+      await screen.findByText(/short code already exists/i),
+    ).toBeInTheDocument();
   });
 });
