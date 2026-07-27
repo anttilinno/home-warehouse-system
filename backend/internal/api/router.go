@@ -50,6 +50,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/label"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/locationphoto"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/maintenance"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/pendingchange"
@@ -319,6 +320,11 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	// on multipart upload. Reuse the existing photoStorage instance (same
 	// upload dir, no new env var — CONTEXT OQ5).
 	attachmentSvc := attachment.NewService(fileRepo, attachmentRepo, photoStorage)
+	// Location photos: own link repo, but the attachment service supplies the
+	// files plumbing (UploadFileBytes/GetFile) and photoStorage the bytes.
+	locationPhotoSvc := locationphoto.NewService(
+		postgres.NewLocationPhotoRepository(pool), attachmentSvc, photoStorage,
+	)
 	activitySvc := activity.NewService(activityRepo)
 	// Every entity SSE publish also writes an activity_log row (single chokepoint).
 	broadcaster.SetTap(activity.NewEventTap(activitySvc, logger))
@@ -521,6 +527,11 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 			location.RegisterRoutes(wsAPI, locationSvc, broadcaster)
 			container.RegisterRoutes(wsAPI, containerSvc, broadcaster)
 
+			// JSON sibling of /r/{code}: resolve a scanned short code to its
+			// owning entity inside THIS workspace (scan lookup + code-conflict
+			// links). Shares the registry resolver with the redirect handler.
+			shortlink.RegisterRoutes(wsAPI, shortlinkRepo)
+
 			// Register Phase 2 domain routes (supporting data)
 			company.RegisterRoutes(wsAPI, companySvc, broadcaster)
 			label.RegisterRoutes(wsAPI, labelSvc, broadcaster)
@@ -556,6 +567,13 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 			// suffixes avoid a huma route collision at boot.
 			attachment.RegisterUploadHandler(r, attachmentSvc, broadcaster)
 			attachment.RegisterServeHandler(r, attachmentSvc, photoStorage)
+
+			// Location photos (migration 010): the link rows live in their own
+			// table, but the bytes reuse the attachment service's files
+			// plumbing, so there is no third copy of upload/checksum/storage.
+			locationphoto.RegisterUploadHandler(r, locationPhotoSvc)
+			locationphoto.RegisterServeHandler(r, locationPhotoSvc)
+			locationphoto.RegisterRoutes(wsAPI, locationPhotoSvc)
 
 			// Register Phase 4 domain routes (loans & borrowers)
 			borrower.RegisterRoutes(wsAPI, borrowerSvc, broadcaster)

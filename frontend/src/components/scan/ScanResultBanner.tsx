@@ -7,6 +7,7 @@ import {
   type StatusPillVariant,
 } from "@/components/retro";
 import type { Item } from "@/lib/types";
+import { shortCodeEntityPath, type ShortCodeMatch } from "@/lib/api/shortCodes";
 
 // SCAN-08 — the 5-state result banner. PRESENTATIONAL: it takes the resolved
 // status (from 11-03's useScanResolve query, offline-aware since Phase 4) +
@@ -31,6 +32,12 @@ export interface ScanResultBannerProps {
   code: string;
   /** The matched item (MATCH state only). */
   item?: Item | null;
+  /**
+   * MATCH on a non-item label: the short-code registry resolved the code to a
+   * LOCATION or CONTAINER. Those have no quick-action menu (it is item-shaped),
+   * so the action is a plain deep link to the owner instead.
+   */
+  entityMatch?: ShortCodeMatch | null;
   /** MATCH: open the quick-action overlay. */
   onOpenActions?: () => void;
   /** ERROR: re-fire the same code. */
@@ -53,33 +60,56 @@ const STATE: Record<
 const BEVEL_BTN =
   "inline-flex cursor-pointer items-center justify-center gap-sp-2 border-2 border-border-ink px-[14px] py-[6px] font-body text-13 font-semibold uppercase tracking-4 bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed";
 
+// Headline text per state, extracted so the banner body stays under the
+// complexity gate (the entity branch pushed it over).
+function BannerHeadline({
+  status,
+  item,
+  entity,
+}: Readonly<{
+  status: ScanBannerStatus;
+  item?: Item | null;
+  entity: ShortCodeMatch | null;
+}>): ReactNode {
+  const wrap = (children: ReactNode) => (
+    <span className="font-body text-14 text-fg-ink">{children}</span>
+  );
+
+  if (status === "match" && item) return wrap(item.name);
+  if (entity) {
+    return wrap(
+      <>
+        {entity.name}{" "}
+        <span className="text-12 uppercase tracking-4 text-fg-muted">
+          {entity.entity_type === "location" ? (
+            <Trans>Location</Trans>
+          ) : (
+            <Trans>Container</Trans>
+          )}
+        </span>
+      </>,
+    );
+  }
+  if (status === "error")
+    return wrap(<Trans>Couldn't look up that code.</Trans>);
+  if (status === "offline") {
+    return wrap(<Trans>Can't verify offline. Add anyway?</Trans>);
+  }
+  return null;
+}
+
 export function ScanResultBanner({
   status,
   code,
   item,
+  entityMatch,
   onOpenActions,
   onRetry,
 }: Readonly<ScanResultBannerProps>) {
   const s = STATE[status];
-
-  let headline: ReactNode = null;
-  if (status === "match" && item) {
-    headline = (
-      <span className="font-body text-14 text-fg-ink">{item.name}</span>
-    );
-  } else if (status === "error") {
-    headline = (
-      <span className="font-body text-14 text-fg-ink">
-        <Trans>Couldn't look up that code.</Trans>
-      </span>
-    );
-  } else if (status === "offline") {
-    headline = (
-      <span className="font-body text-14 text-fg-ink">
-        <Trans>Can't verify offline. Add anyway?</Trans>
-      </span>
-    );
-  }
+  // An item match wins: entityMatch is only consulted when the barcode lookup
+  // found nothing, so the two are never both set.
+  const entity = status === "match" && !item ? entityMatch : null;
 
   return (
     <section
@@ -97,7 +127,7 @@ export function ScanResultBanner({
         <span aria-hidden="true" className="text-14 text-fg-ink">
           {s.glyph}
         </span>
-        {headline}
+        <BannerHeadline status={status} item={item} entity={entity} />
       </div>
 
       <div className="flex items-center justify-between gap-sp-3">
@@ -114,10 +144,15 @@ export function ScanResultBanner({
           )}
         </span>
 
-        {status === "match" && (
+        {status === "match" && item && (
           <button type="button" className={BEVEL_BTN} onClick={onOpenActions}>
             <PixelIcon name="chevron-right" size={16} /> <Trans>ACTIONS</Trans>
           </button>
+        )}
+        {entity && (
+          <Link to={shortCodeEntityPath(entity)} className={BEVEL_BTN}>
+            <PixelIcon name="chevron-right" size={16} /> <Trans>OPEN</Trans>
+          </Link>
         )}
         {(status === "not-found" || status === "offline") && (
           <span className="flex flex-wrap items-center gap-sp-2">
