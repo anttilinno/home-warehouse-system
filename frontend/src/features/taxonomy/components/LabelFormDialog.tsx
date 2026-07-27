@@ -17,6 +17,7 @@ import {
 import { ColorSwatchPicker } from "./ColorSwatchPicker";
 import { DiscardChangesDialog, FormRootError } from "./TaxonomyDialogForm";
 import { DescriptionField, NameField } from "./TaxonomyFormFields";
+import { formErrorMessage } from "@/lib/formError";
 
 // Phase 10 Plan 04 — the label create/edit form. Unlike the routed
 // category/location/container forms, the label form is an INLINE RetroDialog (no
@@ -101,8 +102,10 @@ export function LabelFormDialog({
         await createLabel(body);
       }
       onClose();
-    } catch {
-      setError("root", { message: t`Couldn't save this label.` });
+    } catch (err) {
+      setError("root", {
+        message: formErrorMessage(err, t`Couldn't save this label.`),
+      });
     }
   }
 

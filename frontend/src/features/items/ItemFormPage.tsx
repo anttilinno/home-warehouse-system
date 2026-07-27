@@ -29,6 +29,7 @@ import {
 } from "./hooks/useItemFormMutations";
 import { SkuField } from "./components/SkuField";
 import { BarcodeField } from "./components/BarcodeField";
+import { formErrorMessage } from "@/lib/formError";
 
 // Phase 7 Plan 05 — create/edit item form (ITEM-03 + ITEM-04).
 //
@@ -227,10 +228,12 @@ export function ItemFormPage() {
         const created = await createItem(values);
         navigate(`/items/${created.id}`);
       }
-    } catch {
+    } catch (err) {
       // The mutation's onError already surfaced a persistent retroToast.error.
       // Render the in-window form-level banner too (UI-SPEC §3 form-level error).
-      setError("root", { message: t`Couldn't save this item.` });
+      setError("root", {
+        message: formErrorMessage(err, t`Couldn't save this item.`),
+      });
     }
   }
 

@@ -29,6 +29,7 @@ import {
 import { buildTree, type TreeNode } from "@/features/taxonomy/lib/buildTree";
 import { DiscardChangesDialog, FormRootError } from "./TaxonomyDialogForm";
 import { DescriptionField, NameField } from "./TaxonomyFormFields";
+import { formErrorMessage } from "@/lib/formError";
 
 // Phase 10 Plan 02 — the category create/edit form (TAX-01). Despite the
 // "Dialog" name it is a ROUTED blue Window (the InventoryFormPage / BorrowerForm
@@ -170,8 +171,10 @@ export function CategoryFormDialog({
         await createCategory(body);
       }
       navigate("/taxonomy?tab=categories");
-    } catch {
-      setError("root", { message: t`Couldn't save this category.` });
+    } catch (err) {
+      setError("root", {
+        message: formErrorMessage(err, t`Couldn't save this category.`),
+      });
     }
   }
 
