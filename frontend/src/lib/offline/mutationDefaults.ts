@@ -15,6 +15,8 @@ import {
   type CreateLocationBody,
 } from "@/lib/api/location";
 import { inventoryApi } from "@/lib/api/inventory";
+import { photosApi } from "@/lib/api/photos";
+import { locationPhotosApi } from "@/lib/api/locationPhotos";
 import type { Inventory, Item } from "@/lib/types";
 import { MK } from "./mutationKeys";
 
@@ -63,6 +65,48 @@ export interface InventoryCreateVars {
   wsId: string;
   idemKey: string;
   body: Record<string, unknown>;
+}
+
+// /capture — one label becomes one queued unit: create the entity, then attach
+// the photo that was taken with it.
+//
+// `photo` is a File. The persister serialises with JSON.stringify, so a File
+// does NOT survive a page reload — an in-memory paused mutation keeps it and
+// drains fine on reconnect, but a reload-while-offline restores the capture
+// with `photo: undefined`. captureMutationFn treats that as "create anyway":
+// losing the photo is bad, silently losing the whole capture is worse.
+//
+// ponytail: photos are dropped by a reload-while-offline. Storing the blob in
+// its own idb key and referencing it by id would fix it — do that when field
+// use shows people actually relaunching mid-capture.
+export interface CaptureVars {
+  wsId: string;
+  idemKey: string;
+  kind: "item" | "location";
+  body: Record<string, unknown>;
+  photo?: File;
+}
+
+async function captureMutationFn(vars: CaptureVars): Promise<Item | Location> {
+  const headers = { "Idempotency-Key": vars.idemKey };
+
+  if (vars.kind === "location") {
+    const location = await locationApi.create(
+      vars.wsId,
+      vars.body as CreateLocationBody,
+      headers,
+    );
+    if (vars.photo) {
+      await locationPhotosApi.upload(vars.wsId, location.id, vars.photo);
+    }
+    return location;
+  }
+
+  const item = await itemsApi.create(vars.wsId, vars.body, headers);
+  if (vars.photo) {
+    await photosApi.upload(vars.wsId, item.id, vars.photo);
+  }
+  return item;
 }
 
 // `client` defaults to the app singleton; tests pass their own QueryClient
@@ -127,6 +171,20 @@ export function registerMutationDefaults(
     },
     onSettled: (_data, _err, vars) =>
       client.invalidateQueries({ queryKey: ["locations", vars.wsId] }),
+  });
+
+  client.setMutationDefaults(MK.captureCreate, {
+    mutationFn: captureMutationFn,
+    // Same serial FIFO as the other offline writes.
+    scope: { id: "offline-writes" },
+    onError: (_err, vars) => {
+      const name = (vars.body?.name as string | undefined) ?? "capture";
+      retroToast.error(i18n._(msg`Couldn't sync "${name}".`));
+    },
+    onSettled: (_data, _err, vars) =>
+      client.invalidateQueries({
+        queryKey: [vars.kind === "location" ? "locations" : "items", vars.wsId],
+      }),
   });
 
   client.setMutationDefaults(MK.inventoryQuantity, {

@@ -46,6 +46,11 @@ import { WishlistPage } from "@/features/wishlist/WishlistPage";
 const ScanPage = lazy(() =>
   import("@/features/scan/ScanPage").then((m) => ({ default: m.ScanPage })),
 );
+const CapturePage = lazy(() =>
+  import("@/features/scan/CapturePage").then((m) => ({
+    default: m.CapturePage,
+  })),
+);
 
 // /analytics is React.lazy so recharts (transitively imported by AnalyticsPage)
 // lands in its own `charts` manualChunk (13b-05) and only downloads when the
@@ -185,6 +190,15 @@ export function AppRoutes() {
           element={
             <Suspense fallback={<RouteFallback />}>
               <ScanPage />
+            </Suspense>
+          }
+        />
+        {/* Mobile rapid-capture loop: scan → photo → save → next. */}
+        <Route
+          path="capture"
+          element={
+            <Suspense fallback={<RouteFallback />}>
+              <CapturePage />
             </Suspense>
           }
         />

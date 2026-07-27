@@ -230,7 +230,7 @@ export function Sidebar({
         <NavGroup
           groupKey="overview"
           title={<Trans>Overview</Trans>}
-          routes={["/", "/analytics", "/scan"]}
+          routes={["/", "/analytics", "/scan", "/capture"]}
         >
           <NavItem icon="app-windows" label={<Trans>Dashboard</Trans>} to="/" />
           <NavItem
@@ -240,6 +240,8 @@ export function Sidebar({
           />
           {/* Scan promoted to Overview — it is the primary capture action. */}
           <NavItem icon="camera" label={<Trans>Scan</Trans>} to="/scan" />
+          {/* The mobile capture loop — scan/photo/save/next, details later. */}
+          <NavItem icon="image" label={<Trans>Capture</Trans>} to="/capture" />
         </NavGroup>
         <NavGroup
           groupKey="inventory"
