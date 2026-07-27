@@ -319,17 +319,17 @@ Left open deliberately when `/capture`, location photos and short-code
 resolution shipped. Nothing here blocks the feature; each is a named ceiling
 with its upgrade path. Ordered roughly by who gets bitten first.
 
-**Data loss / correctness**
+**Data loss / correctness — CLOSED 2026-07-27 (debt session)**
 
-- **A photo is lost by a reload while offline** — the query persister serialises with `JSON.stringify`, so a `File` in a paused mutation's vars does not survive a restore. The capture still replays and creates the entity (losing the photo beats losing the whole capture), but the image is gone silently. Fix: store the blob under its own idb key and reference it by id from the mutation vars. Marked `ponytail:` in `frontend/src/lib/offline/mutationDefaults.ts`.
-- **Scanning the same label twice while offline queues two creates** — resolution cannot run offline, so the duplicate guard is skipped by design (the UI says so). The second create fails on drain with a short-code conflict toast, leaving one good row. Fix: dedupe queued captures by code before firing.
-- **No orphan cleanup for `warehouse.files`** — deleting a location photo drops the link row and leaves the file row + bytes, matching the existing attachment delete path. Fix: a sweep of unreferenced files, or a refcount if a file ever becomes linked from more than one place. Marked `ponytail:` in `locationphoto.Service.Delete`.
+- ~~**A photo is lost by a reload while offline**~~ — CLOSED. The bytes now live in an idb side-store (`frontend/src/lib/offline/photoStore.ts`) keyed by a `photoId` the mutation vars carry as a string, so they survive `JSON.stringify`. Stored as `{name, type, buf}` rather than a raw `File`: structured-clone of `File` is fine in real browsers but not in jsdom, and the plain-ArrayBuffer form is unit-testable. Deleted in `onSettled`, so a retry can still read them but nothing accumulates. Guarded by a test that runs the vars through a real JSON round trip.
+- ~~**Scanning the same label twice while offline queues two creates**~~ — CLOSED. `useCaptureMutation.capture()` returns `false` when a pending capture already carries the same code (matched against the mutation cache, plus an in-flight set covering the photo-write gap); `/capture` toasts and re-arms without counting it. Applies online too, closing the double-tap window before the first create resolves.
+- ~~**No orphan cleanup for `warehouse.files`**~~ — CLOSED. Weekly asynq sweep (`backend/internal/jobs/orphaned_files.go`, Sundays 05:00) deletes file rows no link table references, bytes first so a failure never strands them. 24h grace period because an upload INSERTs the file row before its link row. Registered only when blob storage is configured. Four integration assertions against real Postgres.
 
-**Coverage**
+**Coverage — CLOSED 2026-07-27 (debt session)**
 
-- **`ContainersTab`'s `?focus=` has no test** — the locations path is covered (expand-ancestors + tint + stale-id no-op); the containers table branch is asserted by nothing.
-- **The capture e2e does not exercise the photo upload** — `frontend/e2e/capture.spec.ts` covers save/re-arm/duplicate-refusal only. The photo path has unit + Go integration coverage plus a manual live round trip, but no browser-level guard. Playwright can drive the hidden input via `setInputFiles`.
-- **Nothing cheap guards huma's schema-name collision** — two packages exporting the same response type name panic the router at boot, and only the tagged integration lane (which builds the real router) catches it. A plain `go test ./...` stays green. Cost this session: one boot panic caught late.
+- ~~**`ContainersTab`'s `?focus=` has no test**~~ — CLOSED. Two tests: the scanned row is tinted and scrolled into view (with the sibling row proven untinted), and an unknown id tints nothing.
+- ~~**The capture e2e does not exercise the photo upload**~~ — CLOSED. `capture.spec.ts` now drives the hidden input with `setInputFiles` and verifies through the API that the photo landed against the location that same capture created. Note `e2e/` is NOT covered by `tsc -b` (which only includes `src`), so running the spec is its only check.
+- ~~**Nothing cheap guards huma's schema-name collision**~~ — CLOSED. `backend/internal/api/router_test.go` builds the real router with a nil pool (nothing dials at construction) under the plain `go test ./...` lane, with and without the Authelia flag.
 
 **Product edges**
 
@@ -341,9 +341,57 @@ with its upgrade path. Ordered roughly by who gets bitten first.
 **Pre-existing, same class**
 
 - **Other forms still hang offline** — `ItemFormPage` and friends `await` a create that pauses rather than resolving, so the form sits there until reconnect (`offline-replay.spec.ts` documents the behaviour). `/capture` is the only surface converted to fire-and-advance so far.
-- **`warehouse_dev` is at migration 002** — 003-010 are unapplied on the local dev DB (verified 2026-07-27; `uq_locations_ws_id` / `uq_files_ws_id` were missing, which is why migration 010 adds them defensively). Environment drift, not code: run `dbmate up`.
+- ~~**`warehouse_dev` is at migration 002**~~ — resolved 2026-07-27: `dbmate up` applied 003-010. Environment drift, not code.
+
+## Found while closing the above (2026-07-27 debt session)
+
+Two gates were red on `master` and nobody noticed, because the merge that
+shipped Rapid Capture was pushed past the pre-push hook:
+
+- **`tsc -b` failed with 12 errors** — in `CapturePage.tsx`/`.test.tsx`,
+  `ScanResultBanner.tsx` and `mutationDefaults.ts` (missing `Item` /
+  `ShortCodeMatch` type imports, two unused bindings, a `Record` →
+  `CreateLocationBody` cast, `let x = null` narrowing to `never`). This was a
+  **deploy blocker, not a lint nit**: `frontend/Dockerfile` runs
+  `bunx tsc -b && bunx vite build`, so the production image could not be built
+  from `master` at all. Fixed; `bun run lint:tsc` is green.
+- **`scripts/__tests__/check-forbidden-imports.test.mjs` failed 3 of 5
+  subtests** — it still asserted the `idb`/`offline`/`sync` bans that v3.0
+  deliberately lifted, while the script now forbids only `serwist`.
+  `.github/workflows/lint-frontend.yml` runs it, so that job was red. Rewritten
+  against the current contract; the lifted bans are now asserted as *allowed*,
+  so a re-tightening fails there rather than at the persister's import site.
+
+Both were fixed in the same session, along with the two causes behind them:
+
+- **The pre-push hook was skipping every gate, silently.** It hardcoded
+  `origin/master`, but this clone's remote is **`github-personal`** — so
+  `git rev-parse origin/master` failed and the hook hit its
+  "base ref missing → `exit 0`" branch. That is the actual reason the
+  unbuildable tree reached master; it was never bypassed with `--no-verify`.
+  Now: the base ref is resolved by trying `origin/master`, then
+  `<remote>/master` for each configured remote, then local `master`; and if
+  nothing resolves the hook runs the whole-tree gates anyway, skipping only
+  golangci's new-code diff (the one check that genuinely needs a baseline).
+  Verified resolving to `github-personal/master`.
+- **`frontend/e2e/` was in no tsconfig `include`**, so 20 specs got zero
+  typechecking and a bad locator was only discoverable by running the whole
+  live stack. Now: `frontend/tsconfig.e2e.json`, referenced from the root
+  `tsconfig.json`, so `lint:tsc` and the hook compile them. All 20 pass.
+
+Not a repo issue, recorded so it is not chased again:
+
+- The unit suite showed 3-5 failures per full run during this session
+  (`App.onlineSeed`, `AppShell`, `InventoryFormPage`, `PaperlessPage`,
+  `CapturePage`, `ContainersTab` — a different handful each time, all 5s
+  timeouts). Cause was **machine load from an unrelated workload** (load
+  average 23 on 8 cores), not the tests: the same suite runs 233 files /
+  1510 tests green in ~136s on an idle machine, every failure passes in
+  isolation, and the identical failures reproduce on a clean checkout.
+  Don't "fix" it by raising `testTimeout`.
 
 ---
+*Last updated: 2026-07-27 (debt session) — closed 6 of the Rapid Capture known gaps (offline photo persistence via an idb side-store, offline capture dedupe, `warehouse.files` orphan sweep, `ContainersTab` `?focus=` tests, capture e2e photo path, huma schema-collision router guard) and fixed two red gates found on `master`: 12 `tsc -b` errors that blocked the frontend production image build, and 3 stale grep-guard subtests. See "Found while closing the above".*
 *Roadmap created: 2026-01-24*
 *Last updated: 2026-07-27 — added Rapid Capture & Location Photos milestone (SHIPPED, merge `8a4e7016`) + a "Known gaps" section recording what was left open: the reload-while-offline photo loss, offline duplicate captures, `warehouse.files` orphans, the two untested branches (ContainersTab `?focus=`, capture e2e photo path), the huma schema-name collision only the integration lane catches, and the pre-existing await-hangs-offline pattern in the other forms.*
 *Last updated: 2026-07-21 — added Backend MCP Server (stdio-over-SSH) milestone (SCAFFOLDED): `backend/cmd/mcp/` + `backend/internal/mcp/` client + 3 read tools landed with tests; design/plan in `PLAN-mcp-ssh.md`. Remaining work (deploy, SSH forced-command, workstation config, write tools) tracked in the milestone entry.*
