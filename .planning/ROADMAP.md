@@ -23,6 +23,8 @@
 - [x] **Wishlist / Purchase Planning** — SHIPPED 2026-06-11. Backend `wishlist_items` domain + repo + routes (migration 004, commit `149457ad`); frontend `WishlistPage` + acquire-flow handoff into the prefilled item create wizard.
 - [ ] **Backend MCP Server (stdio-over-SSH)** — SCAFFOLDED 2026-07-21. Exposes the warehouse backend to a workstation MCP client (Claude Code/Desktop) launched over SSH; SSH is the auth/transport boundary, no network-exposed MCP endpoint. Design = thin HTTP client to the already-running backend (reuses validation/auth/workspace-scoping, no DB re-wiring) with Bearer-JWT auth (login contract) and single re-login-on-401. Plan + rationale: `PLAN-mcp-ssh.md`. Shipped so far: `backend/cmd/mcp/` + `backend/internal/mcp/` (client + 3 read tools `item_search`/`item_get`/`item_lookup_barcode`, proxy raw JSON; 3 client tests green; SDK `modelcontextprotocol/go-sdk v1.6.1`). Remaining: live smoke vs running backend, homelab deploy + SSH forced-command key, workstation `mcpServers` config, then write tools (`item_create`/`item_update`/`inventory_move`).
 
+- [x] **Rapid Capture & Location Photos** — SHIPPED 2026-07-27 (merge `8a4e7016`). Mobile `/capture` loop: scan a label, optional photo, one tap, next — the write carries only what the backend requires and flags `needs_review`, so the existing `?needs_review=true` filter is the desk-side queue; create + photo travel as ONE offline-queued mutation (the upload needs the id the create assigns, and there is no temp-id remapping). Location photos land as a `warehouse.files` link table (migration 010) following the `attachments`/`repair_attachments` pattern with composite workspace-scoped FKs. Short codes now resolve to locations and containers everywhere via a JSON sibling of `/r/{code}`, a duplicate code names its owner and links to it, `?focus=` deep links land on the row, and scanned QR labels stop 404ing (the redirect still emitted v2.1 `/{locale}/dashboard/...` paths). Open items: see "Known gaps" below.
+
 ## Phases
 
 <details>
@@ -311,8 +313,39 @@ Cut from v3.0 per `docs/FRONTEND2_FEATURE_PARITY_PLAN.md` §5/§8 with explicit 
 - **Companies + favorites UI (G-10 remainder)** — backend has full CRUD + favorites toggle; no current UI use-case. Deferred deliberately.
 - **Dark theme** — Retro OS tokens are light-only; v3.0 Appearance ships "light only". Dark variant needs a token set v2 (design work).
 
+## Known gaps — Rapid Capture & Location Photos (2026-07-27, merge `8a4e7016`)
+
+Left open deliberately when `/capture`, location photos and short-code
+resolution shipped. Nothing here blocks the feature; each is a named ceiling
+with its upgrade path. Ordered roughly by who gets bitten first.
+
+**Data loss / correctness**
+
+- **A photo is lost by a reload while offline** — the query persister serialises with `JSON.stringify`, so a `File` in a paused mutation's vars does not survive a restore. The capture still replays and creates the entity (losing the photo beats losing the whole capture), but the image is gone silently. Fix: store the blob under its own idb key and reference it by id from the mutation vars. Marked `ponytail:` in `frontend/src/lib/offline/mutationDefaults.ts`.
+- **Scanning the same label twice while offline queues two creates** — resolution cannot run offline, so the duplicate guard is skipped by design (the UI says so). The second create fails on drain with a short-code conflict toast, leaving one good row. Fix: dedupe queued captures by code before firing.
+- **No orphan cleanup for `warehouse.files`** — deleting a location photo drops the link row and leaves the file row + bytes, matching the existing attachment delete path. Fix: a sweep of unreferenced files, or a refcount if a file ever becomes linked from more than one place. Marked `ponytail:` in `locationphoto.Service.Delete`.
+
+**Coverage**
+
+- **`ContainersTab`'s `?focus=` has no test** — the locations path is covered (expand-ancestors + tint + stale-id no-op); the containers table branch is asserted by nothing.
+- **The capture e2e does not exercise the photo upload** — `frontend/e2e/capture.spec.ts` covers save/re-arm/duplicate-refusal only. The photo path has unit + Go integration coverage plus a manual live round trip, but no browser-level guard. Playwright can drive the hidden input via `setInputFiles`.
+- **Nothing cheap guards huma's schema-name collision** — two packages exporting the same response type name panic the router at boot, and only the tagged integration lane (which builds the real router) catches it. A plain `go test ./...` stays green. Cost this session: one boot panic caught late.
+
+**Product edges**
+
+- **Location photos are visible only in the location edit dialog** — not in the taxonomy tree, and locations have no detail route to hang a gallery on. Captured photos are therefore easy to forget about.
+- **Containers cannot hold photos** — the link-table pattern makes this a thin copy (`container_photos` + the same service), but nothing needs it yet.
+- **No thumbnails for location photos** — originals are served under a 10MB cap with `private, max-age=86400`. Add `image_meta` + the existing image processor when a photo-heavy view feels slow.
+- **The capture counter counts fired saves, not confirmed syncs** — offline it advances before the server has seen anything. Honest for a capture loop, misleading if read as "saved".
+
+**Pre-existing, same class**
+
+- **Other forms still hang offline** — `ItemFormPage` and friends `await` a create that pauses rather than resolving, so the form sits there until reconnect (`offline-replay.spec.ts` documents the behaviour). `/capture` is the only surface converted to fire-and-advance so far.
+- **`warehouse_dev` is at migration 002** — 003-010 are unapplied on the local dev DB (verified 2026-07-27; `uq_locations_ws_id` / `uq_files_ws_id` were missing, which is why migration 010 adds them defensively). Environment drift, not code: run `dbmate up`.
+
 ---
 *Roadmap created: 2026-01-24*
+*Last updated: 2026-07-27 — added Rapid Capture & Location Photos milestone (SHIPPED, merge `8a4e7016`) + a "Known gaps" section recording what was left open: the reload-while-offline photo loss, offline duplicate captures, `warehouse.files` orphans, the two untested branches (ContainersTab `?focus=`, capture e2e photo path), the huma schema-name collision only the integration lane catches, and the pre-existing await-hangs-offline pattern in the other forms.*
 *Last updated: 2026-07-21 — added Backend MCP Server (stdio-over-SSH) milestone (SCAFFOLDED): `backend/cmd/mcp/` + `backend/internal/mcp/` client + 3 read tools landed with tests; design/plan in `PLAN-mcp-ssh.md`. Remaining work (deploy, SSH forced-command, workstation config, write tools) tracked in the milestone entry.*
 *Last updated: 2026-06-12 — v3.0 roadmap amended per `docs/FRONTEND2_FEATURE_PARITY_PLAN.md`: added lettered phases 7b (Inventory/G-1), 10b (Repairs+Maintenance/G-2), 13b (Analytics+Out-of-stock/G-6), 14b (Attachments+Paperless/G-7); folded gap items into existing phases 3-17 (each carries a "Parity additions (2026-06-12)" note); added requirement IDs INV/RPR/MNT/ANL/ATT/PPL/WISH/DECL/NOTIF/ATOM-FB + AUTH-11/12, TAX-07, SCAN-12, SETT-10/11, POL-06; updated dependency edges (8→7b, 13→+7b+10b); deferred quick-capture/web-push/companies-favorites/dark-theme to backlog. Existing integer phase numbers and all 106 prior requirement IDs untouched.*
 *Last updated: 2026-04-30 — v2.2 abandoned (frontend2 wiped); v3.0 Premium-Terminal Frontend roadmap added with 17 phases mapping all 106 requirements (FOUND/TOKEN/SHELL/BAR/PROV/AUTH/ITEM/LOAN/BORR/TAX/SCAN/SETT/DASH/I18N/SYS/TUI/POL); phase numbering RESET to 1 since v2.2 has no continuity with the rebuild.*
