@@ -5,9 +5,9 @@ planning, architecture, and requirements see `.planning/`.
 
 ## E2E Tests (Playwright)
 
-19 specs live in `frontend/e2e/*.spec.ts`: a11y-sweep, analytics,
-attachments-paperless, auth, borrowers, command-palette, inventory, items,
-keyboard-nav, loans-lifecycle, login-dashboard, offline-replay,
+20 specs live in `frontend/e2e/*.spec.ts`: a11y-sweep, analytics,
+attachments-paperless, auth, borrowers, capture, command-palette, inventory,
+items, keyboard-nav, loans-lifecycle, login-dashboard, offline-replay,
 repairs-maintenance, responsive, scan-lookup, settings, sse-online,
 system-group, taxonomy. `.github/workflows/e2e-frontend.yml` runs all of
 them against a real backend + Postgres + vite preview build on every
@@ -76,7 +76,16 @@ tests, `tests/integration/`). **They are NOT parallel-safe across
 packages** — they share the single `warehouse_test` DB and
 truncate/seed each other's rows, so a plain `go test -tags=integration
 ./...` fails en masse. Always add `-p 1` to force serial package
-execution; that's the correctness requirement, not a perf knob.
+execution; that's the correctness requirement, not a perf knob. The same
+truncation also wipes any seeded e2e/dev user in `warehouse_test`, so don't
+run this suite against a DB a live server is using.
+
+The tagged suite is also the ONLY thing that builds the real router, which
+makes it the only guard against huma's schema registry panicking at boot on
+duplicate type names (it keys schemas by bare type name, so two packages
+exporting `PhotoListResponse` kill the server on startup — that is why the
+location-photo types are named `LocationPhoto*`). A green `go test ./...`
+proves nothing about that.
 
 ### Run locally
 

@@ -99,7 +99,7 @@ func TestRedirect_NoCookie_RedirectsToLogin(t *testing.T) {
 		t.Fatalf("status = %d, want 302", rec.Code)
 	}
 	got := rec.Header().Get("Location")
-	want := "/en/login?next=" + url.QueryEscape("/r/ABC123")
+	want := "/login?next=" + url.QueryEscape("/r/ABC123")
 	if got != want {
 		t.Fatalf("Location = %q, want %q", got, want)
 	}
@@ -112,7 +112,7 @@ func TestRedirect_InvalidToken_RedirectsToLogin(t *testing.T) {
 	if rec.Code != http.StatusFound {
 		t.Fatalf("status = %d, want 302", rec.Code)
 	}
-	if !strings.HasPrefix(rec.Header().Get("Location"), "/en/login?next=") {
+	if !strings.HasPrefix(rec.Header().Get("Location"), "/login?next=") {
 		t.Fatalf("Location = %q, want login redirect", rec.Header().Get("Location"))
 	}
 }
@@ -129,7 +129,7 @@ func TestRedirect_SingleItemMatch(t *testing.T) {
 	if rec.Code != http.StatusFound {
 		t.Fatalf("status = %d, want 302", rec.Code)
 	}
-	want := "/en/dashboard/items/" + itemID.String()
+	want := "/items/" + itemID.String()
 	if got := rec.Header().Get("Location"); got != want {
 		t.Fatalf("Location = %q, want %q", got, want)
 	}
@@ -150,7 +150,7 @@ func TestRedirect_SingleContainerMatch(t *testing.T) {
 
 	rec := doRequest(t, h, "CONTNR", validTokenFor(t, svc))
 
-	want := "/en/dashboard/containers?focus=" + id.String()
+	want := "/taxonomy?tab=containers&focus=" + id.String()
 	if got := rec.Header().Get("Location"); got != want {
 		t.Fatalf("Location = %q, want %q", got, want)
 	}
@@ -164,7 +164,7 @@ func TestRedirect_SingleLocationMatch(t *testing.T) {
 
 	rec := doRequest(t, h, "LOCXYZ", validTokenFor(t, svc))
 
-	want := "/en/dashboard/locations?focus=" + id.String()
+	want := "/taxonomy?tab=locations&focus=" + id.String()
 	if got := rec.Header().Get("Location"); got != want {
 		t.Fatalf("Location = %q, want %q", got, want)
 	}
@@ -180,7 +180,7 @@ func TestRedirect_NotFound_RedirectsToClaim(t *testing.T) {
 	if rec.Code != http.StatusFound {
 		t.Fatalf("status = %d, want 302", rec.Code)
 	}
-	want := "/en/dashboard/claim/NOPE12"
+	want := "/claim/NOPE12"
 	if got := rec.Header().Get("Location"); got != want {
 		t.Fatalf("Location = %q, want %q", got, want)
 	}
@@ -201,7 +201,7 @@ func TestRedirect_ForeignWorkspace_RedirectsToClaim(t *testing.T) {
 	if rec.Code != http.StatusFound {
 		t.Fatalf("status = %d, want 302", rec.Code)
 	}
-	if got := rec.Header().Get("Location"); got != "/en/dashboard/claim/FOREIGN1" {
+	if got := rec.Header().Get("Location"); got != "/claim/FOREIGN1" {
 		t.Fatalf("Location = %q, want claim fallback", got)
 	}
 	// The resolver must have been scoped to exactly the user's workspaces.
@@ -210,34 +210,26 @@ func TestRedirect_ForeignWorkspace_RedirectsToClaim(t *testing.T) {
 	}
 }
 
-func TestRedirect_LocaleFromCookie(t *testing.T) {
+// v3 has NO locale path segment (lingui switches locale in-app), so neither a
+// NEXT_LOCALE cookie nor Accept-Language may reappear in a redirect — the two
+// locale tests this replaces asserted the v2.1 "/{locale}/dashboard/..." paths,
+// which 404 against the SPA.
+func TestRedirect_IgnoresLocaleHints(t *testing.T) {
 	svc := newTestJWT()
-	res := &fakeResolver{match: nil}
-	h := NewHandler(res, svc, &fakeWorkspaceLister{workspaceIDs: []uuid.UUID{uuid.New()}})
-
-	rec := doRequest(t, h, "NOPE12", validTokenFor(t, svc),
-		&http.Cookie{Name: "NEXT_LOCALE", Value: "et"})
-
-	if got := rec.Header().Get("Location"); got != "/et/dashboard/claim/NOPE12" {
-		t.Fatalf("Location = %q, want et locale", got)
-	}
-}
-
-func TestRedirect_LocaleFromAcceptLanguage(t *testing.T) {
-	svc := newTestJWT()
-	res := &fakeResolver{match: nil}
-	h := NewHandler(res, svc, &fakeWorkspaceLister{workspaceIDs: []uuid.UUID{uuid.New()}})
+	h := NewHandler(&fakeResolver{match: nil}, svc,
+		&fakeWorkspaceLister{workspaceIDs: []uuid.UUID{uuid.New()}})
 
 	router := chi.NewRouter()
 	router.Get("/r/{code}", h.Redirect)
 	req := httptest.NewRequest(http.MethodGet, "/r/NOPE12", nil)
 	req.AddCookie(&http.Cookie{Name: accessTokenCookie, Value: validTokenFor(t, svc)})
+	req.AddCookie(&http.Cookie{Name: "NEXT_LOCALE", Value: "et"})
 	req.Header.Set("Accept-Language", "ru-RU,ru;q=0.9,en;q=0.8")
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
-	if got := rec.Header().Get("Location"); got != "/ru/dashboard/claim/NOPE12" {
-		t.Fatalf("Location = %q, want ru locale", got)
+	if got := rec.Header().Get("Location"); got != "/claim/NOPE12" {
+		t.Fatalf("Location = %q, want an unprefixed claim path", got)
 	}
 }
 
@@ -247,7 +239,7 @@ func TestRedirect_WorkspaceLookupError_RedirectsToClaim(t *testing.T) {
 
 	rec := doRequest(t, h, "ANYXXX", validTokenFor(t, svc))
 
-	if got := rec.Header().Get("Location"); got != "/en/dashboard/claim/ANYXXX" {
+	if got := rec.Header().Get("Location"); got != "/claim/ANYXXX" {
 		t.Fatalf("Location = %q, want claim fallback", got)
 	}
 }
