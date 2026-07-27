@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
@@ -131,6 +131,18 @@ export function ContainersTab() {
     );
   }, [searchParams, setSearchParams]);
 
+  // ?focus=<id> — where a scanned container label (or a duplicate-code conflict
+  // link) lands. Tint the row and scroll it into view on mount; a callback ref
+  // is enough, no effect needed.
+  const focusId = searchParams.get("focus");
+  const scrollFocusedIntoView = useCallback(
+    (el: HTMLTableRowElement | null) => {
+      // Optional-called: jsdom has no scrollIntoView.
+      el?.scrollIntoView?.({ block: "center" });
+    },
+    [],
+  );
+
   const openDelete = (c: Container) => openDeleteTarget(c.id, c.name);
 
   function confirmDelete() {
@@ -188,7 +200,16 @@ export function ContainersTab() {
                 <RetroTable>
                   <tbody>
                     {group.containers.map((c) => (
-                      <tr key={c.id}>
+                      <tr
+                        key={c.id}
+                        ref={
+                          c.id === focusId ? scrollFocusedIntoView : undefined
+                        }
+                        data-focused={c.id === focusId ? "true" : undefined}
+                        className={
+                          c.id === focusId ? "bg-titlebar-butter" : undefined
+                        }
+                      >
                         <td>
                           <span
                             className={`font-body text-14 ${

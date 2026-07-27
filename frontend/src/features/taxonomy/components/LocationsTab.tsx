@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   BevelButton,
@@ -68,6 +69,11 @@ export function LocationsTab() {
     return m;
   }, [rows]);
 
+  // ?focus=<id> — where a scanned short code (or a duplicate-code conflict
+  // link) lands. RetroTree expands the ancestors, scrolls, and tints the row.
+  const [searchParams] = useSearchParams();
+  const focusId = searchParams.get("focus") ?? undefined;
+
   const [archiveTarget, setArchiveTarget] = useState<ArchiveTarget | null>(
     null,
   );
@@ -105,6 +111,7 @@ export function LocationsTab() {
         <RetroTree
           nodes={nodes}
           storageKey="taxonomy:tree:locations"
+          focusId={focusId}
           leadingAction={
             <BevelButton variant="mint" onClick={openCreateRoot}>
               <PixelIcon name="plus" size={16} />{" "}

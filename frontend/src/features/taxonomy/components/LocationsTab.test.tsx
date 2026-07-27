@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { I18nProvider } from "@lingui/react";
+import { MemoryRouter } from "react-router";
 import { i18n } from "@/lib/i18n";
 import { server } from "@/test/msw/server";
 import { ModalStackProvider } from "@/components/modal";
@@ -25,7 +26,7 @@ function setWsId(currentWorkspaceId: string | null) {
   });
 }
 
-function renderTab() {
+function renderTab(entry = "/taxonomy?tab=locations") {
   setWsId("ws-1");
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -34,8 +35,12 @@ function renderTab() {
     <I18nProvider i18n={i18n}>
       <QueryClientProvider client={client}>
         <ModalStackProvider>
-          <RetroToaster />
-          <LocationsTab />
+          {/* Router: the create dialog navigates to the owner of a duplicate
+              short code, and the tab reads ?focus= from the URL. */}
+          <MemoryRouter initialEntries={[entry]}>
+            <RetroToaster />
+            <LocationsTab />
+          </MemoryRouter>
         </ModalStackProvider>
       </QueryClientProvider>
     </I18nProvider>,
@@ -45,6 +50,9 @@ function renderTab() {
 afterEach(() => {
   server.resetHandlers();
   vi.clearAllMocks();
+  // RetroTree persists its expanded set per storageKey — without this, one
+  // test's expansion leaks into the next one's collapsed-by-default assertions.
+  sessionStorage.clear();
 });
 
 describe("LocationsTab", () => {
@@ -68,6 +76,27 @@ describe("LocationsTab", () => {
     await user.click(screen.getByText("Garage"));
     // Shelf A nests under Garage via parent_location (NOT _id — Pitfall 6).
     expect(await screen.findByText("Shelf A")).toBeInTheDocument();
+  });
+
+  it("?focus= reveals a nested row without any clicking (scan deep link)", async () => {
+    // Shelf A (loc-2) is collapsed under Garage by default — the deep link has
+    // to expand the ancestor chain for the row to exist at all.
+    renderTab("/taxonomy?tab=locations&focus=loc-2");
+
+    const row = await screen.findByText("Shelf A");
+    expect(row).toBeInTheDocument();
+    expect(row.closest("[role=treeitem]")).toHaveAttribute(
+      "data-focused",
+      "true",
+    );
+  });
+
+  it("?focus= with an id that isn't in the tree changes nothing", async () => {
+    renderTab("/taxonomy?tab=locations&focus=loc-does-not-exist");
+
+    expect(await screen.findByText("Garage")).toBeInTheDocument();
+    // No spurious expansion of unrelated branches.
+    expect(screen.queryByText("Shelf A")).not.toBeInTheDocument();
   });
 
   it("⊕ ADD ROOT LOCATION opens the inline create dialog", async () => {
