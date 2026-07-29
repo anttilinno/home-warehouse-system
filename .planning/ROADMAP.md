@@ -331,16 +331,17 @@ with its upgrade path. Ordered roughly by who gets bitten first.
 - ~~**The capture e2e does not exercise the photo upload**~~ — CLOSED. `capture.spec.ts` now drives the hidden input with `setInputFiles` and verifies through the API that the photo landed against the location that same capture created. Note `e2e/` is NOT covered by `tsc -b` (which only includes `src`), so running the spec is its only check.
 - ~~**Nothing cheap guards huma's schema-name collision**~~ — CLOSED. `backend/internal/api/router_test.go` builds the real router with a nil pool (nothing dials at construction) under the plain `go test ./...` lane, with and without the Authelia flag.
 
-**Product edges**
+**Product edges — triaged 2026-07-29**
 
-- **Location photos are visible only in the location edit dialog** — not in the taxonomy tree, and locations have no detail route to hang a gallery on. Captured photos are therefore easy to forget about.
-- **Containers cannot hold photos** — the link-table pattern makes this a thin copy (`container_photos` + the same service), but nothing needs it yet.
-- **No thumbnails for location photos** — originals are served under a 10MB cap with `private, max-age=86400`. Add `image_meta` + the existing image processor when a photo-heavy view feels slow.
-- **The capture counter counts fired saves, not confirmed syncs** — offline it advances before the server has seen anything. Honest for a capture loop, misleading if read as "saved".
+- **Location photos are visible only in the location edit dialog** — DEFERRED. Not in the taxonomy tree, and locations have no detail route to hang a gallery on, so captured photos are easy to forget about. But the photo already shows during the exact desk task it exists for (open the tree row → edit → name it), so nobody is blocked. Cheapest honest upgrade when it bites: a photo-count badge on the tree row (`LEFT JOIN LATERAL count` in the location list query → a `photo_count` on the list DTO → a glyph in `RetroTree.tsx`, whose `RetroTreeNode` already carries `shortCode`). A detail route + gallery only if the badge proves insufficient.
+- **Containers cannot hold photos** — DROPPED. The roadmap already said "nothing needs it yet" and a caller search confirms it: `/capture` offers only SAVE AS ITEM / SAVE AS LOCATION, and no other surface asks. Re-open only if capture grows a container branch; then it is migration `NNN_container_photos.sql` copied from `010_location_photos.sql` plus a `containerphoto` package copied from `locationphoto`, with the types named `ContainerPhoto*` (huma keys schemas by bare type name — see `internal/api/router_test.go`).
+- **No thumbnails for location photos** — DEFERRED, strictly after the gallery above. Originals are served under a 10MB cap with `private, max-age=86400`, which is fine for the one 96×96 strip that consumes them today. Note the asymmetry that raises the cost: item photos carry their thumbnail state as inline columns on `warehouse.item_photos` (`thumbnail_status`, `thumbnail_{small,medium,large}_path`, migration 001) driven by `jobs/thumbnail_processor.go`; location photos are `warehouse.files` + a link table. When it lands, hang the columns off `warehouse.files` so attachments and any future photo link table inherit them too.
+- ~~**The capture counter counts fired saves, not confirmed syncs**~~ — CLOSED 2026-07-29. `captured` still counts fired saves; a second pill next to it counts captures the server has not confirmed (`useMutationState` filtered to `MK.captureCreate` + `status: "pending"`, so paused-offline and in-flight both count, and it clears itself as the queue drains). No new state — the same mechanism the TopBar pending badge already uses. The existing offline test asserts both pills and that "syncing" clears on reconnect while "captured" stays.
 
 **Pre-existing, same class**
 
-- **Other forms still hang offline** — `ItemFormPage` and friends `await` a create that pauses rather than resolving, so the form sits there until reconnect (`offline-replay.spec.ts` documents the behaviour). `/capture` is the only surface converted to fire-and-advance so far.
+- ~~**Other forms still hang offline**~~ — CLOSED 2026-07-29. Root cause was four wrappers all doing `return create.mutateAsync(vars)` (item, location, container, inventory-entry): with `networkMode: "online"` the mutation pauses offline and `mutateAsync` never settles, so the awaiting form sat there until reconnect. One shared helper, `frontend/src/lib/offline/awaitOrQueue.ts`, now decides: online → `mutateAsync` unchanged (the caller still gets the server row, a rejection still reaches the form banner); offline → `mutate` (queued) and resolve `null`, plus a "saved to the queue" toast, since offline there is no success toast to fire. The four wrappers widen to `Promise<T | null>`, which is what forces every call site to handle the queued case — only `ItemFormPage` read the result, and it now routes to `/items` (the optimistic row is already in the list cache) instead of to an id that does not exist yet. `offline-replay.spec.ts` lost its Cancel → DISCARD workaround, which existed only to escape the hang.
+  Deliberate ceilings: `awaitOrQueue`'s online check races the request (online at the check, offline before the bytes leave → it still pauses mid-flight); and it is only for mutations with a REGISTERED DEFAULT, since those survive a reload — updates and deletes have none, so firing one offline would drop it, and they keep awaiting.
 - ~~**`warehouse_dev` is at migration 002**~~ — resolved 2026-07-27: `dbmate up` applied 003-010. Environment drift, not code.
 
 ## Found while closing the above (2026-07-27 debt session)
@@ -379,6 +380,27 @@ Both were fixed in the same session, along with the two causes behind them:
   live stack. Now: `frontend/tsconfig.e2e.json`, referenced from the root
   `tsconfig.json`, so `lint:tsc` and the hook compile them. All 20 pass.
 
+## Found while closing the above (2026-07-29)
+
+- **The Rapid Capture merge never ran `bun run i18n:extract`.** 75 msgids —
+  every `/capture` string, the saved-views chrome, the dark-mode copy — existed
+  in `src/` but in none of the three catalogs. `check-i18n-catalog.mjs` (a CI
+  job) only checks catalog-internal parity, so an msgid missing from *all three*
+  files reads as green: the guard cannot see a string that was never extracted.
+  Meanwhile lingui resolves an uncatalogued id to the id itself, so those
+  strings rendered as hashes in production. Extracted and hand-filled et + ru
+  (150 msgstr); the guard now reports 1022 msgids at full parity. If a future
+  guard should catch this, it needs a src-coverage check, not a parity check.
+- **`warehouse_dev` had drifted to migration 009** — `010_location_photos.sql`
+  was unapplied, so `GET /locations/{id}/photos` 500'd and `capture.spec.ts`
+  failed locally. `dbmate up` fixed it. Same environment drift recorded (and
+  resolved) on 2026-07-27 at 002 — it recurs whenever a migration lands.
+- **`items.spec.ts` fails against this dev DB** and will keep failing: it has
+  51,573 items from load-test residue, the default sort is name-ASC, and the
+  spec asserts its freshly-seeded `E2E-<timestamp>` row is visible on page 1.
+  Green in CI (fresh Postgres). Either seed a name that sorts first or search
+  before asserting, the way `offline-replay.spec.ts` already does.
+
 Not a repo issue, recorded so it is not chased again:
 
 - The unit suite showed 3-5 failures per full run during this session
@@ -391,6 +413,7 @@ Not a repo issue, recorded so it is not chased again:
   Don't "fix" it by raising `testTimeout`.
 
 ---
+*Last updated: 2026-07-29 — triaged the five remaining Rapid Capture gaps to an honest cut of two and closed both: the capture counter now carries a second "syncing" pill counting unconfirmed writes, and the four form-create wrappers route through `lib/offline/awaitOrQueue.ts` so a create fires-and-queues offline instead of hanging on a paused `mutateAsync` (which let `offline-replay.spec.ts` drop the Cancel → DISCARD workaround that existed only to escape that hang). Container photos DROPPED (no caller); the location-photo gallery and its thumbnails DEFERRED with upgrade paths recorded above. Also extracted 75 msgids the Rapid Capture merge left uncatalogued (they were rendering as hashes in production) and filled et + ru. Verified: 234 files / 1515 unit tests green, `offline-replay` + `capture` + `inventory` + `taxonomy` e2e green against a real backend + Postgres + preview build, and format/biome/tsc/complexity/dup/knip/i18n-catalog all green.*
 *Last updated: 2026-07-27 (debt session) — closed 6 of the Rapid Capture known gaps (offline photo persistence via an idb side-store, offline capture dedupe, `warehouse.files` orphan sweep, `ContainersTab` `?focus=` tests, capture e2e photo path, huma schema-collision router guard) and fixed two red gates found on `master`: 12 `tsc -b` errors that blocked the frontend production image build, and 3 stale grep-guard subtests. See "Found while closing the above".*
 *Roadmap created: 2026-01-24*
 *Last updated: 2026-07-27 — added Rapid Capture & Location Photos milestone (SHIPPED, merge `8a4e7016`) + a "Known gaps" section recording what was left open: the reload-while-offline photo loss, offline duplicate captures, `warehouse.files` orphans, the two untested branches (ContainersTab `?focus=`, capture e2e photo path), the huma schema-name collision only the integration lane catches, and the pre-existing await-hangs-offline pattern in the other forms.*
