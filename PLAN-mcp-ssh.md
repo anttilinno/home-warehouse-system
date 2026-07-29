@@ -37,7 +37,7 @@ workspace scoping, and huma-generated REST shapes. Nothing to keep in sync.
     "warehouse": {
       "command": "ssh",
       "args": [
-        "debian@192.168.10.10",
+        "hws",
         "sudo k3s kubectl -n warehouse exec -i deploy/warehouse-mcp -- warehouse-mcp"
       ]
     }
@@ -46,8 +46,24 @@ workspace scoping, and huma-generated REST shapes. Nothing to keep in sync.
 ```
 
 No secrets here: the credentials live server-side and never leave the cluster.
-It does hardcode the homelab address, so it only works from a machine on that
-network.
+
+`hws` is an **SSH alias each machine defines for itself**, so no homelab address
+is committed and the repo stays portable — point it at a tailnet name or a new
+IP and nothing in git changes. Without the alias the server simply fails to
+start; nothing else breaks.
+
+```
+# ~/.ssh/config
+Host hws
+  HostName 192.168.10.10   # k3s-01
+  User debian
+```
+
+Deliberately NOT a DNS name like `mcp.k3s.lan`. Nothing listens for MCP — the
+pod idles and every session is a `kubectl exec` — so a service-shaped name would
+promise an endpoint that does not exist, and `*.k3s.lan` already means "traefik
+ingress host" in this cluster. What is being addressed is the node, not a
+service; the MCP-ness lives in the command, which already names it twice.
 
 **Homelab** — a `warehouse-mcp` Deployment in namespace `warehouse`, running the
 same `git.lan/antti/warehouse-backend` image as the other four workloads:

@@ -3,7 +3,7 @@
     "warehouse": {
       "command": "ssh",
       "args": [
-        "debian@192.168.10.10",
+        "hws",
         "sudo k3s kubectl -n warehouse exec -i deploy/warehouse-mcp -- warehouse-mcp"
       ]
     }
