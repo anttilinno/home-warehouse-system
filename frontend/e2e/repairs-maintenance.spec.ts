@@ -339,31 +339,33 @@ test("repairs + maintenance: repair rollup + lifecycle start, schedule due → c
       page.locator("table tbody tr", { hasText: scheduleTitle }),
     ).toHaveCount(0);
 
-    // Clean up the schedule for re-runnability: reopen the drawer + DELETE it.
-    await page.goto("/inventory");
-    const reRow = page.locator("table tbody tr", { hasText: rmItemName });
-    await expect(reRow).toBeVisible();
-    await reRow.getByRole("button", { name: /^maintenance$/i }).click();
-    const cleanupDrawer = page.getByRole("dialog", { name: /^MAINTENANCE/i });
-    await expect(cleanupDrawer).toBeVisible();
-    const cleanupSchedRow = cleanupDrawer.locator("li", {
-      hasText: scheduleTitle,
-    });
-    await expect(cleanupSchedRow).toBeVisible();
-    await cleanupSchedRow.getByRole("button", { name: /^delete$/i }).click();
-    const deleteSchedDialog = page.getByRole("dialog", {
-      name: /DELETE SCHEDULE/i,
-    });
-    await expect(deleteSchedDialog).toBeVisible();
-    await deleteSchedDialog
-      .getByRole("button", { name: /^delete$/i })
-      .click();
-    await expect(deleteSchedDialog).toBeHidden();
+    // (Schedule cleanup moved to `finally` — see below.)
   } finally {
     // Best-effort cleanup: archive the seeded inventory entry (a leaked archived
     // row never collides with a later run — the names are unique, T-10b-12). The
     // seeded item + location are left inert behind their unique names.
     if (entryId) {
+      // Delete the schedule through the API, not the drawer UI. Re-opening the
+      // drawer and clicking through DELETE SCHEDULE was the single most
+      // fragile step in this spec and failed in CI twice — and it bought
+      // nothing: the assertions this test exists for end at "the row leaves the
+      // due list". Being in the try body also meant it never ran when the test
+      // failed, which is exactly when leftovers matter most.
+      const schedRes = await page.request
+        .get(`/api/workspaces/${wsId}/inventory/${entryId}/maintenance`)
+        .catch(() => null);
+      if (schedRes?.ok()) {
+        const body = (await schedRes.json()) as
+          | { items?: Array<{ id: string }> }
+          | Array<{ id: string }>;
+        const schedules = Array.isArray(body) ? body : (body.items ?? []);
+        for (const s of schedules) {
+          await page.request
+            .delete(`/api/workspaces/${wsId}/maintenance/${s.id}`)
+            .catch(() => undefined);
+        }
+      }
+
       await page.request
         .post(`/api/workspaces/${wsId}/inventory/${entryId}/archive`)
         .catch(() => undefined);
