@@ -134,7 +134,11 @@ test("by-barcode lookup: MANUAL tab → MATCH banner for a seeded code, NOT-FOUN
   // word + the CREATE WITH CODE affordance (a link to /items/new?barcode=<code>).
   await scanTab.click();
   await expect(page.getByText(/NOT FOUND/i).first()).toBeVisible();
-  const createCta = page.getByRole("link", { name: /create with code/i });
+  // The not-found branch offers two registration targets, ITEM and CONTAINER
+  // (ScanResultBanner) — this asserts the item one. It was written against an
+  // older single "CREATE WITH CODE" affordance that 84cddf90 replaced when the
+  // banner grew the container branch; nothing renamed the spec with it.
+  const createCta = page.getByRole("link", { name: /^item$/i });
   await expect(createCta).toBeVisible();
   await expect(createCta).toHaveAttribute(
     "href",

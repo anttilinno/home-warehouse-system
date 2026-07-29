@@ -56,6 +56,15 @@ test.describe("offline replay: queued create survives reload and drains on recon
       page.getByRole("button", { name: /add item/i }),
     ).toBeVisible();
 
+    // The offline reload in step 4 can only be served by the service worker, so
+    // it has to be installed and precaching-complete BEFORE we cut the network —
+    // otherwise the reload dies on ERR_INTERNET_DISCONNECTED. Passes without
+    // this when the spec runs alone and the SW wins the race anyway; loses it
+    // under a full parallel run.
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+
     await context.setOffline(true);
 
     // ── Create through the real UI: FilterBar's "⊕ ADD ITEM" → /items/new →
