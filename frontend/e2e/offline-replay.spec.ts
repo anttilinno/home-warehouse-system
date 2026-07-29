@@ -66,15 +66,12 @@ test.describe("offline replay: queued create survives reload and drains on recon
     await page.getByLabel("Name").fill(ITEM_NAME);
     await page.getByRole("button", { name: /^save item$/i }).click();
 
-    // The create mutation's networkMode is "online", so it pauses (never
-    // resolves) while offline — the form's onSubmit await just hangs and we
-    // stay on /items/new. The optimistic list-cache patch from onMutate has
-    // already landed, though, so return to the list via the in-app Cancel →
-    // "DISCARD CHANGES?" → Discard path (client-side router nav). A hard
-    // `page.goto` here would be a real document reload — indistinguishable
-    // from the step 4 reload we're about to do on purpose.
-    await page.getByRole("button", { name: /^cancel$/i }).click();
-    await page.getByRole("button", { name: /^discard$/i }).click();
+    // The create mutation's networkMode is "online", so offline it pauses
+    // rather than resolving. `awaitOrQueue` fires it instead of awaiting it and
+    // resolves null, so the form does NOT hang: it routes straight to the list
+    // (no server id to route to) via a client-side nav. That nav must not be a
+    // real document reload — the step 4 reload below is the one that has to
+    // prove the IndexedDB restore.
     await expect(page).toHaveURL(/\/items$/);
 
     const badge = page.getByTestId("pending-writes-badge");

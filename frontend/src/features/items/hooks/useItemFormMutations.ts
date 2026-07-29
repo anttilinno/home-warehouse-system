@@ -8,6 +8,7 @@ import { MK } from "@/lib/offline/mutationKeys";
 import { newIdemKey } from "@/lib/offline/idempotency";
 import { generateShortCode } from "@/lib/offline/shortCode";
 import { newOfflineTempId } from "@/lib/offline/tempId";
+import { awaitOrQueue } from "@/lib/offline/awaitOrQueue";
 import type { ItemCreateVars } from "@/lib/offline/mutationDefaults";
 import type { Item, ItemListResponse } from "@/lib/types";
 import type { ItemFormValues } from "../schema";
@@ -156,11 +157,12 @@ export function useItemFormMutations() {
     onSuccess: () => retroToast.success(t`Item saved.`),
   });
 
-  // Wraps `create.mutateAsync` so callers keep passing bare ItemFormValues —
-  // wsId, the idempotency key, and the client-generated short_code (final at
-  // creation, printed on the label — never remapped) are minted here.
-  function createItem(values: ItemFormValues): Promise<Item> {
-    return create.mutateAsync({
+  // Wraps the create so callers keep passing bare ItemFormValues — wsId, the
+  // idempotency key, and the client-generated short_code (final at creation,
+  // printed on the label — never remapped) are minted here. Resolves `null`
+  // when the write was queued offline rather than sent (awaitOrQueue).
+  function createItem(values: ItemFormValues): Promise<Item | null> {
+    return awaitOrQueue(create, {
       wsId: wsId as string,
       idemKey: newIdemKey(),
       body: { ...buildCreateBody(values), short_code: generateShortCode() },

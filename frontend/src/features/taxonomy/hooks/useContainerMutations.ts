@@ -14,6 +14,7 @@ import { MK } from "@/lib/offline/mutationKeys";
 import { newIdemKey } from "@/lib/offline/idempotency";
 import { generateShortCode } from "@/lib/offline/shortCode";
 import type { ContainerCreateVars } from "@/lib/offline/mutationDefaults";
+import { awaitOrQueue } from "@/lib/offline/awaitOrQueue";
 
 // Phase 10 Plan 03 — the container write surface (TAX-05 create/edit, TAX-06
 // DELETE). MIRRORS useCategoryMutations for shape, with two container-specific
@@ -124,8 +125,11 @@ export function useContainerMutations() {
   // (final at creation, printed on the label — never remapped) are minted
   // here. A short_code already set by the caller (form pre-fill / scanned QR
   // label) wins; only a missing one is generated.
-  function createContainer(body: CreateContainerBody): Promise<Container> {
-    return create.mutateAsync({
+  // Resolves `null` when the write was queued offline rather than sent.
+  function createContainer(
+    body: CreateContainerBody,
+  ): Promise<Container | null> {
+    return awaitOrQueue(create, {
       wsId: wsId as string,
       idemKey: newIdemKey(),
       body: { ...body, short_code: body.short_code ?? generateShortCode() },

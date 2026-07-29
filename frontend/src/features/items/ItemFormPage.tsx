@@ -225,8 +225,11 @@ export function ItemFormPage() {
         retroToast.success(t`Item saved.`);
         navigate(`/items/${created.id}`);
       } else {
+        // `null` = queued offline, so there is no server id to route to. The
+        // optimistic row is already in the list cache (the create's onMutate),
+        // so the list is the honest destination.
         const created = await createItem(values);
-        navigate(`/items/${created.id}`);
+        navigate(created ? `/items/${created.id}` : "/items");
       }
     } catch (err) {
       // The mutation's onError already surfaced a persistent retroToast.error.

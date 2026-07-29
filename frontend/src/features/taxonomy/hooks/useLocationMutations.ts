@@ -13,6 +13,7 @@ import { MK } from "@/lib/offline/mutationKeys";
 import { newIdemKey } from "@/lib/offline/idempotency";
 import { generateShortCode } from "@/lib/offline/shortCode";
 import type { LocationCreateVars } from "@/lib/offline/mutationDefaults";
+import { awaitOrQueue } from "@/lib/offline/awaitOrQueue";
 import { formErrorMessage } from "@/lib/formError";
 import {
   isShortCodeConflict,
@@ -128,8 +129,9 @@ export function useLocationMutations() {
   // (final at creation, printed on the label — never remapped) are minted
   // here. A short_code already set by the caller (form pre-fill / scanned QR
   // label) wins; only a missing one is generated.
-  function createLocation(body: CreateLocationBody): Promise<Location> {
-    return create.mutateAsync({
+  // Resolves `null` when the write was queued offline rather than sent.
+  function createLocation(body: CreateLocationBody): Promise<Location | null> {
+    return awaitOrQueue(create, {
       wsId: wsId as string,
       idemKey: newIdemKey(),
       body: { ...body, short_code: body.short_code ?? generateShortCode() },
