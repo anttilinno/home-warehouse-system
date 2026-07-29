@@ -151,6 +151,9 @@ test("repairs + maintenance: repair rollup + lifecycle start, schedule due → c
   const completedDesc = `E2E-DONE-${stamp}`;
   const pendingDesc = `E2E-REPAIR-${stamp}`;
   const scheduleTitle = `E2E-SCHEDULE-${stamp}`;
+  // Must match seedInventoryEntry's item name — it is how the seeded row is
+  // located in the list (the row's first cell renders the joined item name).
+  const rmItemName = `E2E-RM-ITEM-${stamp}`;
 
   let entryId: string | null = null;
 
@@ -164,10 +167,19 @@ test("repairs + maintenance: repair rollup + lifecycle start, schedule due → c
     // (the one just seeded). Fail loudly if not — the drawers attach to a row.
     await page.goto("/inventory");
     await expect(page).toHaveURL(/\/inventory$/);
-    const firstRow = page.locator("table tbody tr").first();
+    // Locate OUR seeded row by its unique item name, never by position. The
+    // inventory list is created_at DESC, so `.first()` means "the newest entry
+    // in the workspace" — which is only this spec's row until another spec
+    // seeds one microseconds later. inventory.spec seeds an inventory entry
+    // too, and spec FILES run concurrently (playwright.config.ts:
+    // `fullyParallel: false` does not serialise across files), so whichever
+    // seeds last takes slot 1 and the drawers below open against the wrong
+    // entry. That is a race this spec lost in CI while passing every time
+    // locally, where nothing else was running.
+    const seededRow = page.locator("table tbody tr", { hasText: rmItemName });
     await expect(
-      firstRow,
-      "expected at least one inventory entry row to attach the repair/maintenance drawers to",
+      seededRow,
+      "expected the seeded inventory entry row to attach the repair/maintenance drawers to",
     ).toBeVisible();
 
     // ════════════════════════════════════════════════════════════════════════
@@ -175,7 +187,7 @@ test("repairs + maintenance: repair rollup + lifecycle start, schedule due → c
     // ════════════════════════════════════════════════════════════════════════
 
     // Open the per-row REPAIRS drawer (🔧 action; aria-label "Repairs").
-    await firstRow.getByRole("button", { name: /^repairs$/i }).click();
+    await seededRow.getByRole("button", { name: /^repairs$/i }).click();
     const repairsDrawer = page.getByRole("dialog", { name: /^REPAIRS/i });
     await expect(repairsDrawer).toBeVisible();
 
@@ -253,7 +265,7 @@ test("repairs + maintenance: repair rollup + lifecycle start, schedule due → c
     // ════════════════════════════════════════════════════════════════════════
 
     // Open the per-row MAINTENANCE drawer (⟳ action; aria-label "Maintenance").
-    const maintRow = page.locator("table tbody tr").first();
+    const maintRow = page.locator("table tbody tr", { hasText: rmItemName });
     await expect(maintRow).toBeVisible();
     await maintRow.getByRole("button", { name: /^maintenance$/i }).click();
     const maintDrawer = page.getByRole("dialog", { name: /^MAINTENANCE/i });
@@ -312,7 +324,7 @@ test("repairs + maintenance: repair rollup + lifecycle start, schedule due → c
 
     // Clean up the schedule for re-runnability: reopen the drawer + DELETE it.
     await page.goto("/inventory");
-    const reRow = page.locator("table tbody tr").first();
+    const reRow = page.locator("table tbody tr", { hasText: rmItemName });
     await expect(reRow).toBeVisible();
     await reRow.getByRole("button", { name: /^maintenance$/i }).click();
     const cleanupDrawer = page.getByRole("dialog", { name: /^MAINTENANCE/i });
