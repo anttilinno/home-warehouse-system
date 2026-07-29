@@ -131,6 +131,10 @@ msgstr "{0} photo(s) will be permanently removed."
 msgid "{0} restored."
 msgstr "{0} restored."
 
+#: src/features/scan/CapturePage.tsx
+msgid "{captured} captured"
+msgstr "{captured} captured"
+
 #: src/features/inventory/ExpiringPage.tsx
 msgid "{count} expiring"
 msgstr "{count} expiring"
@@ -159,6 +163,10 @@ msgstr "{pendingWrites} pending"
 #: src/features/items/components/PhotoGalleryToolbar.tsx
 msgid "{selectedCount} SELECTED"
 msgstr "{selectedCount} SELECTED"
+
+#: src/features/scan/CapturePage.tsx
+msgid "{syncing} syncing"
+msgstr "{syncing} syncing"
 
 #: src/features/dashboard/components/DashboardStatTiles.tsx
 msgid "{total_inventory} units total"
@@ -353,6 +361,10 @@ msgstr "14-day activity"
 #~ msgid "A helpful hint."
 #~ msgstr "A helpful hint."
 
+#: src/features/scan/CapturePage.tsx
+msgid "A location needs one of our printed labels (4-8 characters) — this looks like a product barcode."
+msgstr "A location needs one of our printed labels (4-8 characters) — this looks like a product barcode."
+
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "A reason is required to reject."
 msgstr "A reason is required to reject."
@@ -534,9 +546,17 @@ msgstr "All loans"
 msgid "All other sessions revoked."
 msgstr "All other sessions revoked."
 
+#: src/features/scan/CapturePage.tsx
+msgid "Already captured — still waiting to sync."
+msgstr "Already captured — still waiting to sync."
+
 #: src/features/auth/RegisterPage.tsx
 msgid "Already have an account?"
 msgstr "Already have an account?"
+
+#: src/features/scan/CapturePage.tsx
+msgid "Already registered:"
+msgstr "Already registered:"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "Amount in your workspace currency."
@@ -647,6 +667,10 @@ msgstr "At least 8 characters."
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "Atom Demo"
 #~ msgstr "Atom Demo"
+
+#: src/features/scan/CapturePage.tsx
+msgid "Attach a photo"
+msgstr "Attach a photo"
 
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "Attachments"
@@ -821,6 +845,15 @@ msgstr "Capacity gauge"
 #: src/features/items/components/CaptionDialog.tsx
 msgid "Caption"
 msgstr "Caption"
+
+#: src/components/layout/breadcrumbs.tsx
+#: src/components/layout/Sidebar.tsx
+msgid "Capture"
+msgstr "Capture"
+
+#: src/features/scan/useCaptureMutation.ts
+msgid "Captured."
+msgstr "Captured."
 
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "Careful."
@@ -1029,6 +1062,7 @@ msgstr "Connected Accounts"
 msgid "Contact"
 msgstr "Contact"
 
+#: src/components/scan/ScanResultBanner.tsx
 #: src/features/inventory/components/InventoryWhereFields.tsx
 msgid "Container"
 msgstr "Container"
@@ -1167,6 +1201,10 @@ msgstr "Couldn't delete this file."
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 msgid "Couldn't delete this label."
 msgstr "Couldn't delete this label."
+
+#: src/features/taxonomy/components/LocationPhotoStrip.tsx
+msgid "Couldn't delete this photo."
+msgstr "Couldn't delete this photo."
 
 #: src/features/repairs/hooks/useRepairMutations.ts
 msgid "Couldn't delete this repair."
@@ -1456,6 +1494,10 @@ msgid "Couldn't sync \"{name}\" — it may have been removed."
 msgstr "Couldn't sync \"{name}\" — it may have been removed."
 
 #: src/lib/offline/mutationDefaults.ts
+msgid "Couldn't sync \"{name}\"."
+msgstr "Couldn't sync \"{name}\"."
+
+#: src/lib/offline/mutationDefaults.ts
 msgid "Couldn't sync a new stock entry."
 msgstr "Couldn't sync a new stock entry."
 
@@ -1711,6 +1753,11 @@ msgstr "DELETE LABEL?"
 #: src/features/settings/SecurityPage.tsx
 msgid "Delete my account"
 msgstr "Delete my account"
+
+#. placeholder {0}: p.original_name
+#: src/features/taxonomy/components/LocationPhotoStrip.tsx
+msgid "Delete photo {0}"
+msgstr "Delete photo {0}"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "DELETE PHOTO?"
@@ -2720,10 +2767,10 @@ msgstr "Loans out"
 msgid "LOCAL"
 msgstr "LOCAL"
 
+#: src/components/scan/ScanResultBanner.tsx
 #: src/features/declutter/DeclutterPage.tsx
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/components/InventoryWhereFields.tsx
-#: src/features/items/ItemFormPage.tsx
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Location"
 msgstr "Location"
@@ -3030,6 +3077,7 @@ msgid "New password"
 msgstr "New password"
 
 #: src/components/retro/data/RetroPagination.tsx
+#: src/features/scan/CapturePage.tsx
 msgid "NEXT"
 msgstr "NEXT"
 
@@ -3431,6 +3479,10 @@ msgstr "offline"
 msgid "OFFLINE"
 msgstr "OFFLINE"
 
+#: src/features/scan/CapturePage.tsx
+msgid "Offline — saved to the queue and synced later. Couldn't check whether this label is already registered."
+msgstr "Offline — saved to the queue and synced later. Couldn't check whether this label is already registered."
+
 #. placeholder {0}: loan.borrower.name
 #: src/features/items/components/LoanPanels.tsx
 msgid "On loan to {0}"
@@ -3452,6 +3504,12 @@ msgstr "Only archived items can be deleted."
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Only workspace owners and admins can review approvals."
 msgstr "Only workspace owners and admins can review approvals."
+
+#: src/components/scan/ScanResultBanner.tsx
+#: src/features/scan/CapturePage.tsx
+#: src/lib/useShortCodeConflict.ts
+msgid "OPEN"
+msgstr "OPEN"
 
 #: src/features/items/components/PhotoTile.tsx
 msgid "Open {label}"
@@ -3622,10 +3680,22 @@ msgstr "Pending approvals"
 msgid "Phone"
 msgstr "Phone"
 
+#: src/features/scan/CapturePage.tsx
+msgid "PHOTO"
+msgstr "PHOTO"
+
 #. placeholder {0}: current + 1
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Photo {0} of {count}"
 msgstr "Photo {0} of {count}"
+
+#: src/features/scan/CapturePage.tsx
+msgid "Photo attached."
+msgstr "Photo attached."
+
+#: src/features/taxonomy/components/LocationPhotoStrip.tsx
+msgid "Photo deleted."
+msgstr "Photo deleted."
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Photo removed."
@@ -3640,6 +3710,7 @@ msgid "Photo updated."
 msgstr "Photo updated."
 
 #: src/features/items/components/PhotoUpload.tsx
+#: src/features/taxonomy/components/LocationPhotoStrip.tsx
 msgid "Photos"
 msgstr "Photos"
 
@@ -3749,6 +3820,10 @@ msgstr "Qty"
 #: src/features/items/ItemFormPage.tsx
 msgid "Quantity"
 msgstr "Quantity"
+
+#: src/features/scan/CapturePage.tsx
+msgid "RAPID CAPTURE"
+msgstr "RAPID CAPTURE"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 msgid "READY"
@@ -3898,6 +3973,10 @@ msgstr "RESTORE"
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "RESTRICTED"
 msgstr "RESTRICTED"
+
+#: src/features/scan/CapturePage.tsx
+msgid "RETAKE PHOTO"
+msgstr "RETAKE PHOTO"
 
 #: src/features/settings/AppearancePage.tsx
 msgid "Retro OS Pastel — cream desktop, white panels."
@@ -4065,6 +4144,14 @@ msgstr "Save"
 msgid "SAVE"
 msgstr "SAVE"
 
+#: src/features/scan/CapturePage.tsx
+msgid "SAVE AS ITEM"
+msgstr "SAVE AS ITEM"
+
+#: src/features/scan/CapturePage.tsx
+msgid "SAVE AS LOCATION"
+msgstr "SAVE AS LOCATION"
+
 #: src/features/borrowers/BorrowerFormPage.tsx
 msgid "Save borrower"
 msgstr "Save borrower"
@@ -4136,6 +4223,10 @@ msgstr "SAVE SCHEDULE"
 msgid "SAVE VIEW"
 msgstr "SAVE VIEW"
 
+#: src/lib/offline/awaitOrQueue.ts
+msgid "Saved to the queue — syncs when you're online."
+msgstr "Saved to the queue — syncs when you're online."
+
 #: src/features/settings/ProfilePage.tsx
 msgid "Saved."
 msgstr "Saved."
@@ -4154,6 +4245,10 @@ msgstr "Scan"
 #: src/features/scan/ScanPage.tsx
 msgid "SCAN"
 msgstr "SCAN"
+
+#: src/features/scan/CapturePage.tsx
+msgid "Scan, snap, move on. Fill in the details later from a desktop."
+msgstr "Scan, snap, move on. Fill in the details later from a desktop."
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "Scanned and looked-up codes show up here for quick re-lookup."
@@ -4294,6 +4389,11 @@ msgstr "Settings"
 msgid "Short code"
 msgstr "Short code"
 
+#. placeholder {0}: match.name
+#: src/lib/useShortCodeConflict.ts
+msgid "Short code {code} is already used by {0}."
+msgstr "Short code {code} is already used by {0}."
+
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 #~ msgid "Show archived"
@@ -4339,6 +4439,10 @@ msgstr "Sign-in failed"
 #: src/features/auth/CallbackPage.tsx
 msgid "Signing in"
 msgstr "Signing in"
+
+#: src/features/scan/CapturePage.tsx
+msgid "SKIP"
+msgstr "SKIP"
 
 #: src/components/layout/AppShell.tsx
 msgid "Skip to content"
@@ -4730,8 +4834,8 @@ msgid "Type a category…"
 msgstr "Type a category…"
 
 #: src/features/items/ItemFormPage.tsx
-msgid "Type a location…"
-msgstr "Type a location…"
+#~ msgid "Type a location…"
+#~ msgstr "Type a location…"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Type DELETE to confirm"

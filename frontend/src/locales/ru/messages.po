@@ -62,7 +62,7 @@ msgstr "(скоро срок, просрочено)"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "(include archived items and inventory in list views)"
-msgstr ""
+msgstr "(включать архивные предметы и запасы в списки)"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "(invites, joins)"
@@ -131,6 +131,10 @@ msgstr "Фото будет безвозвратно удалено: {0}."
 msgid "{0} restored."
 msgstr "{0} восстановлен."
 
+#: src/features/scan/CapturePage.tsx
+msgid "{captured} captured"
+msgstr "{captured} захвачено"
+
 #: src/features/inventory/ExpiringPage.tsx
 msgid "{count} expiring"
 msgstr "истекает: {count}"
@@ -154,11 +158,15 @@ msgstr "просрочено: {overdueCount}"
 
 #: src/components/layout/TopBar.tsx
 msgid "{pendingWrites} pending"
-msgstr ""
+msgstr "{pendingWrites} в очереди"
 
 #: src/features/items/components/PhotoGalleryToolbar.tsx
 msgid "{selectedCount} SELECTED"
 msgstr "ВЫБРАНО: {selectedCount}"
+
+#: src/features/scan/CapturePage.tsx
+msgid "{syncing} syncing"
+msgstr "{syncing} синхронизируется"
 
 #: src/features/dashboard/components/DashboardStatTiles.tsx
 msgid "{total_inventory} units total"
@@ -353,6 +361,10 @@ msgstr "Активность за 14 дней"
 #~ msgid "A helpful hint."
 #~ msgstr "Полезная подсказка."
 
+#: src/features/scan/CapturePage.tsx
+msgid "A location needs one of our printed labels (4-8 characters) — this looks like a product barcode."
+msgstr "Для места нужна наша печатная метка (4-8 символов) — а это похоже на штрихкод товара."
+
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "A reason is required to reject."
 msgstr "Для отклонения требуется указать причину."
@@ -512,15 +524,15 @@ msgstr "Добавлено в список желаемого."
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "All borrowers"
-msgstr ""
+msgstr "Все заёмщики"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "All inventory"
-msgstr ""
+msgstr "Все запасы"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "All items"
-msgstr ""
+msgstr "Все предметы"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "All items are in stock. Anything that drops below its minimum will surface here."
@@ -528,15 +540,23 @@ msgstr "Все предметы в наличии. Всё, что опустит
 
 #: src/features/loans/LoansListPage.tsx
 msgid "All loans"
-msgstr ""
+msgstr "Все выдачи"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "All other sessions revoked."
 msgstr "Все остальные сеансы завершены."
 
+#: src/features/scan/CapturePage.tsx
+msgid "Already captured — still waiting to sync."
+msgstr "Уже захвачено — ещё ждёт синхронизации."
+
 #: src/features/auth/RegisterPage.tsx
 msgid "Already have an account?"
 msgstr "Уже есть аккаунт?"
+
+#: src/features/scan/CapturePage.tsx
+msgid "Already registered:"
+msgstr "Уже зарегистрировано:"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "Amount in your workspace currency."
@@ -637,7 +657,7 @@ msgstr "В АРХИВЕ"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Archived items"
-msgstr ""
+msgstr "Архивные предметы"
 
 #: src/features/auth/RegisterPage.tsx
 #: src/features/settings/SecurityPage.tsx
@@ -647,6 +667,10 @@ msgstr "Не менее 8 символов."
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "Atom Demo"
 #~ msgstr "Демо атомов"
+
+#: src/features/scan/CapturePage.tsx
+msgid "Attach a photo"
+msgstr "Прикрепить фото"
 
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "Attachments"
@@ -679,7 +703,7 @@ msgstr "Штрихкод"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "Barcode copied."
-msgstr ""
+msgstr "Штрихкод скопирован."
 
 #: src/features/dashboard/components/DashboardStatTiles.tsx
 msgid "below threshold"
@@ -770,7 +794,7 @@ msgstr "Нельзя отвязать — это ваш единственный
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "Can't verify offline. Add anyway?"
-msgstr ""
+msgstr "Без сети проверить нельзя. Всё равно добавить?"
 
 #: src/components/retro/overlay/RetroConfirmDialog.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
@@ -821,6 +845,15 @@ msgstr "Индикатор вместимости"
 #: src/features/items/components/CaptionDialog.tsx
 msgid "Caption"
 msgstr "Подпись"
+
+#: src/components/layout/breadcrumbs.tsx
+#: src/components/layout/Sidebar.tsx
+msgid "Capture"
+msgstr "Захват"
+
+#: src/features/scan/useCaptureMutation.ts
+msgid "Captured."
+msgstr "Захвачено."
 
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "Careful."
@@ -893,7 +926,7 @@ msgstr "Код привязки"
 
 #: src/components/retro/filters/TokenField.tsx
 msgid "CLEAR"
-msgstr ""
+msgstr "ОЧИСТИТЬ"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/inventory/components/InventoryResults.tsx
@@ -1029,6 +1062,7 @@ msgstr "Привязанные аккаунты"
 msgid "Contact"
 msgstr "Контакты"
 
+#: src/components/scan/ScanResultBanner.tsx
 #: src/features/inventory/components/InventoryWhereFields.tsx
 msgid "Container"
 msgstr "Контейнер"
@@ -1100,7 +1134,7 @@ msgstr "Не удалось архивировать это местополож
 
 #: src/features/items/components/ItemLabels.tsx
 msgid "Couldn't attach that label."
-msgstr ""
+msgstr "Не удалось прикрепить эту метку."
 
 #: src/features/repairs/hooks/useRepairAttachments.ts
 msgid "Couldn't attach this file."
@@ -1128,7 +1162,7 @@ msgstr "Не удалось завершить этот график."
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "Couldn't copy the barcode."
-msgstr ""
+msgstr "Не удалось скопировать штрихкод."
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Couldn't create this loan."
@@ -1168,6 +1202,10 @@ msgstr "Не удалось удалить этот файл."
 msgid "Couldn't delete this label."
 msgstr "Не удалось удалить эту метку."
 
+#: src/features/taxonomy/components/LocationPhotoStrip.tsx
+msgid "Couldn't delete this photo."
+msgstr "Не удалось удалить это фото."
+
 #: src/features/repairs/hooks/useRepairMutations.ts
 msgid "Couldn't delete this repair."
 msgstr "Не удалось удалить этот ремонт."
@@ -1178,7 +1216,7 @@ msgstr "Не удалось удалить этот график."
 
 #: src/features/items/components/ItemLabels.tsx
 msgid "Couldn't detach that label."
-msgstr ""
+msgstr "Не удалось открепить эту метку."
 
 #: src/features/settings/hooks/usePaperlessSettings.ts
 msgid "Couldn't disconnect Paperless."
@@ -1285,11 +1323,11 @@ msgstr "Не удалось загрузить список желаемого. 
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "Couldn't load this borrower."
-msgstr ""
+msgstr "Не удалось загрузить этого заёмщика."
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "Couldn't load this item."
-msgstr ""
+msgstr "Не удалось загрузить этот предмет."
 
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "Couldn't load your changes. Try again."
@@ -1449,19 +1487,23 @@ msgstr "Не удалось начать этот ремонт."
 #. placeholder {0}: vars.body.name
 #: src/lib/offline/mutationDefaults.ts
 msgid "Couldn't sync \"{0}\" — it may have been removed."
-msgstr ""
+msgstr "Не удалось синхронизировать «{0}» — возможно, он был удалён."
 
 #: src/lib/offline/mutationDefaults.ts
 msgid "Couldn't sync \"{name}\" — it may have been removed."
-msgstr ""
+msgstr "Не удалось синхронизировать «{name}» — возможно, он был удалён."
+
+#: src/lib/offline/mutationDefaults.ts
+msgid "Couldn't sync \"{name}\"."
+msgstr "Не удалось синхронизировать «{name}»."
 
 #: src/lib/offline/mutationDefaults.ts
 msgid "Couldn't sync a new stock entry."
-msgstr ""
+msgstr "Не удалось синхронизировать новую запись запаса."
 
 #: src/lib/offline/mutationDefaults.ts
 msgid "Couldn't sync a stock recount."
-msgstr ""
+msgstr "Не удалось синхронизировать пересчёт запаса."
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "Couldn't unarchive this item."
@@ -1513,11 +1555,11 @@ msgstr "Создать аккаунт"
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Create container"
-msgstr ""
+msgstr "Создать контейнер"
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Create item"
-msgstr ""
+msgstr "Создать предмет"
 
 #: src/features/scan/ClaimPage.tsx
 #~ msgid "Create item with this code"
@@ -1567,7 +1609,7 @@ msgstr "Опасная зона"
 
 #: src/features/settings/AppearancePage.tsx
 msgid "Dark"
-msgstr ""
+msgstr "Тёмная"
 
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
@@ -1712,6 +1754,11 @@ msgstr "УДАЛИТЬ МЕТКУ?"
 msgid "Delete my account"
 msgstr "Удалить мой аккаунт"
 
+#. placeholder {0}: p.original_name
+#: src/features/taxonomy/components/LocationPhotoStrip.tsx
+msgid "Delete photo {0}"
+msgstr "Удалить фото {0}"
+
 #: src/features/items/components/PhotoGallery.tsx
 msgid "DELETE PHOTO?"
 msgstr "УДАЛИТЬ ФОТО?"
@@ -1747,16 +1794,16 @@ msgstr "УДАЛИТЬ ГРАФИК?"
 #. placeholder {0}: pendingDelete?.name
 #: src/components/retro/filters/ViewMenu.tsx
 msgid "Delete the “{0}” view? This can't be undone."
-msgstr ""
+msgstr "Удалить представление «{0}»? Это нельзя отменить."
 
 #: src/components/retro/filters/ViewMenu.tsx
 msgid "DELETE VIEW"
-msgstr ""
+msgstr "УДАЛИТЬ ПРЕДСТАВЛЕНИЕ"
 
 #. placeholder {0}: view.name
 #: src/components/retro/filters/ViewMenu.tsx
 msgid "Delete view {0}"
-msgstr ""
+msgstr "Удалить представление {0}"
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "DELETE WISHLIST ITEM?"
@@ -2261,11 +2308,11 @@ msgstr "ФАЙЛЫ"
 
 #: src/components/retro/filters/ViewMenu.tsx
 msgid "Filter categories"
-msgstr ""
+msgstr "Фильтр категорий"
 
 #: src/components/retro/filters/ViewMenu.tsx
 msgid "Filter categories…"
-msgstr ""
+msgstr "Фильтр категорий…"
 
 #: src/features/inventory/InventoryListPage.tsx
 #~ msgid "Filter inventory…"
@@ -2293,18 +2340,18 @@ msgstr "Фильтровать предметы"
 
 #: src/components/retro/filters/ViewMenu.tsx
 msgid "FILTERS"
-msgstr ""
+msgstr "ФИЛЬТРЫ"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 #: src/features/loans/LoansListPage.tsx
 msgid "Focus search"
-msgstr ""
+msgstr "Перейти к поиску"
 
 #: src/features/settings/AppearancePage.tsx
 msgid "Follow the operating system setting."
-msgstr ""
+msgstr "Следовать настройке операционной системы."
 
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "Form Atoms"
@@ -2720,10 +2767,10 @@ msgstr "Выдано"
 msgid "LOCAL"
 msgstr "ЛОКАЛЬНО"
 
+#: src/components/scan/ScanResultBanner.tsx
 #: src/features/declutter/DeclutterPage.tsx
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/components/InventoryWhereFields.tsx
-#: src/features/items/ItemFormPage.tsx
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Location"
 msgstr "Местоположение"
@@ -2972,7 +3019,7 @@ msgstr "Создать"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "New borrower"
-msgstr ""
+msgstr "Новый заёмщик"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
@@ -2997,7 +3044,7 @@ msgstr "Новый срок"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "New entry"
-msgstr ""
+msgstr "Новая запись"
 
 #: src/features/auth/LoginPage.tsx
 msgid "New here?"
@@ -3006,7 +3053,7 @@ msgstr "Впервые здесь?"
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "New item"
-msgstr ""
+msgstr "Новый предмет"
 
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 msgid "NEW LABEL"
@@ -3014,7 +3061,7 @@ msgstr "НОВАЯ МЕТКА"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "New loan"
-msgstr ""
+msgstr "Новая выдача"
 
 #: src/features/loans/LoanFormPage.tsx
 #: src/features/loans/LoansListPage.tsx
@@ -3030,6 +3077,7 @@ msgid "New password"
 msgstr "Новый пароль"
 
 #: src/components/retro/data/RetroPagination.tsx
+#: src/features/scan/CapturePage.tsx
 msgid "NEXT"
 msgstr "ДАЛЕЕ"
 
@@ -3370,7 +3418,7 @@ msgstr "На складе пока ничего нет. Добавьте пер�
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Nothing matches this code yet. Register it as a new item or container with the code attached."
-msgstr ""
+msgstr "Этому коду пока ничего не соответствует. Зарегистрируйте его как новый предмет или контейнер с прикреплённым кодом."
 
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "Nothing out"
@@ -3431,6 +3479,10 @@ msgstr "офлайн"
 msgid "OFFLINE"
 msgstr "ОФЛАЙН"
 
+#: src/features/scan/CapturePage.tsx
+msgid "Offline — saved to the queue and synced later. Couldn't check whether this label is already registered."
+msgstr "Без сети — сохранено в очередь и синхронизируется позже. Не удалось проверить, зарегистрирована ли уже эта метка."
+
 #. placeholder {0}: loan.borrower.name
 #: src/features/items/components/LoanPanels.tsx
 msgid "On loan to {0}"
@@ -3452,6 +3504,12 @@ msgstr "Удалять можно только архивированные пр
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Only workspace owners and admins can review approvals."
 msgstr "Рассматривать согласования могут только владельцы и администраторы рабочего пространства."
+
+#: src/components/scan/ScanResultBanner.tsx
+#: src/features/scan/CapturePage.tsx
+#: src/lib/useShortCodeConflict.ts
+msgid "OPEN"
+msgstr "ОТКРЫТЬ"
 
 #: src/features/items/components/PhotoTile.tsx
 msgid "Open {label}"
@@ -3622,10 +3680,22 @@ msgstr "Согласования на рассмотрении"
 msgid "Phone"
 msgstr "Телефон"
 
+#: src/features/scan/CapturePage.tsx
+msgid "PHOTO"
+msgstr "ФОТО"
+
 #. placeholder {0}: current + 1
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Photo {0} of {count}"
 msgstr "Фото {0} из {count}"
+
+#: src/features/scan/CapturePage.tsx
+msgid "Photo attached."
+msgstr "Фото прикреплено."
+
+#: src/features/taxonomy/components/LocationPhotoStrip.tsx
+msgid "Photo deleted."
+msgstr "Фото удалено."
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Photo removed."
@@ -3640,6 +3710,7 @@ msgid "Photo updated."
 msgstr "Фото обновлено."
 
 #: src/features/items/components/PhotoUpload.tsx
+#: src/features/taxonomy/components/LocationPhotoStrip.tsx
 msgid "Photos"
 msgstr "Фотографии"
 
@@ -3749,6 +3820,10 @@ msgstr "Кол-во"
 #: src/features/items/ItemFormPage.tsx
 msgid "Quantity"
 msgstr "Количество"
+
+#: src/features/scan/CapturePage.tsx
+msgid "RAPID CAPTURE"
+msgstr "БЫСТРЫЙ ЗАХВАТ"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 msgid "READY"
@@ -3899,9 +3974,13 @@ msgstr "ВОССТАНОВИТЬ"
 msgid "RESTRICTED"
 msgstr "ОГРАНИЧЕНО"
 
+#: src/features/scan/CapturePage.tsx
+msgid "RETAKE PHOTO"
+msgstr "ПЕРЕСНЯТЬ ФОТО"
+
 #: src/features/settings/AppearancePage.tsx
 msgid "Retro OS Pastel — cream desktop, white panels."
-msgstr ""
+msgstr "Retro OS Pastel — кремовый рабочий стол, белые панели."
 
 #: src/features/settings/AppearancePage.tsx
 #~ msgid "Retro OS Pastel — the only theme."
@@ -4065,6 +4144,14 @@ msgstr "Сохранить"
 msgid "SAVE"
 msgstr "СОХРАНИТЬ"
 
+#: src/features/scan/CapturePage.tsx
+msgid "SAVE AS ITEM"
+msgstr "СОХРАНИТЬ КАК ПРЕДМЕТ"
+
+#: src/features/scan/CapturePage.tsx
+msgid "SAVE AS LOCATION"
+msgstr "СОХРАНИТЬ КАК МЕСТО"
+
 #: src/features/borrowers/BorrowerFormPage.tsx
 msgid "Save borrower"
 msgstr "Сохранить получателя"
@@ -4098,7 +4185,7 @@ msgstr "Сохранить контейнер"
 
 #: src/components/retro/filters/ViewMenu.tsx
 msgid "SAVE CURRENT AS VIEW…"
-msgstr ""
+msgstr "СОХРАНИТЬ ТЕКУЩЕЕ КАК ПРЕДСТАВЛЕНИЕ…"
 
 #: src/components/retro/filters/SavedFilters.tsx
 #~ msgid "SAVE CURRENT…"
@@ -4134,7 +4221,11 @@ msgstr "СОХРАНИТЬ ГРАФИК"
 
 #: src/components/retro/filters/ViewMenu.tsx
 msgid "SAVE VIEW"
-msgstr ""
+msgstr "СОХРАНИТЬ ПРЕДСТАВЛЕНИЕ"
+
+#: src/lib/offline/awaitOrQueue.ts
+msgid "Saved to the queue — syncs when you're online."
+msgstr "Сохранено в очередь — синхронизируется при подключении к сети."
 
 #: src/features/settings/ProfilePage.tsx
 msgid "Saved."
@@ -4154,6 +4245,10 @@ msgstr "Сканировать"
 #: src/features/scan/ScanPage.tsx
 msgid "SCAN"
 msgstr "СКАНИРОВАТЬ"
+
+#: src/features/scan/CapturePage.tsx
+msgid "Scan, snap, move on. Fill in the details later from a desktop."
+msgstr "Сканируйте, снимайте, двигайтесь дальше. Детали заполните позже с компьютера."
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "Scanned and looked-up codes show up here for quick re-lookup."
@@ -4184,11 +4279,11 @@ msgstr "Поиск не удался. Попробуйте снова."
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Search item name… ↵ to pin"
-msgstr ""
+msgstr "Поиск по названию предмета… ↵ закрепит"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "Search item, borrower… ↵ to pin"
-msgstr ""
+msgstr "Поиск предмета, заёмщика… ↵ закрепит"
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Search locations…"
@@ -4200,11 +4295,11 @@ msgstr "Поиск местоположений…"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "Search name, brand, model… ↵ to pin"
-msgstr ""
+msgstr "Поиск по названию, бренду, модели… ↵ закрепит"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "Search name, email… ↵ to pin"
-msgstr ""
+msgstr "Поиск по имени, эл. почте… ↵ закрепит"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
@@ -4217,11 +4312,11 @@ msgstr "Поиск маршрутов, рабочих пространств, п
 
 #: src/components/layout/TopBar.tsx
 msgid "Search…"
-msgstr ""
+msgstr "Поиск…"
 
 #: src/components/retro/filters/TokenField.tsx
 msgid "Search… ↵ to pin"
-msgstr ""
+msgstr "Поиск… ↵ закрепит"
 
 #: src/features/command-palette/CommandPalette.tsx
 #: src/features/items/components/PaperlessLinkDialog.tsx
@@ -4281,7 +4376,7 @@ msgstr "СДЕЛАТЬ ОСНОВНЫМ"
 
 #: src/features/taxonomy/components/TaxonomyFormFields.tsx
 msgid "Set when created — can't be changed."
-msgstr ""
+msgstr "Задаётся при создании — изменить нельзя."
 
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
@@ -4294,6 +4389,11 @@ msgstr "Настройки"
 msgid "Short code"
 msgstr "Короткий код"
 
+#. placeholder {0}: match.name
+#: src/lib/useShortCodeConflict.ts
+msgid "Short code {code} is already used by {0}."
+msgstr "Короткий код {code} уже занят: {0}."
+
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 #~ msgid "Show archived"
@@ -4301,7 +4401,7 @@ msgstr "Короткий код"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Show archived items"
-msgstr ""
+msgstr "Показывать архивные предметы"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
@@ -4339,6 +4439,10 @@ msgstr "Вход не удался"
 #: src/features/auth/CallbackPage.tsx
 msgid "Signing in"
 msgstr "Вход"
+
+#: src/features/scan/CapturePage.tsx
+msgid "SKIP"
+msgstr "ПРОПУСТИТЬ"
 
 #: src/components/layout/AppShell.tsx
 msgid "Skip to content"
@@ -4454,12 +4558,12 @@ msgstr "ИСТОРИЯ СИНХРОНИЗАЦИИ"
 
 #: src/lib/offline/useResumeOnReconnect.ts
 msgid "Synced."
-msgstr ""
+msgstr "Синхронизировано."
 
 #. placeholder {0}: paused.length
 #: src/lib/offline/useResumeOnReconnect.ts
 msgid "Syncing {0} changes…"
-msgstr ""
+msgstr "Синхронизация изменений: {0}…"
 
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
@@ -4529,7 +4633,7 @@ msgstr "Запрашиваемая страница не существует и
 
 #: src/features/settings/AppearancePage.tsx
 msgid "The same chrome on a dark desktop and panels."
-msgstr ""
+msgstr "То же оформление на тёмном рабочем столе и панелях."
 
 #: src/features/items/components/ItemsBulkBar.tsx
 msgid "The selected archived items will be permanently removed."
@@ -4730,8 +4834,8 @@ msgid "Type a category…"
 msgstr "Введите категорию…"
 
 #: src/features/items/ItemFormPage.tsx
-msgid "Type a location…"
-msgstr "Введите местоположение…"
+#~ msgid "Type a location…"
+#~ msgstr "Введите местоположение…"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Type DELETE to confirm"
@@ -4779,7 +4883,7 @@ msgstr "Без названия"
 
 #: src/components/retro/filters/ViewMenu.tsx
 msgid "UPDATE “{activeViewName}”"
-msgstr ""
+msgstr "ОБНОВИТЬ «{activeViewName}»"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "Updated"
@@ -4828,11 +4932,11 @@ msgstr "ОТКРЫТЬ ПРЕДМЕТ"
 
 #: src/components/retro/filters/ViewMenu.tsx
 msgid "View name"
-msgstr ""
+msgstr "Название представления"
 
 #: src/components/retro/filters/ViewMenu.tsx
 msgid "VIEWS"
-msgstr ""
+msgstr "ПРЕДСТАВЛЕНИЯ"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
@@ -4966,7 +5070,7 @@ msgstr "Ваши правки будут потеряны."
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Your profile"
-msgstr ""
+msgstr "Ваш профиль"
 
 #: src/features/items/components/ItemsResults.tsx
 msgid "Your warehouse is empty. Add your first item to start tracking it."
