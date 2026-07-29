@@ -50,8 +50,13 @@ jobs:
           --health-retries 10
 
     env:
-      DBMATE_DATABASE_URL: postgresql://wh:wh@localhost:5432/warehouse_test
-      TEST_DATABASE_URL: postgresql://wh:wh@localhost:5432/warehouse_test
+      # sslmode=disable is required: the postgres service container has no TLS,
+      # and dbmate's driver defaults to requiring it — without this, migrations
+      # die on `pq: SSL is not enabled on the server`. e2e-frontend.yml already
+      # carried the parameter; this workflow never did, which stayed invisible
+      # while the job failed earlier at the build step.
+      DBMATE_DATABASE_URL: postgresql://wh:wh@localhost:5432/warehouse_test?sslmode=disable
+      TEST_DATABASE_URL: postgresql://wh:wh@localhost:5432/warehouse_test?sslmode=disable
 
     steps:
       - uses: actions/checkout@v4
