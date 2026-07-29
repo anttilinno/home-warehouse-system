@@ -313,9 +313,19 @@ describe("CapturePage", () => {
     expect(await screen.findByText(/1 captured/i)).toBeInTheDocument();
     expect(posts).toBe(0);
 
+    // …and the second pill says so: "captured" alone would read as "saved"
+    // when the server has seen nothing.
+    expect(await screen.findByText(/1 syncing/i)).toBeInTheDocument();
+
     // Reconnecting drains the queue.
     onlineManager.setOnline(true);
     await waitFor(() => expect(posts).toBe(1));
+
+    // Drained — the syncing pill clears itself, the captured count stays.
+    await waitFor(() =>
+      expect(screen.queryByText(/1 syncing/i)).not.toBeInTheDocument(),
+    );
+    expect(screen.getByText(/1 captured/i)).toBeInTheDocument();
   });
 
   it("queues the same code only once while offline (the duplicate check the registry can't do)", async () => {

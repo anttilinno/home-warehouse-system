@@ -6,6 +6,7 @@ import {
   type RefObject,
 } from "react";
 import { Link } from "react-router";
+import { useMutationState } from "@tanstack/react-query";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   Window,
@@ -21,6 +22,7 @@ import { shortCodeEntityPath, type ShortCodeMatch } from "@/lib/api/shortCodes";
 import type { Item } from "@/lib/types";
 import { generateShortCode } from "@/lib/offline/shortCode";
 import { useIsOnline } from "@/lib/offline/useIsOnline";
+import { MK } from "@/lib/offline/mutationKeys";
 import { useCaptureMutation } from "./useCaptureMutation";
 import { normalizeScanCode } from "./normalizeScanCode";
 import { useScanResolve } from "./useScanResolve";
@@ -125,6 +127,14 @@ export function CapturePage() {
   const [captured, setCaptured] = useState(0);
   const photoInput = useRef<HTMLInputElement>(null);
 
+  // `captured` counts saves this session FIRED — offline it advances before the
+  // server has seen anything, which reads like "saved" when nothing has been
+  // sent. This is the honest other half: captures still paused (offline) or in
+  // flight. Self-clearing, since the queue drains out of the same cache.
+  const syncing = useMutationState({
+    filters: { mutationKey: MK.captureCreate, status: "pending" },
+  }).length;
+
   const code = banner?.code ?? "";
   const existingItem = lookup.data ?? null;
   const state = captureState({
@@ -201,9 +211,14 @@ export function CapturePage() {
               Scan, snap, move on. Fill in the details later from a desktop.
             </Trans>
           </p>
-          <StatusPill variant={captured > 0 ? "ok" : "info"}>
-            {t`${captured} captured`}
-          </StatusPill>
+          <div className="flex shrink-0 items-center gap-sp-2">
+            <StatusPill variant={captured > 0 ? "ok" : "info"}>
+              {t`${captured} captured`}
+            </StatusPill>
+            {syncing > 0 && (
+              <StatusPill variant="warn">{t`${syncing} syncing`}</StatusPill>
+            )}
+          </div>
         </div>
 
         <div className="relative aspect-square w-full overflow-hidden border-2 border-border-ink bg-fg-ink">
