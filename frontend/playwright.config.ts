@@ -11,6 +11,21 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false, // keep serial while the spec count is small; seed state is shared
+  // CAVEAT on the line above: `fullyParallel: false` only serialises tests
+  // WITHIN a file. Separate spec files still run concurrently across workers,
+  // so "seed state is shared" is a hazard this setting does NOT actually
+  // remove. Every spec logs in as the same seeded account and several mutate
+  // global state on it — settings.spec changes the display name and language,
+  // items.spec flips the `show_archived` preference — each visible to whatever
+  // else is mid-run.
+  //
+  // `workers: 1` looks like the fix and is not, measured 2026-07-29: the suite
+  // makes 27 logins and each spec takes ~2 s, so serial or not they all land
+  // inside about a minute — 24/min against the 20/min limiter on /auth/login
+  // (router.go:405). One worker produced 7 × 429 on a freshly restarted
+  // backend, failing ~7 specs with assertion errors that look nothing like
+  // rate limiting. Serialising therefore has to come WITH a shared
+  // storageState (log in once, reuse the cookie) rather than before it.
   reporter: "list",
   use: {
     baseURL: process.env.E2E_BASE_URL ?? "http://localhost:5173",
