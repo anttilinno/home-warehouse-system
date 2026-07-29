@@ -19,6 +19,15 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: backend/go.mod
+          # go.sum is under backend/, not the repo root — without this the
+          # module cache never restores and every run re-downloads.
+          cache-dependency-path: backend/go.sum
+      # kolesa-team/go-webp is a cgo binding to libwebp. Without the dev headers
+      # EVERY package fails to build (`fatal error: webp/encode.h: No such file
+      # or directory`), so `go test ./...` reports build failures instead of
+      # running a single test — which is what this job did on every run.
+      - name: Install libwebp headers (cgo dep for go-webp)
+        run: sudo apt-get update && sudo apt-get install -y libwebp-dev
       - name: go test
         run: cd backend && go test ./...
 
@@ -49,6 +58,9 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Install libwebp headers (cgo dep for go-webp)
+        run: sudo apt-get update && sudo apt-get install -y libwebp-dev
 
       - name: Install dbmate
         run: |

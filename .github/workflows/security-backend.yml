@@ -26,6 +26,12 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      # govulncheck compiles the packages it analyses, so it needs the same cgo
+      # headers the build does — without libwebp-dev it aborts on
+      # `fatal error: webp/encode.h: No such file or directory` before scanning.
+      - name: Install libwebp headers (cgo dep for go-webp)
+        run: sudo apt-get update && sudo apt-get install -y libwebp-dev
       - name: govulncheck (reachable CVEs)
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest
@@ -35,10 +41,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Lockfile scanning only. osv-scanner runs govulncheck call analysis for
+      # Go by default, and it cannot: the action ships Go 1.25.3 with
+      # GOTOOLCHAIN=local, so it refuses to build a module whose directive is
+      # pinned to go1.25.12 — and that pin is a deliberate stdlib security
+      # floor (see backend/go.mod), so it is not moving. The job died on
+      # "Failed to run code analysis (govulncheck)" before reporting anything.
+      # Nothing is lost: the govulncheck job above does reachability properly,
+      # with the right toolchain and the cgo headers it needs.
       - name: osv-scanner (lockfile)
-        uses: google/osv-scanner-action/osv-scanner-action@v2.2.4
+        uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
         with:
           scan-args: |-
+            --no-call-analysis=go
             --lockfile=backend/go.mod
 
   gosec:
@@ -48,6 +63,9 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Install libwebp headers (cgo dep for go-webp)
+        run: sudo apt-get update && sudo apt-get install -y libwebp-dev
       - name: gosec (SAST)
         run: |
           go install github.com/securego/gosec/v2/cmd/gosec@latest
@@ -69,7 +87,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: trivy filesystem scan
-        uses: aquasecurity/trivy-action@0.28.0
+        # Tags carry a `v` prefix — `@0.28.0` resolves to nothing and the job
+        # died on "Unable to resolve action" before scanning anything.
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: backend

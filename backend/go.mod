@@ -1,5 +1,14 @@
 module github.com/antti/home-warehouse/go-backend
 
+// Patch-pinned ON PURPOSE — this is a security floor, not a stray `go get`.
+// It forces a stdlib with GO-2026-5856 (crypto/tls), GO-2026-5039
+// (net/textproto) and five siblings patched; those are all "Fixed in
+// go1.25.12". Relaxing it to `go 1.25.0` makes govulncheck report seven
+// reachable stdlib vulnerabilities on any machine whose local toolchain is
+// older, which is exactly what happened when it was tried.
+// Tools that cannot honour it (osv-scanner ships Go 1.25.3 with
+// GOTOOLCHAIN=local) must be configured around it — see
+// .github/workflows/security-backend.yml — never by lowering this line.
 go 1.25.12
 
 require (

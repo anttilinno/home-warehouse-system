@@ -51,6 +51,12 @@ jobs:
       E2E_PASS: password123
       # vite preview default port; specs read E2E_BASE_URL (playwright.config).
       E2E_BASE_URL: http://localhost:4173
+      # config.Validate() refuses to boot without a >=32-char JWT_SECRET unless
+      # DEBUG=true (backend/internal/config/config.go). This is a throwaway
+      # value for an ephemeral CI database — do NOT copy it anywhere real. The
+      # dev fallback is deliberately not used: CI should exercise the same
+      # code path production does.
+      JWT_SECRET: ci-e2e-only-not-a-real-secret-000000000000 # gitleaks:allow
 
     steps:
       - uses: actions/checkout@v4
@@ -58,6 +64,9 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.25"
+          # go.sum lives under backend/, not the repo root; without this the
+          # module cache silently never restores.
+          cache-dependency-path: backend/go.sum
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -72,25 +81,37 @@ jobs:
       - name: Apply migrations
         run: DATABASE_URL="$DBMATE_DATABASE_URL" dbmate -d backend/db/migrations up
 
+      # The image pipeline uses kolesa-team/go-webp, a cgo binding to libwebp.
+      # Without the dev headers every Go build fails in CI with
+      # `fatal error: webp/encode.h: No such file or directory`. Installed
+      # before the first `go run`, not just before the server build.
+      - name: Install libwebp headers (cgo dep for go-webp)
+        run: sudo apt-get update && sudo apt-get install -y libwebp-dev
+
       # --- seed: creates seeder@test.local + a workspace with items -----------
       - name: Seed dev database
         run: cd backend && go run ./cmd/seed/main.go all
 
       # --- backend: build + run on :8080 --------------------------------------
-      # The image pipeline uses kolesa-team/go-webp, a cgo binding to libwebp.
-      # Without the dev headers the backend fails to compile in CI with
-      # `fatal error: webp/encode.h: No such file or directory`.
-      - name: Install libwebp headers (cgo dep for go-webp)
-        run: sudo apt-get update && sudo apt-get install -y libwebp-dev
+      # The readiness loops below MUST fail the step when the process never
+      # comes up. `for …; do curl -sf … && break; sleep 1; done` does not: the
+      # loop's exit status is the final `sleep`, so 30 failed probes still exit
+      # 0. That is how a backend refusing to boot on a missing JWT_SECRET went
+      # unnoticed while all 28 specs failed at login.
       - name: Start Go backend (:8080)
         run: |
           cd backend
           go build -o /tmp/wh-server ./cmd/server
-          PORT=8080 /tmp/wh-server &
+          PORT=8080 /tmp/wh-server > /tmp/backend.log 2>&1 &
           for i in $(seq 1 30); do
-            curl -sf http://localhost:8080/health && break
+            if curl -sf http://localhost:8080/health; then ready=1; break; fi
             sleep 1
           done
+          if [ -z "${ready:-}" ]; then
+            echo "::error::backend never became healthy on :8080"
+            cat /tmp/backend.log
+            exit 1
+          fi
 
       # --- frontend: build + vite preview on :4173 ----------------------------
       - name: Install frontend deps
@@ -100,11 +121,16 @@ jobs:
       - name: Start vite preview (:4173)
         run: |
           cd frontend
-          bun run preview --port 4173 &
+          bun run preview --port 4173 > /tmp/preview.log 2>&1 &
           for i in $(seq 1 30); do
-            curl -sf http://localhost:4173/ && break
+            if curl -sf http://localhost:4173/ > /dev/null; then ready=1; break; fi
             sleep 1
           done
+          if [ -z "${ready:-}" ]; then
+            echo "::error::vite preview never came up on :4173"
+            cat /tmp/preview.log
+            exit 1
+          fi
 
       # --- playwright: install chromium, run all specs --------------------------
       - name: Install Playwright chromium
