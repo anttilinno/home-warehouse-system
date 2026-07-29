@@ -36,11 +36,21 @@ const E2E_PASS = process.env.E2E_PASS ?? "password123";
 
 // Shared seeder login. Exact-match submit (multi-button login page).
 async function loginAsSeeder(page: Page) {
-  await page.goto("/login");
-  await page.getByLabel("Email").fill(E2E_USER);
-  await page.getByLabel("Password").fill(E2E_PASS);
-  await page.getByRole("button", { name: /^log in$/i }).click();
-  await expect(page).toHaveURL("/");
+  // Already authenticated by the `setup` project via storageState, so this
+  // returns immediately in a normal run. It only performs a real login when
+  // the saved state is missing (running one spec with e2e/.auth deleted).
+  // Logging in per spec is what pushed the suite over the 20/min limiter.
+  await page.goto("/");
+  if (new URL(page.url()).pathname === "/login") {
+    await page.getByLabel("Email").fill(E2E_USER);
+    await page.getByLabel("Password").fill(E2E_PASS);
+    await page.getByRole("button", { name: /^log in$/i }).click();
+    await expect(page).toHaveURL("/");
+  }
+  // Wait for the authenticated shell to actually mount. `goto` resolves on
+  // load, which is earlier than the old login flow settled — specs that
+  // immediately press a keyboard chord raced the app attaching its handlers.
+  await expect(page.getByTestId("workspace-pill")).toBeVisible();
 }
 
 // BORR-02 → BORR-03 → BORR-04 → BORR-05 — the full borrower lifecycle through

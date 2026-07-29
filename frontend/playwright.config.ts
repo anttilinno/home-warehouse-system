@@ -19,13 +19,14 @@ export default defineConfig({
   // items.spec flips the `show_archived` preference — each visible to whatever
   // else is mid-run.
   //
-  // `workers: 1` looks like the fix and is not, measured 2026-07-29: the suite
-  // makes 27 logins and each spec takes ~2 s, so serial or not they all land
-  // inside about a minute — 24/min against the 20/min limiter on /auth/login
-  // (router.go:405). One worker produced 7 × 429 on a freshly restarted
-  // backend, failing ~7 specs with assertion errors that look nothing like
-  // rate limiting. Serialising therefore has to come WITH a shared
-  // storageState (log in once, reuse the cookie) rather than before it.
+  // Both halves of the fix, and they only work together. Serialising alone was
+  // measured on 2026-07-29 and made things worse: the suite logged in 27 times
+  // and each spec takes ~2 s, so serial or not they all landed inside about a
+  // minute — 24/min against the 20/min limiter on /auth/login (router.go:405),
+  // producing 7 × 429 and failing ~7 specs with assertion errors that look
+  // nothing like rate limiting. auth.setup.ts removes that ceiling by logging
+  // in once for the whole run, which is what makes one worker viable.
+  workers: 1,
   reporter: "list",
   use: {
     baseURL: process.env.E2E_BASE_URL ?? "http://localhost:5173",
@@ -37,9 +38,18 @@ export default defineConfig({
   // bundled browser builds (never system Firefox/Zen), so a second project just
   // forces an extra ~100 MB download for no added coverage on this app.
   projects: [
+    // Logs the seeder in once and writes e2e/.auth/seeder.json.
+    { name: "setup", testMatch: /auth\.setup\.ts/ },
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      dependencies: ["setup"],
+      use: {
+        ...devices["Desktop Chrome"],
+        // Every spec starts authenticated. The two specs that own the real
+        // login/logout flows opt out with
+        // `test.use({ storageState: { cookies: [], origins: [] } })`.
+        storageState: "e2e/.auth/seeder.json",
+      },
     },
   ],
   // No auto-launch of the dev server — expect the developer to have

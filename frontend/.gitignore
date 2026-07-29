@@ -35,3 +35,6 @@ playwright/.cache/
 # Lingui compiled catalogs (runtime imports the .po via @lingui/vite-plugin;
 # i18n:compile output is redundant build artifact)
 src/locales/*/messages.js
+
+# Playwright shared auth state (created by e2e/auth.setup.ts, per-run secret)
+e2e/.auth/

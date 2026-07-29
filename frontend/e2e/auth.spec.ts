@@ -16,6 +16,12 @@ import { test, expect, type Page } from "@playwright/test";
 const E2E_USER = process.env.E2E_USER ?? "seeder@test.local";
 const E2E_PASS = process.env.E2E_PASS ?? "password123";
 
+// These specs OWN the real login/logout flows, so they must start signed OUT
+// rather than inherit the shared storageState session (playwright.config.ts).
+// It also keeps auth.spec's logout from revoking the session every other
+// spec is riding — logging in here creates a separate session row.
+test.use({ storageState: { cookies: [], origins: [] } });
+
 // Shared seeder login. Exact-match submit (multi-button login page).
 async function loginAsSeeder(page: Page) {
   await page.goto("/login");

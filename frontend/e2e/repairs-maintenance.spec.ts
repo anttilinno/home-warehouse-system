@@ -43,11 +43,21 @@ const E2E_PASS = process.env.E2E_PASS ?? "password123";
 
 // Shared seeder login. Exact-match submit (multi-button login page).
 async function loginAsSeeder(page: Page) {
-  await page.goto("/login");
-  await page.getByLabel("Email").fill(E2E_USER);
-  await page.getByLabel("Password").fill(E2E_PASS);
-  await page.getByRole("button", { name: /^log in$/i }).click();
-  await expect(page).toHaveURL("/");
+  // Already authenticated by the `setup` project via storageState, so this
+  // returns immediately in a normal run. It only performs a real login when
+  // the saved state is missing (running one spec with e2e/.auth deleted).
+  // Logging in per spec is what pushed the suite over the 20/min limiter.
+  await page.goto("/");
+  if (new URL(page.url()).pathname === "/login") {
+    await page.getByLabel("Email").fill(E2E_USER);
+    await page.getByLabel("Password").fill(E2E_PASS);
+    await page.getByRole("button", { name: /^log in$/i }).click();
+    await expect(page).toHaveURL("/");
+  }
+  // Wait for the authenticated shell to actually mount. `goto` resolves on
+  // load, which is earlier than the old login flow settled — specs that
+  // immediately press a keyboard chord raced the app attaching its handlers.
+  await expect(page.getByTestId("workspace-pill")).toBeVisible();
 }
 
 // The seeder's first workspace id. page.request inherits the cookie, so the
@@ -153,6 +163,13 @@ test("repairs + maintenance: repair rollup + lifecycle start, schedule due → c
   const scheduleTitle = `E2E-SCHEDULE-${stamp}`;
   // Must match seedInventoryEntry's item name — it is how the seeded row is
   // located in the list (the row's first cell renders the joined item name).
+  //
+  // CEILING: that name is joined client-side from `itemsApi.list({limit: 100})`
+  // (InventoryListPage.tsx), so it only resolves in a workspace with ≤100
+  // items — true of a fresh CI database, not of a long-lived dev one, where
+  // rows render "—" and this locator matches nothing. inventory.spec.ts carries
+  // the same caveat. If that cap ever bites in CI, the fix is a server-side
+  // lookup, not going back to positional row selection.
   const rmItemName = `E2E-RM-ITEM-${stamp}`;
 
   let entryId: string | null = null;

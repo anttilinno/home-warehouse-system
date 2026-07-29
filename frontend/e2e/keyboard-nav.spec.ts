@@ -25,11 +25,21 @@ const PALETTE = '[data-testid="command-palette"]';
 
 /** Log in via the real /login flow and land on the dashboard (one login/test). */
 async function login(page: Page): Promise<void> {
-  await page.goto("/login");
-  await page.getByLabel("Email").fill(E2E_USER);
-  await page.getByLabel("Password").fill(E2E_PASS);
-  await page.getByRole("button", { name: /^log in$/i }).click();
-  await expect(page).toHaveURL("/");
+  // Already authenticated by the `setup` project via storageState, so this
+  // returns immediately in a normal run. It only performs a real login when
+  // the saved state is missing (running one spec with e2e/.auth deleted).
+  // Logging in per spec is what pushed the suite over the 20/min limiter.
+  await page.goto("/");
+  if (new URL(page.url()).pathname === "/login") {
+    await page.getByLabel("Email").fill(E2E_USER);
+    await page.getByLabel("Password").fill(E2E_PASS);
+    await page.getByRole("button", { name: /^log in$/i }).click();
+    await expect(page).toHaveURL("/");
+  }
+  // Wait for the authenticated shell to actually mount. `goto` resolves on
+  // load, which is earlier than the old login flow settled — specs that
+  // immediately press a keyboard chord raced the app attaching its handlers.
+  await expect(page.getByTestId("workspace-pill")).toBeVisible();
 }
 
 /** Read a stable identity for the active element so we can detect focus motion
