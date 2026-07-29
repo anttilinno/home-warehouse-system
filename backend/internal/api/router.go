@@ -664,7 +664,7 @@ func getUploadDir() string {
 	}
 
 	// Create directory if it doesn't exist
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0750); err != nil {
 		log.Printf("Warning: failed to create upload directory %s: %v", dir, err)
 	}
 
@@ -679,7 +679,7 @@ func getPhotoStorageDir() string {
 	}
 
 	// Create directory if it doesn't exist
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0750); err != nil {
 		log.Printf("Warning: failed to create photo storage directory %s: %v", dir, err)
 	}
 

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"strconv"
 	"time"
 
@@ -395,7 +396,12 @@ func (s *WorkspaceBackupService) parseInventoryFromRows(rows [][]string) []queri
 		if id, ok := parseOptionalUUID(getCellValue(row, 3)); ok {
 			inv.ContainerID = pgtype.UUID{Bytes: id, Valid: true}
 		}
-		if qty, err := strconv.Atoi(getCellValue(row, 4)); err == nil {
+		// Range-checked: the cell is arbitrary text from an uploaded workbook,
+		// so a value past int32 would wrap and restore a wildly wrong (or
+		// negative) quantity instead of failing.
+		if qty, err := strconv.Atoi(getCellValue(row, 4)); err == nil &&
+			qty >= 0 && qty <= math.MaxInt32 {
+			// #nosec G109 -- bounded by the condition on the line above.
 			inv.Quantity = int32(qty)
 		}
 		if condition := getCellValue(row, 5); condition != "" {
@@ -436,7 +442,10 @@ func (s *WorkspaceBackupService) parseLoansFromRows(rows [][]string) []queries.W
 				loan.InventoryID = id
 			}
 		}
-		if qty, err := strconv.Atoi(getCellValue(row, 3)); err == nil {
+		// Range-checked for the same reason as the inventory quantity above.
+		if qty, err := strconv.Atoi(getCellValue(row, 3)); err == nil &&
+			qty >= 0 && qty <= math.MaxInt32 {
+			// #nosec G109 -- bounded by the condition on the line above.
 			loan.Quantity = int32(qty)
 		}
 		loan.LoanedAt = parseTimestampCell(getCellValue(row, 4))

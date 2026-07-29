@@ -1,0 +1,37 @@
+# osv-scanner ignore list. Every entry needs a REACHABILITY argument, not just a
+# severity — and an expiry, so nothing sits here unexamined forever.
+#
+# Both current entries are advisories with NO fixed version: upgrading cannot
+# clear them, so the only options are ignore-with-justification or drop the
+# dependency. govulncheck (the security-backend job that DOES do call analysis)
+# passes on both, which is the machine-checked half of the argument below.
+
+[[IgnoredVulns]]
+id = "GO-2026-5932"
+ignoreUntil = 2026-10-29
+# golang.org/x/crypto/openpgp is deprecated wholesale — unmaintained and unsafe
+# by design, so the advisory has no fixed version and never will. It applies to
+# the openpgp/* symbols only. This module imports exactly one x/crypto
+# subpackage, bcrypt (password hashing), and no openpgp package anywhere:
+#   grep -rho 'golang.org/x/crypto/[a-z0-9/]*' --include='*.go' . | sort -u
+#   → golang.org/x/crypto/bcrypt
+# Unreachable. Revisit if anything here ever needs PGP, in which case the
+# migration target is github.com/ProtonMail/go-crypto/openpgp.
+reason = "openpgp/* not imported; only x/crypto/bcrypt is used. No fixed version exists (package deprecated). govulncheck clean."
+
+[[IgnoredVulns]]
+id = "GHSA-q7pp-wcgr-pffx"
+ignoreUntil = 2026-10-29
+# github.com/disintegration/imaging <=1.6.2, i.e. every released version — the
+# project is dormant, so there is no upgrade. LOW severity: a panic from an
+# integer index out of range during a Grayscale call on a crafted TIFF, and the
+# advisory itself says it is unclear whether that has any security consequence.
+# This module never calls Grayscale — the imaging surface it uses is Decode,
+# Open, Fit, Save, AutoOrientation, JPEGQuality, Lanczos and
+# PNGCompressionLevel. Unreachable.
+#
+# Worth knowing when this is reviewed: those decode paths DO run on
+# user-uploaded bytes, so if a future advisory lands on Decode rather than
+# Grayscale it is a genuine issue and this entry must not be extended to cover
+# it. The upgrade path is replacing the library, not bumping it.
+reason = "Grayscale is never called; decode/resize surface only. Every version affected, project dormant. LOW, and govulncheck clean."

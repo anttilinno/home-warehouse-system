@@ -160,7 +160,12 @@ func main() {
 		pool:        pool,
 		workspaceID: workspaceID,
 		userID:      userID,
-		rng:         rand.New(rand.NewSource(time.Now().UnixNano())),
+		// #nosec G404 -- fixture generator for the dev/CI database. Nothing here
+		// is a secret, a token or an id that anyone authenticates against; a
+		// CSPRNG would only make seeding slower. Kept as an inline suppression
+		// rather than a global G404 exclusion so real misuse in production code
+		// still fails the build.
+		rng: rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 
 	// Run seeder based on type

@@ -37,13 +37,13 @@ func NewLocalStorage(baseDir string) (*LocalStorage, error) {
 	}
 
 	// Create base directory if it doesn't exist
-	if err := os.MkdirAll(baseDir, 0755); err != nil {
+	if err := os.MkdirAll(baseDir, 0750); err != nil {
 		return nil, fmt.Errorf("failed to create base directory: %w", err)
 	}
 
 	// Verify directory is writable
 	testFile := filepath.Join(baseDir, ".write_test")
-	if err := os.WriteFile(testFile, []byte("test"), 0644); err != nil {
+	if err := os.WriteFile(testFile, []byte("test"), 0600); err != nil {
 		return nil, fmt.Errorf("base directory is not writable: %w", err)
 	}
 	os.Remove(testFile)
@@ -75,13 +75,13 @@ func (s *LocalStorage) Save(ctx context.Context, workspaceID, itemID, filename s
 
 	// Create directory structure
 	dir := filepath.Dir(fullPath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0750); err != nil {
 		return "", fmt.Errorf("failed to create directory: %w", err)
 	}
 
 	// Write to temporary file first (atomic write)
 	tempFile := fullPath + ".tmp"
-	f, err := os.OpenFile(tempFile, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
+	f, err := os.OpenFile(tempFile, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp file: %w", err)
 	}

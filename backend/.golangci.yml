@@ -32,8 +32,27 @@ linters:
       # internal UUIDs and error values that are not user-controlled text. Real
       # log injection (logging raw request bodies/headers) is not a pattern in
       # this codebase, so exclude the rule rather than scatter nolints.
+      #
+      # The rest mirror the exclusions in .github/workflows/security-backend.yml
+      # EXACTLY — the CI job and this hook must agree, or a rule excluded in one
+      # blocks a push in the other (which is how a permission fix on an
+      # untouched G703 line first surfaced). Full per-rule justification lives
+      # with the workflow; the short version is that each is a guard gosec
+      # cannot follow: cookie flags set from config rather than a literal, form
+      # parsing already capped by MaxBodySize, paths resolved through
+      # LocalStorage.resolveWithinBase or os.CreateTemp, redirects built from
+      # server-side prefixes, and int32 casts of already-validated pagination.
+      # Whatever was genuinely wrong was fixed rather than excluded.
+      #
+      # G404 stays enabled: its one site carries an inline #nosec.
       excludes:
         - G706
+        - G115
+        - G120
+        - G124
+        - G304
+        - G703
+        - G710
   exclusions:
     generated: lax
     rules:

@@ -104,7 +104,7 @@ func (h *UploadHandler) HandleUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create upload directory if it doesn't exist
-	if err := os.MkdirAll(UploadDir, 0755); err != nil {
+	if err := os.MkdirAll(UploadDir, 0750); err != nil {
 		http.Error(w, "failed to create upload directory", http.StatusInternalServerError)
 		return
 	}
