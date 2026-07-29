@@ -96,7 +96,10 @@ test("logout revokes the session: protected access is denied afterward", async (
   // Log out through the real UI: user pill → Log out menuitem → confirm dialog
   // → danger "Log out" button (this is the only path that POSTs /auth/logout
   // and revokes the session server-side; BAR-05 — ESC never logs out).
-  await page.getByTestId("user-pill").click();
+  // The account menu lives in the Sidebar footer — the TopBar's redundant
+  // account pill (`user-pill`) was removed during v3.0 and this spec was never
+  // updated, so it waited 30 s for an element that no longer exists.
+  await page.getByTestId("sidebar-user-menu").click();
   await page.getByRole("menuitem", { name: /log out/i }).click();
   const dialog = page.getByRole("dialog", { name: /log out/i });
   await expect(dialog).toBeVisible();

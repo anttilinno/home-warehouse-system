@@ -98,10 +98,21 @@ test("item lifecycle: create → list → detail → archive → hidden → reve
     await expect(page).toHaveURL(new RegExp(`/items/${createdId}$`));
     await expect(page.getByText(itemName).first()).toBeVisible();
 
+    // The items list is name-sorted and paginated, and in CI every spec shares
+    // one database while running in parallel — so "my row is on page 1" is not
+    // a safe assumption. It held for the default list and broke on the archived
+    // one, which is a superset (`archived=true` means INCLUDE archived, not
+    // ONLY archived — handler.go LookupItemsInput). Narrow to the probe with
+    // the search box before asserting, the same move offline-replay.spec.ts
+    // makes for the same reason.
+    async function rowsFor(url: string) {
+      await page.goto(url);
+      await page.locator('input[type="search"]').first().fill(itemName);
+      return page.getByRole("row").filter({ hasText: itemName });
+    }
+
     // ── LIST: the new item appears in the default (non-archived) list.
-    await page.goto("/items");
-    await expect(page).toHaveURL(/\/items$/);
-    const liveRow = page.getByRole("row").filter({ hasText: itemName });
+    const liveRow = await rowsFor("/items");
     await expect(liveRow).toBeVisible();
 
     // ── DETAIL via row click: the row navigates to the detail route and the
@@ -118,19 +129,20 @@ test("item lifecycle: create → list → detail → archive → hidden → reve
 
     // ── HIDDEN: back on the default list the archived row is filtered out
     // (ITEM-05 default = non-archived). Assert the row is gone.
-    await page.goto("/items");
-    await expect(page).toHaveURL(/\/items$/);
-    await expect(
-      page.getByRole("row").filter({ hasText: itemName }),
-    ).toHaveCount(0);
+    await expect(await rowsFor("/items")).toHaveCount(0);
 
-    // ── REVEAL: turning on the ARCHIVED facet (the FilterPopover's "Show
-    // archived" option) flips ?archived=true and the row reappears, now flagged
-    // ARCHIVED. We drive the facet through the URL param the popover writes —
-    // the popover trigger + option are the user path, but the URL is the SSOT
-    // (Pattern 1) and is the deterministic, locale-agnostic way to assert it.
-    await page.goto("/items?archived=true&page=1");
-    const archivedRow = page.getByRole("row").filter({ hasText: itemName });
+    // ── REVEAL: archived visibility is NO LONGER a URL facet. It is the
+    // global, backend-synced `show_archived` user preference (Settings → Data
+    // & Storage), which the list hook reads off the shared ["me"] query — see
+    // useItemsQuery.ts. `?archived=true` has therefore done nothing since the
+    // toggle moved, which is why this step failed against an item that really
+    // was archived. Flip the preference through the same endpoint the settings
+    // toggle uses: deterministic and locale-agnostic, which is what the URL
+    // param was originally chosen for.
+    await page.request.patch("/api/users/me/preferences", {
+      data: { show_archived: true },
+    });
+    const archivedRow = await rowsFor("/items");
     await expect(archivedRow).toBeVisible();
     await expect(archivedRow.getByText(/archived/i)).toBeVisible();
 
@@ -139,13 +151,18 @@ test("item lifecycle: create → list → detail → archive → hidden → reve
     // back on the DEFAULT list it returns (no longer filtered out).
     await archivedRow.getByRole("button", { name: /^restore$/i }).click();
 
-    await page.goto("/items");
-    await expect(page).toHaveURL(/\/items$/);
-    const restoredRow = page.getByRole("row").filter({ hasText: itemName });
+    const restoredRow = await rowsFor("/items");
     await expect(restoredRow).toBeVisible();
     // It is no longer flagged ARCHIVED in the default list (IN STOCK status).
     await expect(restoredRow.getByText(/archived/i)).toHaveCount(0);
   } finally {
+    // show_archived is a persisted USER preference, not per-test state — leave
+    // it as found or every later spec (and the seeder account itself) inherits
+    // archived rows in its lists.
+    await page.request
+      .patch("/api/users/me/preferences", { data: { show_archived: false } })
+      .catch(() => undefined);
+
     // Best-effort cleanup: archive then delete (delete is archived-only per
     // ITEM-06 server/UI convention). Failures are swallowed — a leaked unique
     // row never collides with a later run (T-07-20).
