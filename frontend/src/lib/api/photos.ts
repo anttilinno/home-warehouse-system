@@ -23,9 +23,10 @@ export interface BulkCaptionUpdate {
 
 export const photosApi = {
   list(wsId: string, itemId: string): Promise<Photo[]> {
-    return get<Photo[]>(`/workspaces/${wsId}/items/${itemId}/photos/list`).then(
-      (photos) => photos.map(mapPhoto),
-    );
+    // Backend wraps the list: { items: [...] } (PhotoListResponse).
+    return get<{ items: Photo[] }>(
+      `/workspaces/${wsId}/items/${itemId}/photos/list`,
+    ).then((res) => res.items.map(mapPhoto));
   },
 
   // Multipart upload. Field name MUST be "photo"; optional "caption".

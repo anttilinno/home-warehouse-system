@@ -50,7 +50,7 @@ afterEach(() => {
 describe("photosApi.list", () => {
   it("rewrites url + thumbnail_url to /api-relative on every photo", async () => {
     fetchMock.mockResolvedValueOnce(
-      jsonResponse([PHOTO, { ...PHOTO, id: "p-2" }]),
+      jsonResponse({ items: [PHOTO, { ...PHOTO, id: "p-2" }] }),
     );
 
     const photos = await photosApi.list("ws-1", "it-1");

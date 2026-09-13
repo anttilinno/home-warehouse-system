@@ -91,7 +91,7 @@ export const repairHandlers = [
   // --- Repair sub-routes (photos + attachments) BEFORE the /repairs/:id
   // catch-all so the :id segment never swallows them. ---
   http.get("/api/workspaces/:wsId/repairs/:id/photos/list", () =>
-    HttpResponse.json([REPAIR_PHOTO]),
+    HttpResponse.json({ items: [REPAIR_PHOTO] }),
   ),
   http.get("/api/workspaces/:wsId/repairs/:id/attachments", () =>
     HttpResponse.json({ items: [REPAIR_ATTACHMENT], total: 1 }),

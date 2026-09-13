@@ -35,7 +35,7 @@ const PHOTO = {
 
 describe("repairPhotosApi.list", () => {
   it("fetches /repairs/{id}/photos/list and rewrites url + thumbnail_url", async () => {
-    fetchMock.mockResolvedValueOnce(jsonResponse([PHOTO]));
+    fetchMock.mockResolvedValueOnce(jsonResponse({ items: [PHOTO] }));
     const photos = await repairPhotosApi.list("ws-1", "rep-1");
     expect(fetchMock.mock.calls[0][0] as string).toContain(
       "/workspaces/ws-1/repairs/rep-1/photos/list",

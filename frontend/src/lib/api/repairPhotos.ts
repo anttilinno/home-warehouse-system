@@ -22,9 +22,10 @@ function mapRepairPhoto(raw: RepairPhoto): RepairPhoto {
 
 export const repairPhotosApi = {
   list(ws: string, repairId: string): Promise<RepairPhoto[]> {
-    return get<RepairPhoto[]>(
+    // Backend wraps the list: { items: [...] } (RepairPhotoListResponse).
+    return get<{ items: RepairPhoto[] }>(
       `/workspaces/${ws}/repairs/${repairId}/photos/list`,
-    ).then((photos) => photos.map(mapRepairPhoto));
+    ).then((res) => res.items.map(mapRepairPhoto));
   },
 
   // Multipart upload. Field name MUST be "photo"; "photo_type" REQUIRED

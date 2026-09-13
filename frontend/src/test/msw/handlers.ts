@@ -453,7 +453,7 @@ export const handlers = [
 
   // Item photos list (specific) BEFORE item :id.
   http.get("/api/workspaces/:wsId/items/:id/photos/list", () =>
-    HttpResponse.json([PHOTO]),
+    HttpResponse.json({ items: [PHOTO] }),
   ),
 
   // Item lifecycle (specific) BEFORE item :id.

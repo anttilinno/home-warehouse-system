@@ -134,7 +134,7 @@ function installHandlers(f: Fixtures) {
       return HttpResponse.json(f.item ?? makeItem());
     }),
     http.get("/api/workspaces/:wsId/items/:id/photos/list", () =>
-      HttpResponse.json(f.photos ?? []),
+      HttpResponse.json({ items: f.photos ?? [] }),
     ),
     http.get("/api/workspaces/:wsId/items/:id/loans", () =>
       HttpResponse.json({ items: f.loans ?? [] }),
