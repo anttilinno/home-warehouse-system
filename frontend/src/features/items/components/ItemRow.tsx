@@ -4,7 +4,6 @@ import {
   PixelIcon,
   RetroBadge,
   RetroCheckbox,
-  StatusPill,
 } from "@/components/retro";
 import type { Item } from "@/lib/types";
 
@@ -75,14 +74,10 @@ export function ItemRow({
         {categoryName ?? "—"}
       </td>
       <td>
-        {archived ? (
+        {archived && (
           <RetroBadge variant="neutral">
             <Trans>ARCHIVED</Trans>
           </RetroBadge>
-        ) : (
-          <StatusPill variant="ok">
-            <Trans>IN STOCK</Trans>
-          </StatusPill>
         )}
       </td>
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard to stop the row navigate; keyboard users focus the nested action buttons directly */}

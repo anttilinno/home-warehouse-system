@@ -22,6 +22,7 @@ import type { Item } from "@/lib/types";
 import { useItemsQuery } from "./hooks/useItemsQuery";
 import { useItemMutations } from "./hooks/useItemMutations";
 import { ItemsResults } from "./components/ItemsResults";
+import { InventoryScopeTabs } from "./components/InventoryScopeTabs";
 import { ItemsBulkBar } from "./components/ItemsBulkBar";
 import { DeleteItemDialog } from "./components/DeleteItemDialog";
 import { BulkDeleteItemsDialog } from "./components/BulkDeleteItemsDialog";
@@ -243,6 +244,7 @@ export function ItemsListPage() {
 
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">
+      <InventoryScopeTabs />
       <Window
         title={t`ITEMS — ${workspaceName}`}
         titlebarVariant="mint"

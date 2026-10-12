@@ -16,7 +16,7 @@ export interface RetroDialogProps {
   actions?: ReactNode;
   /** Optional right-aligned footer action row (BevelButtons). */
   footer?: ReactNode;
-  /** Width contract. Default min(520px, 92vw). */
+  /** Width contract at ≥640px. Default min(520px, 92vw); below 640px the dialog is a full-width bottom sheet. */
   width?: string;
   children: ReactNode;
 }
@@ -87,7 +87,7 @@ export function RetroDialog({
       aria-label={t`Close`}
       title={t`Close`}
       onClick={onClose}
-      className="flex h-[14px] w-[14px] flex-none cursor-pointer items-center justify-center border-2 border-border-ink bg-bg-panel text-10 leading-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
+      className="relative flex h-[14px] w-[14px] flex-none cursor-pointer items-center justify-center border-2 before:absolute before:-inset-2 before:content-[''] border-border-ink bg-bg-panel text-10 leading-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
     >
       <span aria-hidden="true">✕</span>
     </button>
@@ -97,7 +97,7 @@ export function RetroDialog({
     // biome-ignore lint/a11y/useKeyWithClickEvents: tap-outside scrim; Escape closes via the modal stack
     // biome-ignore lint/a11y/noStaticElementInteractions: tap-outside scrim; Escape closes via the modal stack
     <div
-      className="fixed inset-0 z-40 flex items-center justify-center bg-fg-ink/40 p-sp-4"
+      className="fixed inset-0 z-40 flex items-center justify-center bg-fg-ink/40 p-sp-4 max-sm:items-end max-sm:p-0"
       onClick={onClose}
     >
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops scrim-click propagation only, not an interactive control */}
@@ -107,7 +107,7 @@ export function RetroDialog({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="outline-none"
+        className="outline-none max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:w-auto! max-sm:max-h-[85dvh] max-sm:overflow-y-auto"
         style={{ width }}
         onClick={(e) => e.stopPropagation()}
       >

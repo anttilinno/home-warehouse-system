@@ -10,6 +10,7 @@ import {
   RetroEmptyState,
 } from "@/components/retro";
 import type { ExpiringEntry } from "@/lib/types";
+import { InventoryScopeTabs } from "@/features/items/components/InventoryScopeTabs";
 import {
   useExpiringQuery,
   EXPIRING_DAYS_OPTIONS,
@@ -98,6 +99,7 @@ export function ExpiringPage() {
 
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">
+      <InventoryScopeTabs />
       <Window title={t`EXPIRING SOON`} titlebarVariant="butter">
         {/* Header strip: days selector + count. */}
         <div className="flex items-center gap-sp-3 border-b-2 border-border-ink bg-bg-panel-2 p-sp-3">

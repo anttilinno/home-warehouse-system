@@ -380,14 +380,13 @@ export function RetroTree({
                 // space when hidden (lets the short code sit flush against the
                 // right edge). Reveal on hover/focus; the panel-2 bg + left fade
                 // covers the code beneath while acting on the row.
-                className="absolute inset-y-0 right-0 flex items-center gap-sp-1 bg-bg-panel-2 pl-sp-3 pr-sp-2 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+                className="absolute inset-y-0 right-0 flex items-center gap-sp-1 bg-bg-panel-2 pl-sp-3 pr-sp-2 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 group-focus-within:opacity-100"
                 onClick={(e) => e.stopPropagation()}
               >
                 {node.isArchived ? (
                   <BevelButton
                     type="button"
                     variant="mint"
-                    tabIndex={-1}
                     className="!px-[8px] !py-[2px] !text-11"
                     onClick={() => onRestore(node)}
                   >
@@ -397,7 +396,6 @@ export function RetroTree({
                   <>
                     <BevelButton
                       type="button"
-                      tabIndex={-1}
                       className="!px-[8px] !py-[2px] !text-11"
                       onClick={() => onEdit(node)}
                     >
@@ -405,7 +403,6 @@ export function RetroTree({
                     </BevelButton>
                     <BevelButton
                       type="button"
-                      tabIndex={-1}
                       aria-label="Add child"
                       title="Add child"
                       className="!px-[8px] !py-[2px] !text-11"
@@ -415,7 +412,6 @@ export function RetroTree({
                     </BevelButton>
                     <BevelButton
                       type="button"
-                      tabIndex={-1}
                       aria-label="Archive"
                       title="Archive"
                       className="!px-[8px] !py-[2px] !text-11"

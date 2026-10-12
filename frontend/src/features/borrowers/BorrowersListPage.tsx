@@ -64,7 +64,7 @@ export function BorrowersListPage() {
   const focusSearch = useCallback(() => {
     document.querySelector<HTMLInputElement>("[data-search-input]")?.focus();
   }, []);
-  const labelNew = t`New borrower`;
+  const labelNew = t`Add borrower`;
   const labelSearch = t`Focus search`;
   const routeShortcuts = useMemo(
     () => [
@@ -126,7 +126,7 @@ export function BorrowersListPage() {
           searchPlaceholder={t`Search name, email… ↵ to pin`}
           primaryAction={
             <BevelButton variant="mint" onClick={goNew}>
-              <PixelIcon name="plus" size={16} /> <Trans>NEW BORROWER</Trans>
+              <PixelIcon name="plus" size={16} /> <Trans>ADD BORROWER</Trans>
             </BevelButton>
           }
         />

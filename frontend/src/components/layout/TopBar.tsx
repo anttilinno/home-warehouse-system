@@ -1,8 +1,7 @@
 import { Trans } from "@lingui/react/macro";
 import { BrandMark } from "@/components/BrandMark";
-import { PixelIcon, RetroStatusDot, StatusPill } from "@/components/retro";
+import { PixelIcon, StatusPill } from "@/components/retro";
 import { useTheme } from "@/lib/useTheme";
-import { useSSEStatus } from "@/features/sse";
 import { useIsOnline } from "@/lib/offline/useIsOnline";
 import { usePendingWrites } from "@/lib/offline/usePendingWrites";
 import { NotificationsBell } from "@/features/notifications/components/NotificationsBell";
@@ -49,19 +48,11 @@ export interface TopBarProps {
    * force a state without touching `navigator.onLine`.
    */
   online?: boolean;
-  /** Mobile hamburger toggle for the Navigator drawer (wired in Plan 06). */
-  onToggleDrawer?: () => void;
   /** Open the global search / command palette (⌘K / F2 also open it). */
   onOpenSearch?: () => void;
 }
 
-export function TopBar({
-  online,
-  onToggleDrawer,
-  onOpenSearch,
-}: Readonly<TopBarProps>) {
-  // Live SSE connection status — drives ONLY the sse-slot RetroStatusDot now.
-  const { connected } = useSSEStatus();
+export function TopBar({ online, onOpenSearch }: Readonly<TopBarProps>) {
   // Real network state (Phase 4) — drives the ONLINE dot when no explicit
   // `online` prop is passed.
   const networkOnline = useIsOnline();
@@ -76,19 +67,6 @@ export function TopBar({
 
   return (
     <header className="sticky top-0 z-10 flex h-[40px] items-center gap-sp-2 border-b-2 border-border-ink bg-bg-panel px-sp-3 py-sp-1 shadow-[inset_0_-2px_0_var(--bevel-shade)] md:gap-sp-4 md:px-sp-4">
-      {/* Mobile hamburger — hidden on desktop where the sidebar is persistent.
-          Visual stays 28px (fits the 40px bar); the ::before extends the tap
-          target to 44px so it clears the touch-target minimum (C1). */}
-      <button
-        type="button"
-        onClick={onToggleDrawer}
-        aria-label="Open navigation"
-        title="Open navigation"
-        className={`relative grid h-[28px] w-[28px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-14 leading-none bevel-raised-ink before:absolute before:-inset-2 before:content-[''] active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed md:hidden ${FOCUS_RING}`}
-      >
-        <PixelIcon name="menu" />
-      </button>
-
       {/* Brand: 30x30 beveled square + WAREHOUSE.SYS mark. */}
       <span className="flex flex-none items-center gap-sp-2">
         <span
@@ -154,22 +132,13 @@ export function TopBar({
           goingDark ? "Switch to dark theme" : "Switch to light theme"
         }
         title={goingDark ? "Switch to dark theme" : "Switch to light theme"}
-        className={`ml-auto grid h-[28px] w-[28px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-14 leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed ${FOCUS_RING}`}
+        className={`ml-auto hidden h-[28px] w-[28px] flex-none md:grid place-items-center border-2 border-border-ink bg-bg-panel font-mono text-14 leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed ${FOCUS_RING}`}
       >
         <span aria-hidden="true">{goingDark ? "☾" : "☀"}</span>
       </button>
 
       {/* Live notifications bell — bell button + unread badge + dropdown (Phase 13). */}
       <NotificationsBell />
-
-      {/* SSE status slot — the live RetroStatusDot fed by useSSEStatus (Phase 6).
-          Atom stays dumb: TopBar maps connected→"live"/"idle" (Pitfall 6). */}
-      <span
-        data-testid="sse-slot"
-        className="hidden flex-none items-center md:inline-flex"
-      >
-        <RetroStatusDot state={connected ? "live" : "idle"} />
-      </span>
     </header>
   );
 }

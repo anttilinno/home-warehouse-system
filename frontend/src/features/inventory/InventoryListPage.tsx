@@ -27,6 +27,7 @@ import { useInventoryMutations } from "./hooks/useInventoryMutations";
 import { usePickerOptions } from "./hooks/usePickerOptions";
 import { useInventoryVisible } from "./hooks/useInventoryFilters";
 import { InventoryResults } from "./components/InventoryResults";
+import { InventoryScopeTabs } from "@/features/items/components/InventoryScopeTabs";
 import { InventoryDrawers } from "./components/InventoryDrawers";
 import { MoveDialog } from "./components/MoveDialog";
 
@@ -166,10 +167,12 @@ export function InventoryListPage() {
 
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">
+      <InventoryScopeTabs />
       <Window title={t`INVENTORY — ${workspaceName}`} titlebarVariant="mint">
         <ViewBar
           {...viewBar}
           itemCount={visible.length}
+          countNoun={<Trans>entries</Trans>}
           searchPlaceholder={t`Search item name… ↵ to pin`}
           primaryAction={
             <span className="flex items-center gap-sp-2">

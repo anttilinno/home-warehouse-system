@@ -8,7 +8,7 @@ import { Sidebar } from "./Sidebar";
 import { PageHeader } from "./PageHeader";
 import { buildCrumbs } from "./breadcrumbs";
 import { Bottombar } from "./Bottombar";
-import { Fab } from "./Fab";
+import { TabBar } from "./TabBar";
 import { MobileDrawer } from "./MobileDrawer";
 import { F1HelpDialog } from "./F1HelpDialog";
 import { WorkspaceProvider } from "@/features/workspace/WorkspaceProvider";
@@ -108,6 +108,8 @@ function ShellChrome() {
     const onEsc = (e: KeyboardEvent) => {
       if (e.key !== "Escape" || e.defaultPrevented) return;
       if (isEditableTarget(e.target)) return;
+      // A dirty form opts out: history-back would bypass its discard guard.
+      if (document.querySelector('[data-dirty="true"]')) return;
       navigate(-1);
     };
     document.addEventListener("keydown", onEsc);
@@ -160,10 +162,7 @@ function ShellChrome() {
       <div className="app-topbar">
         {/* No `online` prop — TopBar defaults its ONLINE chip to the real
             network state (useIsOnline(), Phase 4), not SSE `connected`. */}
-        <TopBar
-          onToggleDrawer={() => setDrawerOpen((v) => !v)}
-          onOpenSearch={() => setPaletteOpen(true)}
-        />
+        <TopBar onOpenSearch={() => setPaletteOpen(true)} />
       </div>
 
       {/* Desktop Navigator — persistent in the grid; hidden <768px (the drawer
@@ -183,7 +182,7 @@ function ShellChrome() {
         <PageHeader crumbs={crumbs} lastSync={lastSync} />
         {/* Extra bottom padding below md so the last row (and its right-side
             actions) clears the 56px FAB + safe-area inset (C3). */}
-        <div className="p-sp-5 max-md:pb-[calc(88px+env(safe-area-inset-bottom))]">
+        <div className="p-sp-5 max-md:pb-[calc(64px+env(safe-area-inset-bottom))]">
           <Outlet />
         </div>
       </main>
@@ -195,7 +194,7 @@ function ShellChrome() {
         />
       </div>
 
-      {/* Mobile-only surfaces (<768px): the off-canvas Navigator + the FAB. */}
+      {/* Mobile-only surfaces (<768px): the bottom TabBar + the MORE drawer. */}
       <MobileDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
@@ -204,7 +203,7 @@ function ShellChrome() {
         user={me.data}
         onLogout={logout}
       />
-      <Fab />
+      <TabBar onOpenMore={() => setDrawerOpen(true)} />
 
       {/* The F1 help dialog (its single F1/"?" keydown owner toggles it). */}
       <F1HelpDialog

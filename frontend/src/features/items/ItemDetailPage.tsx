@@ -14,10 +14,12 @@ import {
 } from "@/components/retro";
 import { Popover } from "@/components/retro/overlay";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
+import { useCategoriesQuery } from "@/features/taxonomy/hooks/useCategoriesQuery";
 import { HttpError } from "@/lib/api";
 import { itemsApi } from "@/lib/api/items";
 import { photosApi } from "@/lib/api/photos";
 import type { Item } from "@/lib/types";
+import type { Category } from "@/lib/api/category";
 import { useItemMutations } from "./hooks/useItemMutations";
 import { PhotoGallery } from "./components/PhotoGallery";
 import { PhotoLightbox } from "./components/PhotoLightbox";
@@ -48,6 +50,7 @@ export function ItemDetailPage() {
   const navigate = useNavigate();
   const { currentWorkspaceId: wsId } = useWorkspace();
   const { id } = useParams();
+  const { rows: categoryRows } = useCategoriesQuery();
 
   const itemQuery = useQuery({
     queryKey: ["items", wsId as string, "detail", id],
@@ -184,6 +187,7 @@ export function ItemDetailPage() {
         <DetailsTab
           item={item}
           wsId={wsId as string}
+          categories={categoryRows}
           onCopyBarcode={copyBarcode}
         />
       ),
@@ -251,7 +255,7 @@ export function ItemDetailPage() {
               className="!px-[8px] !py-[2px] !text-11"
               onClick={() => setMenuOpen((o) => !o)}
             >
-              <PixelIcon name="download" size={16} />
+              <span aria-hidden="true">⋯</span>
             </BevelButton>
             <Popover
               open={menuOpen}
@@ -388,10 +392,12 @@ export function ItemDetailPage() {
 function DetailsTab({
   item,
   wsId,
+  categories,
   onCopyBarcode,
 }: Readonly<{
   item: Item;
   wsId: string;
+  categories: Category[];
   onCopyBarcode: () => void;
 }>) {
   return (
@@ -399,9 +405,11 @@ function DetailsTab({
       <dl className="grid grid-cols-[minmax(0,140px)_minmax(0,1fr)] gap-x-sp-4 gap-y-sp-3">
         <Field label={<Trans>Name</Trans>}>{item.name}</Field>
         <Field label={<Trans>Category</Trans>}>
-          {item.category_id ?? <Muted>—</Muted>}
+          {categories.find((c) => c.id === item.category_id)?.name ?? (
+            <Muted>—</Muted>
+          )}
         </Field>
-        <Field label={<Trans>Quantity</Trans>} mono>
+        <Field label={<Trans>Min stock</Trans>} mono>
           {item.min_stock_level}
         </Field>
         <Field label={<Trans>Barcode</Trans>} mono>

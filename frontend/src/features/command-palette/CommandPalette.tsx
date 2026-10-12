@@ -18,7 +18,12 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "react-router";
 import { useModalStack } from "@/components/modal";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
-import { paletteRoutes } from "./paletteRoutes";
+import { useTheme } from "@/lib/useTheme";
+import {
+  paletteActions,
+  paletteRoutes,
+  type PaletteAction,
+} from "./paletteRoutes";
 import { useEntitySearch, type EntityHit } from "./useEntitySearch";
 import { addRecent, getRecent, type RecentKind } from "./recentActions";
 
@@ -56,6 +61,7 @@ export default function CommandPalette({
   const { t } = useLingui();
   const navigate = useNavigate();
   const { workspaces, setWorkspace } = useWorkspace();
+  const { resolved, setPref } = useTheme();
 
   // cmdk controlled state: `value` = selected item, `query` = search input.
   const [value, setValue] = useState("");
@@ -105,6 +111,20 @@ export default function CommandPalette({
   );
 
   if (!open) return null;
+
+  // Actions: nav verbs record an MRU route row (replays via navigate); the
+  // theme toggle is not recorded (nothing to replay).
+  const runAction = (action: PaletteAction) => {
+    const { to } = action;
+    if (to) {
+      run({ id: action.id, kind: "route", label: t(action.label), to }, () =>
+        navigate(to),
+      );
+      return;
+    }
+    setPref(resolved === "light" ? "dark" : "light");
+    onClose();
+  };
 
   const renderEntityGroup = (
     heading: ReactNode,
@@ -190,6 +210,25 @@ export default function CommandPalette({
             <CommandEmpty className="px-sp-3 py-sp-3 font-body text-14 text-fg-muted">
               <Trans>No results.</Trans>
             </CommandEmpty>
+
+            {/* Actions — static verbs, rendered first. */}
+            <CommandGroup
+              heading={t`Actions`}
+              className="px-sp-2 py-sp-1 text-11 font-semibold uppercase tracking-wide text-fg-muted"
+            >
+              {paletteActions
+                .filter((a) => matches(t(a.label), query))
+                .map((a) => (
+                  <CommandItem
+                    key={a.id}
+                    value={`action:${a.id}`}
+                    onSelect={() => runAction(a)}
+                    className="cursor-pointer px-sp-3 py-sp-2 font-body text-14 text-fg-ink data-[selected=true]:bg-titlebar-blue data-[selected=true]:text-fg-ink"
+                  >
+                    {t(a.label)}
+                  </CommandItem>
+                ))}
+            </CommandGroup>
 
             {/* Routes — static, client substring-filtered. */}
             <CommandGroup

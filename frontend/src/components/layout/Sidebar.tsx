@@ -240,8 +240,6 @@ export function Sidebar({
           />
           {/* Scan promoted to Overview — it is the primary capture action. */}
           <NavItem icon="camera" label={<Trans>Scan</Trans>} to="/scan" />
-          {/* The mobile capture loop — scan/photo/save/next, details later. */}
-          <NavItem icon="image" label={<Trans>Capture</Trans>} to="/capture" />
         </NavGroup>
         <NavGroup
           groupKey="inventory"
@@ -255,11 +253,6 @@ export function Sidebar({
             label={<Trans>Items</Trans>}
             count={stats?.total_items || undefined}
             to="/items"
-          />
-          <NavItem
-            icon="grid-3x3"
-            label={<Trans>Inventory</Trans>}
-            to="/inventory"
           />
           {/* Organize folds the three /taxonomy tabs (Locations / Containers /
               Categories) into one entry — they are already tabs of one page.
@@ -311,13 +304,7 @@ export function Sidebar({
           groupKey="system"
           title={<Trans>System</Trans>}
           defaultOpen={false}
-          routes={[
-            "/approvals",
-            "/my-changes",
-            "/imports",
-            "/sync-history",
-            "/settings",
-          ]}
+          routes={["/approvals", "/my-changes", "/imports", "/settings"]}
           // Pending approvals must stay visible even when System is collapsed.
           collapsedBadge={
             pendingApprovals ? (
@@ -341,12 +328,6 @@ export function Sidebar({
             icon="bulletlist"
             label={<Trans>My Changes</Trans>}
             to="/my-changes"
-          />
-          <NavItem icon="upload" label={<Trans>Imports</Trans>} to="/imports" />
-          <NavItem
-            icon="reload"
-            label={<Trans>Sync History</Trans>}
-            to="/sync-history"
           />
           <NavItem
             icon="settings-2"

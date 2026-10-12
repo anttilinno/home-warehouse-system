@@ -401,6 +401,7 @@ msgstr "Action"
 msgid "action needed"
 msgstr "action needed"
 
+#: src/features/command-palette/CommandPalette.tsx
 #: src/features/settings/MembersPage.tsx
 #: src/features/settings/SecurityPage.tsx
 msgid "Actions"
@@ -448,6 +449,10 @@ msgid "ADD"
 msgstr "ADD"
 
 #: src/features/borrowers/BorrowersListPage.tsx
+msgid "Add borrower"
+msgstr "Add borrower"
+
+#: src/features/borrowers/BorrowersListPage.tsx
 msgid "ADD BORROWER"
 msgstr "ADD BORROWER"
 
@@ -469,7 +474,6 @@ msgstr "ADD ENTRY"
 msgid "ADD FILE"
 msgstr "ADD FILE"
 
-#: src/components/layout/Fab.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Add item"
 msgstr "Add item"
@@ -477,7 +481,6 @@ msgstr "Add item"
 #: src/features/items/components/ItemsResults.tsx
 #: src/features/items/ItemFormPage.tsx
 #: src/features/items/ItemsListPage.tsx
-#: src/features/wishlist/components/WishlistTable.tsx
 msgid "ADD ITEM"
 msgstr "ADD ITEM"
 
@@ -513,6 +516,10 @@ msgstr "ADD SCHEDULE"
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "ADD TO WISHLIST"
 msgstr "ADD TO WISHLIST"
+
+#: src/features/wishlist/components/WishlistTable.tsx
+msgid "ADD WISH"
+msgstr "ADD WISH"
 
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Add your first location — a room, shelf, or area. Nest sub-locations to mirror your space."
@@ -847,7 +854,6 @@ msgid "Caption"
 msgstr "Caption"
 
 #: src/components/layout/breadcrumbs.tsx
-#: src/components/layout/Sidebar.tsx
 msgid "Capture"
 msgstr "Capture"
 
@@ -967,6 +973,10 @@ msgstr "Close"
 msgid "CLOSE"
 msgstr "CLOSE"
 
+#: src/components/layout/F1HelpDialog.tsx
+msgid "Close / back"
+msgstr "Close / back"
+
 #: src/features/scan/ClaimPage.tsx
 msgid "Code not found"
 msgstr "Code not found"
@@ -980,6 +990,7 @@ msgstr "Color"
 msgid "Coming soon"
 msgstr "Coming soon"
 
+#: src/components/layout/F1HelpDialog.tsx
 #: src/features/command-palette/CommandPalette.tsx
 msgid "Command palette"
 msgstr "Command palette"
@@ -2151,6 +2162,10 @@ msgstr "Enter your name."
 msgid "Entity"
 msgstr "Entity"
 
+#: src/features/inventory/InventoryListPage.tsx
+msgid "entries"
+msgstr "entries"
+
 #: src/features/inventory/hooks/useInventoryFormMutations.ts
 msgid "Entry saved."
 msgstr "Entry saved."
@@ -2185,8 +2200,13 @@ msgid "exchanging credentials"
 msgstr "exchanging credentials"
 
 #: src/components/layout/breadcrumbs.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "Expiring"
 msgstr "Expiring"
+
+#: src/features/items/components/InventoryScopeTabs.tsx
+msgid "EXPIRING"
+msgstr "EXPIRING"
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "Expiring soon"
@@ -2307,12 +2327,12 @@ msgstr "FILES"
 #~ msgstr "Filter borrowers…"
 
 #: src/components/retro/filters/ViewMenu.tsx
-msgid "Filter categories"
-msgstr "Filter categories"
+#~ msgid "Filter categories"
+#~ msgstr "Filter categories"
 
 #: src/components/retro/filters/ViewMenu.tsx
-msgid "Filter categories…"
-msgstr "Filter categories…"
+#~ msgid "Filter categories…"
+#~ msgstr "Filter categories…"
 
 #: src/features/inventory/InventoryListPage.tsx
 #~ msgid "Filter inventory…"
@@ -2329,6 +2349,14 @@ msgstr "Filter items"
 #: src/features/loans/LoansListPage.tsx
 #~ msgid "Filter loans…"
 #~ msgstr "Filter loans…"
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "Filter options"
+msgstr "Filter options"
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "Filter…"
+msgstr "Filter…"
 
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "FilterBar + FilterPopover — search, facets, chips, count, CTA."
@@ -2405,6 +2433,10 @@ msgstr "HISTORY"
 #~ msgid "History tab panel."
 #~ msgstr "History tab panel."
 
+#: src/components/layout/TabBar.tsx
+msgid "Home"
+msgstr "Home"
+
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
 msgid "home inventory terminal · v3.0"
@@ -2447,7 +2479,6 @@ msgid "Importing…"
 msgstr "Importing…"
 
 #: src/components/layout/breadcrumbs.tsx
-#: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/imports/components/ImportHistory.tsx
 msgid "Imports"
@@ -2458,7 +2489,6 @@ msgid "IMPORTS — {workspaceName}"
 msgstr "IMPORTS — {workspaceName}"
 
 #: src/features/items/components/InventoryPanel.tsx
-#: src/features/items/components/ItemRow.tsx
 msgid "IN STOCK"
 msgstr "IN STOCK"
 
@@ -2548,12 +2578,17 @@ msgstr "items"
 
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
+#: src/components/layout/TabBar.tsx
 #: src/features/command-palette/CommandPalette.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/components/DashboardStatTiles.tsx
 #: src/features/dashboard/components/HudRow.tsx
 msgid "Items"
 msgstr "Items"
+
+#: src/features/items/components/InventoryScopeTabs.tsx
+msgid "ITEMS"
+msgstr "ITEMS"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "ITEMS — {workspaceName}"
@@ -2745,6 +2780,7 @@ msgstr "Loaning this item — pick a borrower."
 
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
+#: src/components/layout/TabBar.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/components/DashboardStatTiles.tsx
@@ -2915,8 +2951,13 @@ msgstr "Members"
 #~ msgstr "Menu ▾"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
+#: src/features/items/ItemDetailPage.tsx
 msgid "Min stock"
 msgstr "Min stock"
+
+#: src/features/items/ItemFormPage.tsx
+msgid "Min stock level"
+msgstr "Min stock level"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Mirror Paperless tags"
@@ -2925,6 +2966,10 @@ msgstr "Mirror Paperless tags"
 #: src/features/analytics/components/MonthlyLoanActivityChart.tsx
 msgid "Monthly loan activity"
 msgstr "Monthly loan activity"
+
+#: src/components/layout/TabBar.tsx
+msgid "More"
+msgstr "More"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "More actions"
@@ -3017,12 +3062,11 @@ msgstr "never"
 msgid "New"
 msgstr "New"
 
-#: src/features/borrowers/BorrowersListPage.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "New borrower"
 msgstr "New borrower"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
-#: src/features/borrowers/BorrowersListPage.tsx
 msgid "NEW BORROWER"
 msgstr "NEW BORROWER"
 
@@ -3050,6 +3094,7 @@ msgstr "New entry"
 msgid "New here?"
 msgstr "New here?"
 
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "New item"
@@ -3059,6 +3104,7 @@ msgstr "New item"
 msgid "NEW LABEL"
 msgstr "NEW LABEL"
 
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/loans/LoansListPage.tsx
 msgid "New loan"
 msgstr "New loan"
@@ -3493,8 +3539,8 @@ msgid "ONLINE"
 msgstr "ONLINE"
 
 #: src/features/system-history/Page.tsx
-msgid "ONLINE ONLY"
-msgstr "ONLINE ONLY"
+#~ msgid "ONLINE ONLY"
+#~ msgstr "ONLINE ONLY"
 
 #: src/features/items/hooks/useItemMutations.ts
 #: src/features/items/ItemsListPage.tsx
@@ -3558,6 +3604,7 @@ msgstr "Ordered"
 msgid "ORDERED"
 msgstr "ORDERED"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 msgid "Organize"
 msgstr "Organize"
@@ -3816,8 +3863,6 @@ msgid "Qty"
 msgstr "Qty"
 
 #: src/features/inventory/InventoryFormPage.tsx
-#: src/features/items/ItemDetailPage.tsx
-#: src/features/items/ItemFormPage.tsx
 msgid "Quantity"
 msgstr "Quantity"
 
@@ -4237,6 +4282,7 @@ msgstr "Saved."
 
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
+#: src/components/layout/TabBar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Scan"
@@ -4245,6 +4291,10 @@ msgstr "Scan"
 #: src/features/scan/ScanPage.tsx
 msgid "SCAN"
 msgstr "SCAN"
+
+#: src/components/scan/ScanResultBanner.tsx
+msgid "SCAN NEXT"
+msgstr "SCAN NEXT"
 
 #: src/features/scan/CapturePage.tsx
 msgid "Scan, snap, move on. Fill in the details later from a desktop."
@@ -4384,6 +4434,46 @@ msgstr "Set when created — can't be changed."
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings"
 msgstr "Settings"
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Accounts"
+msgstr "Settings · Accounts"
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Appearance"
+msgstr "Settings · Appearance"
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Data"
+msgstr "Settings · Data"
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Formats"
+msgstr "Settings · Formats"
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Language"
+msgstr "Settings · Language"
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Members"
+msgstr "Settings · Members"
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Notifications"
+msgstr "Settings · Notifications"
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Paperless"
+msgstr "Settings · Paperless"
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Profile"
+msgstr "Settings · Profile"
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Security"
+msgstr "Settings · Security"
 
 #: src/features/taxonomy/components/TaxonomyFormFields.tsx
 msgid "Short code"
@@ -4530,6 +4620,10 @@ msgstr "Stay"
 msgid "Stock"
 msgstr "Stock"
 
+#: src/features/items/components/InventoryScopeTabs.tsx
+msgid "STOCK"
+msgstr "STOCK"
+
 #: src/features/items/components/InventoryPanelStub.tsx
 msgid "Stock entries arrive in 7b."
 msgstr "Stock entries arrive in 7b."
@@ -4543,18 +4637,18 @@ msgid "Switched to {name}."
 msgstr "Switched to {name}."
 
 #: src/features/system-history/Page.tsx
-msgid "Sync"
-msgstr "Sync"
+#~ msgid "Sync"
+#~ msgstr "Sync"
 
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
-msgid "Sync History"
-msgstr "Sync History"
+#~ msgid "Sync History"
+#~ msgstr "Sync History"
 
 #: src/features/system-history/Page.tsx
-msgid "SYNC HISTORY"
-msgstr "SYNC HISTORY"
+#~ msgid "SYNC HISTORY"
+#~ msgstr "SYNC HISTORY"
 
 #: src/lib/offline/useResumeOnReconnect.ts
 msgid "Synced."
@@ -4584,8 +4678,8 @@ msgid "target {CAPACITY_TARGET_PLACEHOLDER} · data pending"
 msgstr "target {CAPACITY_TARGET_PLACEHOLDER} · data pending"
 
 #: src/components/layout/breadcrumbs.tsx
-msgid "Taxonomy"
-msgstr "Taxonomy"
+#~ msgid "Taxonomy"
+#~ msgstr "Taxonomy"
 
 #: src/features/taxonomy/TaxonomyPage.tsx
 #~ msgid "TAXONOMY — {workspaceName}"
@@ -4732,8 +4826,8 @@ msgid "This route has no quick actions yet. Press F1 anytime for the full list."
 msgstr "This route has no quick actions yet. Press F1 anytime for the full list."
 
 #: src/features/system-history/Page.tsx
-msgid "This workspace runs online-only — changes save directly to the server, so there are no background sync events to show."
-msgstr "This workspace runs online-only — changes save directly to the server, so there are no background sync events to show."
+#~ msgid "This workspace runs online-only — changes save directly to the server, so there are no background sync events to show."
+#~ msgstr "This workspace runs online-only — changes save directly to the server, so there are no background sync events to show."
 
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Thousand and decimal separators must be different."
@@ -4785,6 +4879,14 @@ msgstr "To location"
 #: src/features/items/components/PhotoTile.tsx
 msgid "Toggle {label}"
 msgstr "Toggle {label}"
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Toggle theme"
+msgstr "Toggle theme"
+
+#: src/components/layout/F1HelpDialog.tsx
+msgid "Toggle this help"
+msgstr "Toggle this help"
 
 #: src/features/analytics/components/TopBorrowersChart.tsx
 msgid "Top borrowers"

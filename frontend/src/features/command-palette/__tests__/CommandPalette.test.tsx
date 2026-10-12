@@ -45,6 +45,11 @@ vi.mock("@/features/workspace/useWorkspace", () => ({
   }),
 }));
 
+const setPref = vi.fn();
+vi.mock("@/lib/useTheme", () => ({
+  useTheme: () => ({ pref: "light", resolved: "light", setPref }),
+}));
+
 let lastPath = "";
 function LocationProbe() {
   const loc = useLocation();
@@ -87,16 +92,49 @@ describe("CommandPalette", () => {
     renderPalette();
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
     expect(screen.getByText("Items")).toBeInTheDocument();
-    expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.getByText("Settings · Appearance")).toBeInTheDocument();
+    expect(screen.queryByText("Sync History")).not.toBeInTheDocument();
+  });
+
+  it("renders the Actions group before Routes", () => {
+    renderPalette();
+    const groups = screen.getAllByRole("group");
+    expect(groups[0]).toHaveTextContent("New item");
+    expect(groups[0]).toHaveTextContent("Toggle theme");
+  });
+
+  it("typing 'new item' shows the action; selecting it navigates to /items/new", async () => {
+    const user = userEvent.setup();
+    const { onClose } = renderPalette();
+
+    await user.type(screen.getByRole("combobox"), "new item");
+    expect(screen.queryByText("Dashboard")).not.toBeInTheDocument();
+    await user.click(screen.getByText("New item"));
+
+    await waitFor(() => expect(lastPath).toBe("/items/new"));
+    expect(onClose).toHaveBeenCalled();
+    expect(getRecent()[0].to).toBe("/items/new");
+  });
+
+  it("Toggle theme flips light → dark and closes without recording MRU", async () => {
+    const user = userEvent.setup();
+    const { onClose } = renderPalette();
+
+    await user.type(screen.getByRole("combobox"), "toggle");
+    await user.click(screen.getByText("Toggle theme"));
+
+    expect(setPref).toHaveBeenCalledWith("dark");
+    expect(onClose).toHaveBeenCalled();
+    expect(getRecent()).toEqual([]);
   });
 
   it("client-filters the static groups as the user types", async () => {
     const user = userEvent.setup();
     renderPalette();
 
-    await user.type(screen.getByRole("combobox"), "settings");
+    await user.type(screen.getByRole("combobox"), "wishlist");
 
-    expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.getByText("Wishlist")).toBeInTheDocument();
     expect(screen.queryByText("Dashboard")).not.toBeInTheDocument();
   });
 

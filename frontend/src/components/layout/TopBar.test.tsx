@@ -172,27 +172,6 @@ describe("TopBar", () => {
     expect(bell).toHaveAttribute("aria-label", "Notifications");
   });
 
-  it("binds the sse-slot RetroStatusDot to live state — 'live' when connected", () => {
-    sseStatus = { connected: true, lastEventAt: null };
-    renderTopBar(<TopBar />);
-    const slot = screen.getByTestId("sse-slot");
-    // The static '● live' placeholder is gone — the live RetroStatusDot renders
-    // its `live` word + mint dot when the stream is connected (no more raw text).
-    expect(within(slot).getByText("live")).toBeInTheDocument();
-    expect(within(slot).getByTestId("status-dot")).toHaveClass(
-      "bg-titlebar-mint",
-    );
-    expect(within(slot).queryByText("● live")).not.toBeInTheDocument();
-  });
-
-  it("renders the sse-slot RetroStatusDot in 'idle' state when disconnected", () => {
-    sseStatus = { connected: false, lastEventAt: null };
-    renderTopBar(<TopBar />);
-    const slot = screen.getByTestId("sse-slot");
-    expect(within(slot).getByText("offline")).toBeInTheDocument();
-    expect(within(slot).getByTestId("status-dot")).toHaveClass("bg-fg-faint");
-  });
-
   it("no longer renders an account pill — the user menu moved to the Sidebar", () => {
     renderTopBar(<TopBar />);
     expect(screen.queryByTestId("user-pill")).not.toBeInTheDocument();

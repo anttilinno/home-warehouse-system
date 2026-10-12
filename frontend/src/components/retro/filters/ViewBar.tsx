@@ -23,6 +23,8 @@ export interface ViewBarProps {
   liveValue: string;
   onLiveChange: (value: string) => void;
   itemCount: number;
+  /** Noun after the count; defaults to "items". */
+  countNoun?: ReactNode;
   primaryAction?: ReactNode;
   searchPlaceholder?: string;
 }
@@ -51,6 +53,7 @@ export function ViewBar({
   liveValue,
   onLiveChange,
   itemCount,
+  countNoun,
   primaryAction,
   searchPlaceholder,
 }: Readonly<ViewBarProps>) {
@@ -106,7 +109,7 @@ export function ViewBar({
       />
 
       <span className="font-mono text-12 tabular-nums text-fg-muted">
-        {itemCount} <Trans>items</Trans>
+        {itemCount} {countNoun ?? <Trans>items</Trans>}
       </span>
 
       {primaryAction}

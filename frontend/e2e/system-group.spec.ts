@@ -27,7 +27,7 @@ async function login(page: import("@playwright/test").Page) {
   await expect(page.getByTestId("workspace-pill")).toBeVisible();
 }
 
-test("the SYSTEM nav group routes to approvals, wishlist, and sync-history", async ({
+test("the SYSTEM nav group routes to approvals and wishlist", async ({
   page,
 }) => {
   await login(page);
@@ -49,11 +49,4 @@ test("the SYSTEM nav group routes to approvals, wishlist, and sync-history", asy
   await page.getByRole("link", { name: /^wishlist/i }).click();
   await expect(page).toHaveURL(/\/wishlist$/);
   await expect(page.getByRole("tab", { name: /wanted/i })).toBeVisible();
-
-  // Sync history — the honest online-only informational page (SYS-03).
-  await page.getByRole("link", { name: /sync history/i }).click();
-  await expect(page).toHaveURL(/\/sync-history$/);
-  await expect(
-    page.getByRole("heading", { name: /online only/i }),
-  ).toBeVisible();
 });

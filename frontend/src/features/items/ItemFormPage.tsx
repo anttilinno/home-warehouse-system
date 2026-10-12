@@ -255,6 +255,7 @@ export function ItemFormPage() {
         <form
           onSubmit={handleSubmit(onSubmit)}
           noValidate
+          data-dirty={guardActive ? "true" : undefined}
           className="flex flex-col gap-sp-4"
         >
           {/* Group 1 — Identity */}
@@ -292,7 +293,7 @@ export function ItemFormPage() {
           {/* Group 2 — Quantity & code */}
           <div className="flex flex-col gap-sp-3">
             <RetroInput
-              label={<Trans>Quantity</Trans>}
+              label={<Trans>Min stock level</Trans>}
               type="number"
               min={0}
               mono

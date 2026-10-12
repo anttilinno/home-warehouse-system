@@ -103,10 +103,10 @@ function EnumFilterRow({
           <div className="px-sp-2 py-sp-1">
             <input
               type="search"
-              aria-label={t`Filter categories`}
+              aria-label={t`Filter options`}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={t`Filter categories…`}
+              placeholder={t`Filter…`}
               className="w-full border-2 border-border-ink bg-bg-panel px-[8px] py-[4px] text-12 text-fg-ink bevel-sunken focus:outline-2 focus:outline-offset-1 focus:outline-titlebar-blue"
             />
           </div>

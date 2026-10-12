@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Trans } from "@lingui/react/macro";
 import { useShortcutsContext, type Shortcut } from "@/components/shortcuts";
 import { RetroDialog } from "@/components/retro";
@@ -14,9 +14,12 @@ export interface F1HelpDialogProps {
 }
 
 /** Synthetic Global-scope rows the help dialog always documents. */
-const GLOBAL_SYNTHETIC: { shortcutKey: string; description: string }[] = [
-  { shortcutKey: "F1", description: "Toggle this help" },
-  { shortcutKey: "ESC", description: "Close / back" },
+const GLOBAL_SYNTHETIC: { shortcutKey: string; description: ReactNode }[] = [
+  { shortcutKey: "⌘K / Ctrl+K", description: <Trans>Command palette</Trans> },
+  { shortcutKey: "F2", description: <Trans>Command palette</Trans> },
+  { shortcutKey: "F1", description: <Trans>Toggle this help</Trans> },
+  { shortcutKey: "?", description: <Trans>Toggle this help</Trans> },
+  { shortcutKey: "ESC", description: <Trans>Close / back</Trans> },
 ];
 
 /**
@@ -143,7 +146,7 @@ function Row({
 }: Readonly<{
   shortcutKey: string;
   label: string;
-  description: string;
+  description: ReactNode;
   danger?: boolean;
   onActivate: () => void;
 }>) {

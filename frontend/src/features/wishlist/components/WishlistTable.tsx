@@ -114,7 +114,7 @@ export function WishlistTable({
             action={{
               label: (
                 <>
-                  <PixelIcon name="plus" size={16} /> <Trans>ADD ITEM</Trans>
+                  <PixelIcon name="plus" size={16} /> <Trans>ADD WISH</Trans>
                 </>
               ),
               onClick: onAdd,

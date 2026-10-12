@@ -370,6 +370,47 @@ body {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
+  /* Keyboard row cursor (j/k/arrows in RetroTable) — same look as hover. */
+  .rtable tbody tr[data-active-row="true"] td {
+    background: var(--info-bg);
+  }
+  /* Card rows below md: header stays for screen readers only, each row is a
+     block with its cells flowing inline, so a 390px phone gets a stacked list
+     instead of a sideways scroller. The overflow shade is moot here. */
+  @media (max-width: 767px) {
+    .rtable-wrap[data-overflow-right="true"]::after {
+      display: none;
+    }
+    .rtable {
+      table-layout: auto;
+    }
+    .rtable thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .rtable tbody,
+    .rtable tbody tr {
+      display: block;
+      width: 100%;
+    }
+    .rtable tbody tr {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--table-rule);
+    }
+    .rtable tbody td {
+      display: inline-block;
+      padding: 0;
+      margin: 0 10px 4px 0;
+      border-bottom: 0;
+    }
+  }
 }
 
 /* ---------- Status-dot live blink (RetroStatusDot, TUI-03) ----------

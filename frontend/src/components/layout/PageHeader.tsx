@@ -30,7 +30,7 @@ export function PageHeader({
   const lastIndex = crumbs.length - 1;
 
   return (
-    <div className="flex items-baseline justify-between gap-sp-4 border-b-2 border-border-ink bg-bg-panel-2 px-sp-3 py-sp-2">
+    <div className="hidden items-baseline justify-between gap-sp-4 border-b-2 md:flex border-border-ink bg-bg-panel-2 px-sp-3 py-sp-2">
       <nav
         aria-label="Breadcrumb"
         className="flex items-center gap-sp-1 text-11 font-bold uppercase tracking-10"

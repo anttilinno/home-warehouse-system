@@ -117,6 +117,18 @@ describe("F1HelpDialog", () => {
     ).toBeInTheDocument();
   });
 
+  it("documents the global palette / help chords", async () => {
+    const user = userEvent.setup();
+    render(<Host routeShortcuts={[]} />);
+    await user.keyboard("{F1}");
+    const dialog = screen.getByRole("dialog");
+    for (const key of ["⌘K / Ctrl+K", "F2", "F1", "?", "ESC"]) {
+      expect(within(dialog).getAllByText(key).length).toBeGreaterThan(0);
+    }
+    expect(within(dialog).getAllByText("Command palette")).toHaveLength(2);
+    expect(within(dialog).getAllByText("Toggle this help")).toHaveLength(2);
+  });
+
   it("closes on ESC via the modal stack and does NOT log out", async () => {
     const user = userEvent.setup();
     const onLogout = vi.fn();
