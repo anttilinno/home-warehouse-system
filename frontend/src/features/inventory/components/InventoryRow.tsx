@@ -92,7 +92,10 @@ export function InventoryRow({
         {expiry ? expiry.slice(0, 10) : "—"}
       </td>
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard to stop the row navigate; keyboard users focus the nested action buttons directly */}
-      <td className="actions text-right" onClick={(e) => e.stopPropagation()}>
+      <td
+        className="actions text-right max-md:hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         <span className="inline-flex gap-sp-1">
           {!archived && (
             <BevelButton onClick={() => onMove(entry)}>

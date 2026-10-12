@@ -81,7 +81,10 @@ export function ItemRow({
         )}
       </td>
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard to stop the row navigate; keyboard users focus the nested action buttons directly */}
-      <td className="actions text-right" onClick={(e) => e.stopPropagation()}>
+      <td
+        className="actions text-right max-md:hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {archived ? (
           <span className="inline-flex gap-sp-1">
             <BevelButton variant="mint" onClick={() => onRestore(item.id)}>
