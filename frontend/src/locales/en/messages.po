@@ -2525,8 +2525,8 @@ msgid "INVENTORY"
 msgstr "INVENTORY"
 
 #: src/features/inventory/InventoryListPage.tsx
-msgid "INVENTORY — {workspaceName}"
-msgstr "INVENTORY — {workspaceName}"
+#~ msgid "INVENTORY — {workspaceName}"
+#~ msgstr "INVENTORY — {workspaceName}"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Inventory entry"
@@ -4616,6 +4616,7 @@ msgstr "Status mix"
 msgid "Stay"
 msgstr "Stay"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "Stock"
 msgstr "Stock"
@@ -4623,6 +4624,10 @@ msgstr "Stock"
 #: src/features/items/components/InventoryScopeTabs.tsx
 msgid "STOCK"
 msgstr "STOCK"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "STOCK — {workspaceName}"
+msgstr "STOCK — {workspaceName}"
 
 #: src/features/items/components/InventoryPanelStub.tsx
 msgid "Stock entries arrive in 7b."

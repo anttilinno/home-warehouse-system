@@ -121,6 +121,11 @@ body {
 /* Dashboard stat cards (solarized 2a): full body fill + a darker header tint +
    a bright matching number. Unlayered so it beats the Tailwind bg-bg-panel /
    text-* utilities. Markers from StatCard. */
+/* Stat cards are ~145px wide in the 4-up row; the Window's two decorative
+   corner boxes ate ~50px of that and truncated OVERDUE / LOW STOCK. */
+.stat-card > header > span[aria-hidden="true"] {
+  display: none;
+}
 [data-theme="dark"] .stat-card.stat-blue { background: #103c4e; }
 [data-theme="dark"] .stat-card.stat-blue > header { background: #0c2f3d; }
 [data-theme="dark"] .stat-card.stat-blue .stat-card__value { color: #59a7d7; }
@@ -360,6 +365,12 @@ body {
   }
   .rtable tbody tr:nth-child(even) td {
     background: var(--table-stripe);
+  }
+  /* A row-level tone (e.g. an overdue loan's bg-danger-bg) must survive the
+     even-row stripe, which paints the cells and would hide it on every other
+     row. */
+  .rtable tbody tr.bg-danger-bg td {
+    background: var(--danger-bg);
   }
   .rtable tbody tr:hover td {
     background: var(--info-bg);

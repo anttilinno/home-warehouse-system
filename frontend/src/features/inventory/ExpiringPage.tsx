@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   Window,
-  BevelButton,
   RetroTable,
   RetroBadge,
   RetroSelect,
@@ -195,14 +194,6 @@ export function ExpiringPage() {
           </RetroTable>
         )}
       </Window>
-
-      {!showEmpty && rows.length > 0 && (
-        <div className="mt-sp-3">
-          <BevelButton variant="neutral" onClick={() => navigate("/inventory")}>
-            <Trans>← BACK TO INVENTORY</Trans>
-          </BevelButton>
-        </div>
-      )}
     </div>
   );
 }

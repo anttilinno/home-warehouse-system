@@ -2525,8 +2525,8 @@ msgid "INVENTORY"
 msgstr "LAOSEIS"
 
 #: src/features/inventory/InventoryListPage.tsx
-msgid "INVENTORY — {workspaceName}"
-msgstr "LAOSEIS — {workspaceName}"
+#~ msgid "INVENTORY — {workspaceName}"
+#~ msgstr "LAOSEIS — {workspaceName}"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Inventory entry"
@@ -4616,13 +4616,18 @@ msgstr "Olekute jaotus"
 msgid "Stay"
 msgstr "Jää"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "Stock"
 msgstr "Laoseis"
 
 #: src/features/items/components/InventoryScopeTabs.tsx
 msgid "STOCK"
-msgstr ""
+msgstr "LAOSEIS"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "STOCK — {workspaceName}"
+msgstr "LAOSEIS — {workspaceName}"
 
 #: src/features/items/components/InventoryPanelStub.tsx
 msgid "Stock entries arrive in 7b."

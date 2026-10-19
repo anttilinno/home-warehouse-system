@@ -93,7 +93,7 @@ export function DashboardStatTiles({
             // so the count stays whole instead of the word shoving it off-edge.
             // no-underline drops the anchor underline; <a> default cursor signals
             // the tile navigates to its taxonomy tab / borrowers list.
-            className="flex items-baseline justify-between gap-sp-2 border-2 border-border-ink bg-bg-panel py-sp-2 pl-sp-3 pr-sp-4 text-12 font-semibold uppercase tracking-6 text-fg-muted no-underline bevel-raised-ink"
+            className="flex items-baseline justify-between gap-sp-2 border-2 border-border-ink bg-bg-panel py-sp-2 pl-sp-3 pr-sp-4 text-12 font-semibold uppercase tracking-2 text-fg-muted no-underline bevel-raised-ink"
           >
             <span className="min-w-0 truncate">{label}</span>
             <b className="flex-none font-display text-16 leading-none text-fg-ink">

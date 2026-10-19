@@ -168,7 +168,7 @@ export function InventoryListPage() {
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">
       <InventoryScopeTabs />
-      <Window title={t`INVENTORY — ${workspaceName}`} titlebarVariant="mint">
+      <Window title={t`STOCK — ${workspaceName}`} titlebarVariant="mint">
         <ViewBar
           {...viewBar}
           itemCount={visible.length}
