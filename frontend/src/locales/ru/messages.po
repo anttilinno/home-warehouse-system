@@ -462,7 +462,7 @@ msgstr "ДОБАВИТЬ"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "Add borrower"
-msgstr ""
+msgstr "Добавить заёмщика"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "ADD BORROWER"
@@ -531,7 +531,7 @@ msgstr "ДОБАВИТЬ В СПИСОК ЖЕЛАЕМОГО"
 
 #: src/features/wishlist/components/WishlistTable.tsx
 msgid "ADD WISH"
-msgstr ""
+msgstr "ДОБАВИТЬ ЖЕЛАНИЕ"
 
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Add your first location — a room, shelf, or area. Nest sub-locations to mirror your space."
@@ -987,7 +987,7 @@ msgstr "ЗАКРЫТЬ"
 
 #: src/components/layout/F1HelpDialog.tsx
 msgid "Close / back"
-msgstr ""
+msgstr "Закрыть / назад"
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Code not found"
@@ -2176,7 +2176,7 @@ msgstr "Объект"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "entries"
-msgstr ""
+msgstr "записей"
 
 #: src/features/inventory/hooks/useInventoryFormMutations.ts
 msgid "Entry saved."
@@ -2218,7 +2218,7 @@ msgstr "Истекающие"
 
 #: src/features/items/components/InventoryScopeTabs.tsx
 msgid "EXPIRING"
-msgstr ""
+msgstr "ИСТЕКАЮЩИЕ"
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "Expiring soon"
@@ -2364,11 +2364,11 @@ msgstr "Фильтровать предметы"
 
 #: src/components/retro/filters/ViewMenu.tsx
 msgid "Filter options"
-msgstr ""
+msgstr "Параметры фильтра"
 
 #: src/components/retro/filters/ViewMenu.tsx
 msgid "Filter…"
-msgstr ""
+msgstr "Фильтр…"
 
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "FilterBar + FilterPopover — search, facets, chips, count, CTA."
@@ -2447,7 +2447,7 @@ msgstr "ИСТОРИЯ"
 
 #: src/components/layout/TabBar.tsx
 msgid "Home"
-msgstr ""
+msgstr "Главная"
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
@@ -2600,7 +2600,7 @@ msgstr "Предметы"
 
 #: src/features/items/components/InventoryScopeTabs.tsx
 msgid "ITEMS"
-msgstr ""
+msgstr "ПРЕДМЕТЫ"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "ITEMS — {workspaceName}"
@@ -2968,7 +2968,7 @@ msgstr "Мин. запас"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "Min stock level"
-msgstr ""
+msgstr "Мин. запас"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Mirror Paperless tags"
@@ -2980,7 +2980,7 @@ msgstr "Активность выдач по месяцам"
 
 #: src/components/layout/TabBar.tsx
 msgid "More"
-msgstr ""
+msgstr "Ещё"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "More actions"
@@ -4312,7 +4312,7 @@ msgstr "СКАНИРОВАТЬ"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "SCAN NEXT"
-msgstr ""
+msgstr "СКАНИРОВАТЬ ДАЛЬШЕ"
 
 #: src/features/scan/CapturePage.tsx
 msgid "Scan, snap, move on. Fill in the details later from a desktop."
@@ -4455,43 +4455,43 @@ msgstr "Настройки"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Accounts"
-msgstr ""
+msgstr "Настройки · Учётные записи"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Appearance"
-msgstr ""
+msgstr "Настройки · Оформление"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Data"
-msgstr ""
+msgstr "Настройки · Данные"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Formats"
-msgstr ""
+msgstr "Настройки · Форматы"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Language"
-msgstr ""
+msgstr "Настройки · Язык"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Members"
-msgstr ""
+msgstr "Настройки · Участники"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Notifications"
-msgstr ""
+msgstr "Настройки · Уведомления"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Paperless"
-msgstr ""
+msgstr "Настройки · Paperless"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Profile"
-msgstr ""
+msgstr "Настройки · Профиль"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Security"
-msgstr ""
+msgstr "Настройки · Безопасность"
 
 #: src/features/taxonomy/components/TaxonomyFormFields.tsx
 msgid "Short code"
@@ -4903,11 +4903,11 @@ msgstr "Переключить {label}"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Toggle theme"
-msgstr ""
+msgstr "Сменить тему"
 
 #: src/components/layout/F1HelpDialog.tsx
 msgid "Toggle this help"
-msgstr ""
+msgstr "Показать/скрыть справку"
 
 #: src/features/analytics/components/TopBorrowersChart.tsx
 msgid "Top borrowers"

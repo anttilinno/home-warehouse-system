@@ -43,14 +43,6 @@ vi.mock("@/features/workspace/useWorkspace", () => ({
   useWorkspace: () => wsContext,
 }));
 
-// TopBar reads useSSEStatus() for the sse-slot RetroStatusDot ONLY (Phase 4 —
-// the ONLINE dot no longer defaults from it). Mock the feature so the banner
-// renders without a live SSEProvider; `sseStatus` is mutable per-test.
-let sseStatus = { connected: true, lastEventAt: null as Date | null };
-vi.mock("@/features/sse", () => ({
-  useSSEStatus: () => sseStatus,
-}));
-
 // TopBar's ONLINE dot defaults to useIsOnline() (real network state, Phase 4)
 // when no `online` prop is passed. Mock it so this suite doesn't depend on
 // jsdom's navigator.onLine; `isOnlineMock`/`pendingWritesMock` are mutable
@@ -93,8 +85,6 @@ describe("TopBar", () => {
   });
 
   beforeEach(() => {
-    // Default each test to a connected stream; SSE-slot tests flip this.
-    sseStatus = { connected: true, lastEventAt: null };
     // Default each test to online with no queued writes; individual tests flip these.
     isOnlineMock = true;
     pendingWritesMock = 0;
@@ -139,7 +129,6 @@ describe("TopBar", () => {
 
   it("defaults the ONLINE dot from useIsOnline() when no online prop (Phase 4 — not SSE)", () => {
     isOnlineMock = false;
-    sseStatus = { connected: true, lastEventAt: null }; // SSE fine; network isn't
     renderTopBar(<TopBar />);
     // No explicit online prop → falls back to real network state, NOT SSE.
     expect(screen.getByText("OFFLINE")).toBeInTheDocument();
