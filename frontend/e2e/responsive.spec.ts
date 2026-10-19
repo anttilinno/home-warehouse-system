@@ -8,8 +8,8 @@ import { test, expect, type Page } from "@playwright/test";
 // This spec asserts ONLY the STRUCTURAL responsive contract:
 //   - no horizontal overflow at any of the 5 breakpoints, on / and /items
 //   - the AppShell nav-surface swap at the Tailwind `md` (768px) boundary:
-//       <768  => mobile Fab visible, desktop Sidebar hidden
-//       >=768 => desktop Sidebar visible (Fab hidden)
+//       <768  => mobile TabBar visible, desktop Sidebar hidden
+//       >=768 => desktop Sidebar visible (TabBar hidden)
 //   - captures a full-page dashboard screenshot at each breakpoint as a
 //     Playwright artifact (test-results/dashboard-<width>.png).
 //
@@ -19,10 +19,10 @@ import { test, expect, type Page } from "@playwright/test";
 //
 // VERIFIED AppShell contract (frontend/src/components/layout/):
 //   .app-sidebar => `hidden md:block`  -> Sidebar HIDDEN <768, VISIBLE >=768
-//   Fab wrapper  => `md:hidden`        -> Fab VISIBLE <768, HIDDEN >=768
+//   TabBar       => `md:hidden`        -> TabBar VISIBLE <768, HIDDEN >=768
 //   Bottombar    => `hidden md:flex`   -> desktop-only; NOT asserted at <768
-//   Sidebar <nav> carries aria-label="Primary"; the Fab toggle is a
-//   <button aria-label="Quick actions" aria-haspopup="menu">.
+//   Sidebar <nav> carries aria-label="Primary"; the TabBar is a
+//   <nav aria-label="Primary (mobile)">.
 //
 // Auth contract (CLAUDE.md): /login → Email + Password labels → submit
 // /^log in$/i; the access_token cookie is inherited by the page context. Honor
@@ -34,7 +34,7 @@ const E2E_PASS = process.env.E2E_PASS ?? "password123";
 
 // POL-05 breakpoints (widths, px). 768 is the boundary itself: Tailwind `md`
 // is min-width:768px, so it is ACTIVE at exactly 768 (desktop surface).
-//   320 / 360  => mobile  (Fab)
+//   320 / 360  => mobile  (TabBar)
 //   768 / 1024 / 1440 => desktop (Sidebar)
 const BREAKPOINTS = [320, 360, 768, 1024, 1440] as const;
 const MD = 768;
@@ -89,7 +89,7 @@ async function hasNoHorizontalOverflow(page: Page): Promise<boolean> {
  * wide content lives inside an `overflow-x:auto/scroll` wrapper and is excluded.
  *
  * SVG primitives and sub-60px slivers are ignored (decorative chrome like the
- * FAB icon and chart-axis labels can sit a few px past the edge by design).
+ * TabBar icons and chart-axis labels can sit a few px past the edge by design).
  */
 async function clippedOverflowOffenders(
   page: Page,
@@ -115,7 +115,14 @@ async function clippedOverflowOffenders(
       while (p) {
         const ox = getComputedStyle(p).overflowX;
         if (ox === "auto" || ox === "scroll") { scrollable = true; break; }
-        if (ox === "hidden") break;
+        if (ox === "hidden") {
+          // A visually-hidden (sr-only) box clips on purpose — e.g. the table
+          // header kept for screen readers when RetroTable switches to card
+          // rows below md. Nothing in it is visible, so it is not a break.
+          const pr = p.getBoundingClientRect();
+          if (pr.width <= 1 && pr.height <= 1) scrollable = true;
+          break;
+        }
         p = p.parentElement;
       }
       if (!scrollable) {
@@ -132,14 +139,14 @@ async function clippedOverflowOffenders(
 }
 
 test.describe("responsive breakpoint matrix (POL-05)", () => {
-  test("no horizontal overflow + Sidebar/Fab swap across 5 breakpoints", async ({
+  test("no horizontal overflow + Sidebar/TabBar swap across 5 breakpoints", async ({
     page,
   }) => {
     await login(page);
 
     // Stable nav-surface locators (verified contract).
     const sidebar = page.locator(".app-sidebar nav[aria-label='Primary']");
-    const fab = page.getByRole("navigation", { name: "Primary (mobile)" });
+    const tabBar = page.getByRole("navigation", { name: "Primary (mobile)" });
 
     for (const width of BREAKPOINTS) {
       const isDesktop = width >= MD;
@@ -179,13 +186,13 @@ test.describe("responsive breakpoint matrix (POL-05)", () => {
             `Sidebar should be visible at ${width}px on ${route}`,
           ).toBeVisible();
           await expect(
-            fab,
-            `Fab should be hidden at ${width}px on ${route}`,
+            tabBar,
+            `TabBar should be hidden at ${width}px on ${route}`,
           ).toBeHidden();
         } else {
           await expect(
-            fab,
-            `Fab should be visible at ${width}px on ${route}`,
+            tabBar,
+            `TabBar should be visible at ${width}px on ${route}`,
           ).toBeVisible();
           await expect(
             sidebar,

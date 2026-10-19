@@ -123,9 +123,9 @@ function ShellChrome() {
 
   // Live SSE status (read once here, threaded into the chrome). The split STATUS
   // context (Plan 06-01) re-renders this ONLY on connected/lastEventAt change —
-  // never on event fan-out (Pitfall 5). TopBar reads useSSEStatus() itself now
-  // for the sse-slot (Phase 4 — the ONLINE dot no longer binds to `connected`);
-  // this shell only needs `lastEventAt` for PageHeader's LAST SYNC readout.
+  // never on event fan-out (Pitfall 5). The TopBar's ONLINE pill reports network
+  // state, not SSE, so this shell only needs `lastEventAt` for PageHeader's
+  // LAST SYNC readout.
   const { lastEventAt } = useSSEStatus();
   const lastSync = formatLastSync(lastEventAt);
 
