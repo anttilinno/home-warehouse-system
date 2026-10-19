@@ -173,9 +173,9 @@ export function BorrowersListPage() {
                       <td className="font-mono text-13">
                         {contact ?? <span className="text-fg-muted">—</span>}
                       </td>
-                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops row-click propagation only */}
                       {/* Row tap opens the borrower; below md the EDIT button
                           only made rows wrap raggedly (same as the items list). */}
+                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops row-click propagation only */}
                       <td
                         className="actions text-right max-md:hidden"
                         onClick={(e) => e.stopPropagation()}
