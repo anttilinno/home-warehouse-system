@@ -152,6 +152,10 @@ msgstr "{done}/{0} uploaded"
 msgid "{label} unlinked."
 msgstr "{label} unlinked."
 
+#: src/features/loans/LoansListPage.tsx
+msgid "{overdueBy}d overdue"
+msgstr "{overdueBy}d overdue"
+
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "{overdueCount} overdue"
 msgstr "{overdueCount} overdue"
@@ -205,8 +209,8 @@ msgstr "← BACK TO ITEMS"
 #~ msgstr "+ Add item"
 
 #: src/features/loans/LoansListPage.tsx
-msgid "−{overdueBy}d"
-msgstr "−{overdueBy}d"
+#~ msgid "−{overdueBy}d"
+#~ msgstr "−{overdueBy}d"
 
 #: src/features/items/components/InventoryPanel.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
@@ -416,8 +420,8 @@ msgid "active"
 msgstr "active"
 
 #: src/features/loans/LoansListPage.tsx
-msgid "Active"
-msgstr "Active"
+#~ msgid "Active"
+#~ msgstr "Active"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "ACTIVE"
@@ -2781,7 +2785,6 @@ msgstr "Loaning this item — pick a borrower."
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/components/layout/TabBar.tsx
-#: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/components/DashboardStatTiles.tsx
 #: src/features/dashboard/DashboardPage.tsx
@@ -2974,6 +2977,10 @@ msgstr "More"
 #: src/features/items/ItemDetailPage.tsx
 msgid "More actions"
 msgstr "More actions"
+
+#: src/features/inventory/components/InventoryRow.tsx
+msgid "More actions for {label}"
+msgstr "More actions for {label}"
 
 #: src/components/layout/Bottombar.tsx
 msgid "MORE SHORTCUTS"
@@ -3618,7 +3625,6 @@ msgid "Out of stock"
 msgstr "Out of stock"
 
 #: src/features/dashboard/components/DashboardStatTiles.tsx
-#: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Overdue"
 msgstr "Overdue"
@@ -4114,8 +4120,8 @@ msgid "Return the active loans before deleting this borrower."
 msgstr "Return the active loans before deleting this borrower."
 
 #: src/features/loans/LoansListPage.tsx
-msgid "Returned"
-msgstr "Returned"
+#~ msgid "Returned"
+#~ msgstr "Returned"
 
 #: src/features/loans/components/ReturnLoanDialog.tsx
 msgid "Returned — moved to History."
@@ -4586,13 +4592,11 @@ msgstr "Stage"
 msgid "START"
 msgstr "START"
 
-#: src/features/dashboard/components/RecentActivityCard.tsx
 #: src/features/imports/components/ImportHistory.tsx
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/components/ItemsResults.tsx
-#: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 #: src/features/my-changes/MyChangesPage.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx

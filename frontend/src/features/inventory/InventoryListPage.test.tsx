@@ -275,8 +275,12 @@ describe("InventoryListPage", () => {
     await screen.findByText("Cordless Drill");
 
     const row = screen.getByText("Cordless Drill").closest("tr")!;
+    // Movement history lives in the row's ⋯ menu.
     await user.click(
-      within(row).getByRole("button", { name: /movement history/i }),
+      within(row).getByRole("button", { name: /more actions/i }),
+    );
+    await user.click(
+      screen.getByRole("menuitem", { name: /movement history/i }),
     );
     // The blue MOVEMENTS dialog opens with the NO MOVEMENTS empty state.
     expect(await screen.findByRole("dialog")).toBeInTheDocument();

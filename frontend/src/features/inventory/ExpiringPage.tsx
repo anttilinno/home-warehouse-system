@@ -98,8 +98,8 @@ export function ExpiringPage() {
 
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">
-      <InventoryScopeTabs />
       <Window title={t`EXPIRING SOON`} titlebarVariant="butter">
+        <InventoryScopeTabs />
         {/* Header strip: days selector + count. */}
         <div className="flex items-center gap-sp-3 border-b-2 border-border-ink bg-bg-panel-2 p-sp-3">
           <div className="w-[160px]">

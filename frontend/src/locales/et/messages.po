@@ -152,6 +152,10 @@ msgstr "{done}/{0} üles laaditud"
 msgid "{label} unlinked."
 msgstr "{label} lahti ühendatud."
 
+#: src/features/loans/LoansListPage.tsx
+msgid "{overdueBy}d overdue"
+msgstr "{overdueBy}p üle tähtaja"
+
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "{overdueCount} overdue"
 msgstr "{overdueCount} üle tähtaja"
@@ -205,8 +209,8 @@ msgstr "← TAGASI ESEMETE JUURDE"
 #~ msgstr "+ Lisa ese"
 
 #: src/features/loans/LoansListPage.tsx
-msgid "−{overdueBy}d"
-msgstr "−{overdueBy}p"
+#~ msgid "−{overdueBy}d"
+#~ msgstr "−{overdueBy}p"
 
 #: src/features/items/components/InventoryPanel.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
@@ -416,8 +420,8 @@ msgid "active"
 msgstr "aktiivne"
 
 #: src/features/loans/LoansListPage.tsx
-msgid "Active"
-msgstr "Aktiivne"
+#~ msgid "Active"
+#~ msgstr "Aktiivne"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "ACTIVE"
@@ -2781,7 +2785,6 @@ msgstr "Selle eseme laenutamine — vali laenaja."
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/components/layout/TabBar.tsx
-#: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/components/DashboardStatTiles.tsx
 #: src/features/dashboard/DashboardPage.tsx
@@ -2974,6 +2977,10 @@ msgstr ""
 #: src/features/items/ItemDetailPage.tsx
 msgid "More actions"
 msgstr "Veel toiminguid"
+
+#: src/features/inventory/components/InventoryRow.tsx
+msgid "More actions for {label}"
+msgstr "Veel toiminguid: {label}"
 
 #: src/components/layout/Bottombar.tsx
 msgid "MORE SHORTCUTS"
@@ -3618,7 +3625,6 @@ msgid "Out of stock"
 msgstr "Laost otsas"
 
 #: src/features/dashboard/components/DashboardStatTiles.tsx
-#: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Overdue"
 msgstr "Üle tähtaja"
@@ -4114,8 +4120,8 @@ msgid "Return the active loans before deleting this borrower."
 msgstr "Tagasta aktiivsed laenutused enne selle laenaja kustutamist."
 
 #: src/features/loans/LoansListPage.tsx
-msgid "Returned"
-msgstr "Tagastatud"
+#~ msgid "Returned"
+#~ msgstr "Tagastatud"
 
 #: src/features/loans/components/ReturnLoanDialog.tsx
 msgid "Returned — moved to History."
@@ -4586,13 +4592,11 @@ msgstr "Etapp"
 msgid "START"
 msgstr "ALUSTA"
 
-#: src/features/dashboard/components/RecentActivityCard.tsx
 #: src/features/imports/components/ImportHistory.tsx
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/components/ItemsResults.tsx
-#: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 #: src/features/my-changes/MyChangesPage.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx

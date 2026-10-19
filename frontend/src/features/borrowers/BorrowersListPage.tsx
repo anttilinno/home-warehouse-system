@@ -21,14 +21,14 @@ import {
 
 // Phase 9 Plan 02 — the /borrowers list surface (BORR-01). Mirrors
 // InventoryListPage / LoansListPage density: a mint Window with a FilterBar
-// (client search + count + NEW BORROWER CTA), a RetroTable (Name / Contact /
-// Loans / row actions), and a RetroPagination fed a CLIENT-computed pageCount.
+// (client search + count + ADD BORROWER CTA), a RetroTable (Name / Contact /
+// row actions), and a RetroPagination fed a CLIENT-computed pageCount.
 //
 // Data strategy (OQ2 / binding override #2): useBorrowersQuery does ONE ≤100
 // fetch then filters + pages ENTIRELY in the client — the page never calls
-// /borrowers/search and never reads a server `total`. The `Loans` column is a
-// muted "—" placeholder (OQ7 / binding override #2: NO per-row loan-count
-// fan-out; the live count lives on the detail page in plan 09-03).
+// /borrowers/search and never reads a server `total`. There is no Loans column:
+// a per-row count would fan out (OQ7 / binding override #2), and an always-"—"
+// column is noise; the live count lives on the detail page (plan 09-03).
 //
 // RENDER-LOOP GUARD (CONTEXT constraint 5, hit 4× in prior phases): useLingui()'s
 // `t` is NOT referentially stable — read it through a live ref inside the
@@ -152,7 +152,6 @@ export function BorrowersListPage() {
                 <tr>
                   <th>{t`Name`}</th>
                   <th>{t`Contact`}</th>
-                  <th>{t`Loans`}</th>
                   <th />
                 </tr>
               </thead>
@@ -170,10 +169,6 @@ export function BorrowersListPage() {
                       <td className="font-mono text-13">
                         {contact ?? <span className="text-fg-muted">—</span>}
                       </td>
-                      {/* OQ7 / binding override #2: NO per-row loan-count
-                          fan-out — the list shows a muted placeholder; the live
-                          count lives on the detail page (plan 09-03). */}
-                      <td className="text-fg-muted">—</td>
                       {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops row-click propagation only */}
                       <td
                         className="actions text-right"

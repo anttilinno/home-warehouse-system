@@ -152,6 +152,10 @@ msgstr "загружено {done}/{0}"
 msgid "{label} unlinked."
 msgstr "Метка {label} отвязана."
 
+#: src/features/loans/LoansListPage.tsx
+msgid "{overdueBy}d overdue"
+msgstr "просрочено на {overdueBy}д"
+
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "{overdueCount} overdue"
 msgstr "просрочено: {overdueCount}"
@@ -205,8 +209,8 @@ msgstr "← НАЗАД К ПРЕДМЕТАМ"
 #~ msgstr "+ Добавить предмет"
 
 #: src/features/loans/LoansListPage.tsx
-msgid "−{overdueBy}d"
-msgstr "−{overdueBy}д"
+#~ msgid "−{overdueBy}d"
+#~ msgstr "−{overdueBy}д"
 
 #: src/features/items/components/InventoryPanel.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
@@ -416,8 +420,8 @@ msgid "active"
 msgstr "активно"
 
 #: src/features/loans/LoansListPage.tsx
-msgid "Active"
-msgstr "Активно"
+#~ msgid "Active"
+#~ msgstr "Активно"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "ACTIVE"
@@ -2781,7 +2785,6 @@ msgstr "Выдача этого предмета — выберите получ
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/components/layout/TabBar.tsx
-#: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/components/DashboardStatTiles.tsx
 #: src/features/dashboard/DashboardPage.tsx
@@ -2974,6 +2977,10 @@ msgstr ""
 #: src/features/items/ItemDetailPage.tsx
 msgid "More actions"
 msgstr "Ещё действия"
+
+#: src/features/inventory/components/InventoryRow.tsx
+msgid "More actions for {label}"
+msgstr "Ещё действия: {label}"
 
 #: src/components/layout/Bottombar.tsx
 msgid "MORE SHORTCUTS"
@@ -3618,7 +3625,6 @@ msgid "Out of stock"
 msgstr "Нет в наличии"
 
 #: src/features/dashboard/components/DashboardStatTiles.tsx
-#: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Overdue"
 msgstr "Просрочено"
@@ -4114,8 +4120,8 @@ msgid "Return the active loans before deleting this borrower."
 msgstr "Верните активные выдачи перед удалением этого получателя."
 
 #: src/features/loans/LoansListPage.tsx
-msgid "Returned"
-msgstr "Возвращено"
+#~ msgid "Returned"
+#~ msgstr "Возвращено"
 
 #: src/features/loans/components/ReturnLoanDialog.tsx
 msgid "Returned — moved to History."
@@ -4586,13 +4592,11 @@ msgstr "Этап"
 msgid "START"
 msgstr "НАЧАТЬ"
 
-#: src/features/dashboard/components/RecentActivityCard.tsx
 #: src/features/imports/components/ImportHistory.tsx
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/components/ItemsResults.tsx
-#: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 #: src/features/my-changes/MyChangesPage.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx

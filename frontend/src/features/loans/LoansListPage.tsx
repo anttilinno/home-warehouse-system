@@ -8,7 +8,6 @@ import {
   RetroTable,
   RetroTabs,
   RetroEmptyState,
-  StatusPill,
   ViewBar,
   type FilterDef,
   useListViews,
@@ -18,7 +17,6 @@ import {
 import { useShortcuts } from "@/components/shortcuts";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 import type { Loan } from "@/lib/types";
-import { loanStatus } from "./loanStatus";
 import { loansToCsvBlob, triggerCsvDownload } from "./loanCsv";
 import { useLoansQuery, type LoansTab } from "./hooks/useLoansQuery";
 import { LoanRowActions } from "./components/LoanRowActions";
@@ -28,8 +26,10 @@ import { LoanRowActions } from "./components/LoanRowActions";
 // render-loop guard (tRef + stable shortcut deps). RetroTabs folders
 // Active/Overdue/History are URL-driven (`?tab=`, default active); each tab's
 // content is the same table bound to that tab's endpoint via useLoansQuery.
-// Overdue rows carry THREE non-color cues (bg-danger-bg tint + danger Overdue
-// pill word + `⚠ −{n}d` chip — UI-SPEC §Overdue-row highlight). Per-tab CSV is
+// Overdue rows carry non-color cues beyond the bg-danger-bg tint: the Due
+// cell's `⚠ {n}d overdue` chip carries both the glyph and the word (UI-SPEC
+// §Overdue-row highlight). There is no Status column — Due already says
+// overdue / due in Nd / returned, so a status pill only repeated it. Per-tab CSV is
 // CLIENT-generated from the already-fetched rows (override 3 — no backend
 // export). Row lifecycle actions are a stable <LoanRowActions/> slot (Plan 04
 // wires the dialogs; same path + props, no change needed here).
@@ -137,7 +137,7 @@ export function LoansListPage() {
       return (
         <span className="inline-flex items-center gap-[4px] rounded-chip border border-border-ink bg-danger-bg px-sp-2 py-px font-mono text-12 font-bold tabular-nums text-danger">
           <span aria-hidden="true">⚠</span>
-          {t`−${overdueBy}d`}
+          {t`${overdueBy}d overdue`}
         </span>
       );
     }
@@ -252,21 +252,11 @@ export function LoansListPage() {
               <th>{t`Borrower`}</th>
               <th>{t`Loaned`}</th>
               <th>{t`Due`}</th>
-              <th>{t`Status`}</th>
               <th />
             </tr>
           </thead>
           <tbody>
             {visible.map((loan) => {
-              const status = loanStatus(loan);
-              let statusLabel: ReactNode;
-              if (status.label === "OVERDUE") {
-                statusLabel = <Trans>Overdue</Trans>;
-              } else if (status.label === "RETURNED") {
-                statusLabel = <Trans>Returned</Trans>;
-              } else {
-                statusLabel = <Trans>Active</Trans>;
-              }
               return (
                 <tr
                   key={loan.id}
@@ -281,11 +271,6 @@ export function LoansListPage() {
                     {isoDate(loan.loaned_at)}
                   </td>
                   <td className="font-mono">{renderDue(loan)}</td>
-                  <td>
-                    <StatusPill variant={status.variant}>
-                      {statusLabel}
-                    </StatusPill>
-                  </td>
                   {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops row-click propagation only */}
                   <td
                     className="actions text-right"
@@ -305,15 +290,18 @@ export function LoansListPage() {
   const tabs = TABS.map((definition) => ({
     id: definition.id,
     label: definition.label,
-    // All tabs render the SAME table chrome — useLoansQuery already keys on the
-    // active tab, so only the selected panel mounts (RetroTabs renders one).
-    content: tableContent,
+    // All tabs share ONE table, rendered as a sibling below the strip (the
+    // /scan pattern): a null panel draws no inner box, so the table sits in
+    // the Window body instead of a frame inside a frame. useLoansQuery keys on
+    // the active tab, so the sibling always shows the selected tab's rows.
+    content: null,
   }));
 
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">
       <Window title={t`LOANS — ${workspaceName}`} titlebarVariant="mint">
         <RetroTabs tabs={tabs} value={tab} onChange={setTab} />
+        <div className="mt-sp-3">{tableContent}</div>
       </Window>
     </div>
   );

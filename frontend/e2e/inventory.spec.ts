@@ -171,15 +171,14 @@ test("inventory lifecycle: create entry → list → move → movements recorded
     await moveDialog.getByRole("button", { name: /^move$/i }).click();
     await expect(moveDialog).toBeHidden();
 
-    // ── MOVEMENTS: open the entry's movements drawer (the per-row ↧ button,
-    // aria-label "Movement history"). It MUST now show at least one row — the
+    // ── MOVEMENTS: open the entry's movements drawer (row ⋯ menu → "Movement
+    // history"). It MUST now show at least one row — the
     // move just created the first movement (Pitfall 3's move-only semantic).
     // The post-move list re-render keeps our entry as the first tbody row.
     const movedRow = page.locator("table tbody tr").first();
     await expect(movedRow).toBeVisible();
-    await movedRow
-      .getByRole("button", { name: /movement history/i })
-      .click();
+    await movedRow.getByRole("button", { name: /more actions/i }).click();
+    await page.getByRole("menuitem", { name: /movement history/i }).click();
 
     const movementsDrawer = page.getByRole("dialog", { name: /movements/i });
     await expect(movementsDrawer).toBeVisible();

@@ -1,5 +1,6 @@
+import { type ReactNode, useRef, useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { BevelButton, PixelIcon, RetroBadge } from "@/components/retro";
+import { BevelButton, Popover, RetroBadge } from "@/components/retro";
 import type { Condition, Inventory, InventoryStatus } from "@/lib/types";
 import { InlineEditCell } from "./InlineEditCell";
 
@@ -96,53 +97,108 @@ export function InventoryRow({
         className="actions text-right max-md:hidden"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* One inline action (MOVE, or RESTORE when archived) plus a ⋯ menu:
+            five beveled buttons per row overflowed the table (sketch-findings:
+            heavy per-row bevels are borderline at table density). Row tap
+            still opens the item. */}
         <span className="inline-flex gap-sp-1">
-          {!archived && (
-            <BevelButton onClick={() => onMove(entry)}>
-              <Trans>MOVE</Trans>
-            </BevelButton>
-          )}
           {archived ? (
             <BevelButton variant="mint" onClick={() => onRestore(entry.id)}>
               <Trans>RESTORE</Trans>
             </BevelButton>
           ) : (
-            <>
-              <BevelButton onClick={() => onNavigateEdit(entry.id)}>
-                <Trans>EDIT</Trans>
-              </BevelButton>
-              <BevelButton onClick={() => onArchive(entry.id)}>
-                <Trans>ARCHIVE</Trans>
-              </BevelButton>
-            </>
-          )}
-          <BevelButton
-            aria-label={t`Movement history`}
-            title={t`Movement history`}
-            onClick={() => onMovements(entry.id)}
-          >
-            <PixelIcon name="repeat" size={16} />
-          </BevelButton>
-          {!archived && (
-            <BevelButton
-              aria-label={t`Repairs`}
-              title={t`Repairs`}
-              onClick={() => onRepairs(entry.id)}
-            >
-              <PixelIcon name="tool-case" size={16} />
+            <BevelButton onClick={() => onMove(entry)}>
+              <Trans>MOVE</Trans>
             </BevelButton>
           )}
-          {!archived && (
-            <BevelButton
-              aria-label={t`Maintenance`}
-              title={t`Maintenance`}
-              onClick={() => onMaintenance(entry.id)}
-            >
-              <PixelIcon name="reload" size={16} />
-            </BevelButton>
-          )}
+          <RowMenu
+            label={t`More actions for ${label}`}
+            actions={[
+              ...(archived
+                ? []
+                : [
+                    {
+                      key: "edit",
+                      label: <Trans>EDIT</Trans>,
+                      run: () => onNavigateEdit(entry.id),
+                    },
+                    {
+                      key: "archive",
+                      label: <Trans>ARCHIVE</Trans>,
+                      run: () => onArchive(entry.id),
+                    },
+                  ]),
+              {
+                key: "movements",
+                label: <Trans>Movement history</Trans>,
+                run: () => onMovements(entry.id),
+              },
+              ...(archived
+                ? []
+                : [
+                    {
+                      key: "repairs",
+                      label: <Trans>Repairs</Trans>,
+                      run: () => onRepairs(entry.id),
+                    },
+                    {
+                      key: "maintenance",
+                      label: <Trans>Maintenance</Trans>,
+                      run: () => onMaintenance(entry.id),
+                    },
+                  ]),
+            ]}
+          />
         </span>
       </td>
     </tr>
+  );
+}
+
+// The ⋯ trigger + Popover menu, same idiom as the ItemDetailPage title-bar menu.
+function RowMenu({
+  label,
+  actions,
+}: Readonly<{
+  label: string;
+  actions: { key: string; label: ReactNode; run: () => void }[];
+}>) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLButtonElement>(null);
+  return (
+    <>
+      <BevelButton
+        ref={ref}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={label}
+        title={label}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span aria-hidden="true">⋯</span>
+      </BevelButton>
+      <Popover
+        open={open}
+        onClose={() => setOpen(false)}
+        anchorRef={ref}
+        role="menu"
+        minWidth={180}
+      >
+        <div className="flex flex-col gap-sp-1 px-sp-1 py-sp-1">
+          {actions.map((a) => (
+            <BevelButton
+              key={a.key}
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                a.run();
+              }}
+            >
+              {a.label}
+            </BevelButton>
+          ))}
+        </div>
+      </Popover>
+    </>
   );
 }

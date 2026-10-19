@@ -244,7 +244,6 @@ export function ItemsListPage() {
 
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">
-      <InventoryScopeTabs />
       <Window
         title={t`ITEMS — ${workspaceName}`}
         titlebarVariant="mint"
@@ -255,6 +254,11 @@ export function ItemsListPage() {
           </BevelButton>
         }
       >
+        {/* The body is flush (bodyClassName=""), so the strip brings its own
+            padding to sit where the padded Stock/Expiring bodies put it. */}
+        <div className="px-sp-4 pt-sp-4">
+          <InventoryScopeTabs />
+        </div>
         <ViewBar
           {...viewBar}
           itemCount={data?.total ?? 0}

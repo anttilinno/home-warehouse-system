@@ -23,7 +23,7 @@ const ACTION_BADGES: Record<string, RetroBadgeVariant> = {
 // error / table switch over RecentActivity. Extracted verbatim from
 // DashboardPage to lift the activity-query view branches and the row map out of
 // the page body. Time is relative under 24h, absolute after (DASH-02); the
-// Status pill is action-derived via ACTION_BADGES (T-13-10 — no server status).
+// Action badge tone comes from ACTION_BADGES (T-13-10 — no server status).
 export function RecentActivityCard({
   data,
   isError,
@@ -60,9 +60,6 @@ export function RecentActivityCard({
               <th>
                 <Trans>Actor</Trans>
               </th>
-              <th>
-                <Trans>Status</Trans>
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -70,7 +67,18 @@ export function RecentActivityCard({
               <tr key={row.id}>
                 {/* DASH-02: relative under 24h, absolute after (../relativeTime). */}
                 <td className="mono">{formatRelativeTime(row.created_at)}</td>
-                <td>{row.action}</td>
+                {/* Badge DERIVED from `action` via ACTION_BADGES — RecentActivity
+                    has NO status field (T-13-10), so it lives in the Action
+                    column rather than a separate Status column repeating it. */}
+                <td>
+                  <RetroBadge
+                    variant={
+                      ACTION_BADGES[row.action.toUpperCase()] ?? "neutral"
+                    }
+                  >
+                    {row.action}
+                  </RetroBadge>
+                </td>
                 {/* Entity type with the entity_name folded in as a secondary
                     line so no data is lost when the Name column is dropped. */}
                 <td>
@@ -86,23 +94,11 @@ export function RecentActivityCard({
                 <td className="mono">
                   {row.user_id ? row.user_id.slice(0, 8) : "—"}
                 </td>
-                {/* Status: a pill DERIVED from `action` via ACTION_BADGES —
-                    RecentActivity has NO status field; this is honestly an
-                    action-derived badge (T-13-10), never a fabricated status. */}
-                <td>
-                  <RetroBadge
-                    variant={
-                      ACTION_BADGES[row.action.toUpperCase()] ?? "neutral"
-                    }
-                  >
-                    {row.action}
-                  </RetroBadge>
-                </td>
               </tr>
             ))}
             {data.length === 0 && (
               <tr>
-                <td colSpan={5} className="text-fg-muted">
+                <td colSpan={4} className="text-fg-muted">
                   <Trans>No activity yet.</Trans>
                 </td>
               </tr>

@@ -69,6 +69,29 @@ describe("Popover", () => {
     vi.useRealTimers();
   });
 
+  it("clamps the panel to the viewport's right edge", async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    // Trigger hugs the right edge of a 1000px viewport; the panel is 200px.
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
+      left: 950,
+      right: 990,
+      top: 100,
+      bottom: 130,
+      width: 40,
+      height: 30,
+      x: 950,
+      y: 100,
+      toJSON: () => ({}),
+    });
+    vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockReturnValue(200);
+    vi.stubGlobal("innerWidth", 1000);
+    render(<Host />);
+    await user.click(screen.getByRole("button", { name: "Trigger" }));
+    expect(screen.getByRole("menu").style.left).toBe("792px");
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
   it("renders nothing when closed", () => {
     render(<Host />);
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
