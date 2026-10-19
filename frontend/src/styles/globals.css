@@ -201,11 +201,14 @@ body {
        at narrow widths (POL-05, caught at 320px). minmax(0,1fr) lets the track
        shrink below content; paired with min-width:0 on .app-topbar/.app-main. */
     grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
-    grid-template-rows: 40px 1fr 36px;
+    /* Bottombar spans both columns and mirrors the 40px TopBar, so the screen
+       has one band top and one band bottom instead of a sidebar footer card
+       sitting beside a shorter bar. */
+    grid-template-rows: 40px 1fr 40px;
     grid-template-areas:
-      "topbar  topbar"
-      "sidebar main"
-      "sidebar bottombar";
+      "topbar    topbar"
+      "sidebar   main"
+      "bottombar bottombar";
     transition: grid-template-columns 160ms ease;
   }
   .app-shell[data-collapsed="true"] {
@@ -275,9 +278,8 @@ body {
    every other Window keep the full card frame. */
 .app-sidebar > section {
   border-top-width: 0;
-  /* The bottom border is redundant at the viewport edge and made the sidebar's
-     lower edge sit ~2px inset vs the borderless Bottombar — drop it so both
-     panes run flush to the window bottom. */
+  /* The full-width Bottombar's top border closes the sidebar — a bottom border
+     here would stack into a 4px double ink line. */
   border-bottom-width: 0;
   /* Fill the full-height sidebar grid cell so the Navigator panel runs from the
      TopBar to the Bottombar (no cream gap below the nav). min-height (not height)

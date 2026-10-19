@@ -57,10 +57,9 @@ describe("PageHeader", () => {
     );
   });
 
-  it("renders a SESSION readout (reusing the Clock leaf)", () => {
+  it("leaves SESSION to the Bottombar clock (no duplicate readout)", () => {
     renderPageHeader(<PageHeader crumbs={[{ label: "Overview" }]} />);
-    expect(screen.getByText("SESSION")).toBeInTheDocument();
-    expect(screen.getByTestId("clock-session")).toBeInTheDocument();
+    expect(screen.queryByText("SESSION")).toBeNull();
   });
 
   it("renders the meta line with tabular-nums", () => {

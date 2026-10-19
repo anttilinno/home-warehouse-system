@@ -73,7 +73,7 @@ describe("Bottombar", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders a right-anchored F1 HELP chip and an ESC BACK chip", () => {
+  it("renders an F1 HELP chip and an ESC BACK chip", () => {
     renderBottombar([]);
     expect(screen.getByRole("button", { name: /help/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /back/i })).toBeInTheDocument();

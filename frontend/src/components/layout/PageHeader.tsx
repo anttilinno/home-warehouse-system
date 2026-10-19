@@ -2,13 +2,11 @@ import { Fragment } from "react";
 import { Link } from "react-router";
 import { Trans } from "@lingui/react/macro";
 import type { Crumb } from "./breadcrumbs";
-import { Clock } from "./Clock";
 
 // PageHeader (SHELL-05): rendered at the top of `main`, above route content.
 // A route breadcrumb (ancestors muted+linked, leaf ink, joined by an ink "›")
-// on the left; a right-aligned SESSION · LAST SYNC meta line. SESSION reuses the
-// Clock leaf (single-readout `local={false}` mode) so the 1s tick re-renders
-// only the clock, never this header. LAST SYNC binds to live SSE (Phase 6).
+// on the left; a right-aligned LAST SYNC meta line bound to live SSE (Phase 6).
+// SESSION lives only in the Bottombar clock — one readout, not two.
 
 // Em-dash placeholder for LAST SYNC until a live value arrives.
 const LAST_SYNC_PLACEHOLDER = "—";
@@ -62,12 +60,9 @@ export function PageHeader({
         })}
       </nav>
 
-      {/* SESSION · LAST SYNC is decorative chrome; hidden below lg so the
-          breadcrumb + content column never overflow on narrow viewports
-          (POL-05 — the meta cluster is ~410px and won't shrink). */}
+      {/* LAST SYNC is decorative chrome; hidden below lg so the breadcrumb +
+          content column never overflow on narrow viewports (POL-05). */}
       <div className="hidden items-center gap-sp-3 font-mono text-12 tabular-nums text-fg-muted lg:flex">
-        {/* SESSION readout reuses the isolated Clock leaf (no second timer). */}
-        <Clock local={false} />
         <span className="inline-flex items-center gap-sp-1">
           <span className="text-11 font-bold uppercase tracking-10 text-fg-muted">
             <Trans>LAST SYNC</Trans>

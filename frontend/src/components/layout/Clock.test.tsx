@@ -80,10 +80,4 @@ describe("Clock", () => {
     unmount();
     expect(clearSpy).toHaveBeenCalled();
   });
-
-  it("renders only the SESSION readout when local={false}", () => {
-    renderClock(<Clock local={false} />);
-    expect(screen.getByText("SESSION")).toBeInTheDocument();
-    expect(screen.queryByText("LOCAL")).not.toBeInTheDocument();
-  });
 });

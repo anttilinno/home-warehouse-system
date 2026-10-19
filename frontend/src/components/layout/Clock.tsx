@@ -1,12 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Trans } from "@lingui/react/macro";
 
-export interface ClockProps {
-  /** Render the LOCAL wall-clock readout. Defaults to true; the PageHeader
-   *  reuses the same component with `local={false}` for a SESSION-only timer. */
-  local?: boolean;
-}
-
 // hh:mm:ss, zero-padded. Elapsed seconds → clamped at 0.
 function formatElapsed(ms: number): string {
   const total = Math.max(0, Math.floor(ms / 1000));
@@ -29,7 +23,7 @@ function formatElapsed(ms: number): string {
  * LOCAL = a locale-fixed et-EE wall clock (sketch-006 locale); decorative chrome,
  * not user data — see the i18n-format-ignore note on the call below.
  */
-export function Clock({ local = true }: Readonly<ClockProps>) {
+export function Clock() {
   // Mount timestamp is stable across renders; only `now` ticks.
   const startRef = useRef(Date.now());
   const [now, setNow] = useState(() => Date.now());
@@ -50,11 +44,9 @@ export function Clock({ local = true }: Readonly<ClockProps>) {
       <Readout testid="clock-session" value={session}>
         <Trans>SESSION</Trans>
       </Readout>
-      {local && (
-        <Readout testid="clock-local" value={localTime}>
-          <Trans>LOCAL</Trans>
-        </Readout>
-      )}
+      <Readout testid="clock-local" value={localTime}>
+        <Trans>LOCAL</Trans>
+      </Readout>
     </div>
   );
 }
