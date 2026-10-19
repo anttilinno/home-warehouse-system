@@ -28,7 +28,6 @@ export function ManualBarcodeEntry({
       <RetroInput
         mono
         label={t`ENTER CODE`}
-        inputMode="numeric"
         value={value}
         onChange={(e) => setValue(e.target.value)}
       />

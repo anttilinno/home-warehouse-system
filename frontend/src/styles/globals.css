@@ -121,6 +121,11 @@ body {
 /* Dashboard stat cards (solarized 2a): full body fill + a darker header tint +
    a bright matching number. Unlayered so it beats the Tailwind bg-bg-panel /
    text-* utilities. Markers from StatCard. */
+/* Stat cards are ~145px wide in the 4-up row; the Window's two decorative
+   corner boxes ate ~50px of that and truncated OVERDUE / LOW STOCK. */
+.stat-card > header > span[aria-hidden="true"] {
+  display: none;
+}
 [data-theme="dark"] .stat-card.stat-blue { background: #103c4e; }
 [data-theme="dark"] .stat-card.stat-blue > header { background: #0c2f3d; }
 [data-theme="dark"] .stat-card.stat-blue .stat-card__value { color: #59a7d7; }
@@ -201,11 +206,14 @@ body {
        at narrow widths (POL-05, caught at 320px). minmax(0,1fr) lets the track
        shrink below content; paired with min-width:0 on .app-topbar/.app-main. */
     grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
-    grid-template-rows: 40px 1fr 36px;
+    /* Bottombar spans both columns and mirrors the 40px TopBar, so the screen
+       has one band top and one band bottom instead of a sidebar footer card
+       sitting beside a shorter bar. */
+    grid-template-rows: 40px 1fr 40px;
     grid-template-areas:
-      "topbar  topbar"
-      "sidebar main"
-      "sidebar bottombar";
+      "topbar    topbar"
+      "sidebar   main"
+      "bottombar bottombar";
     transition: grid-template-columns 160ms ease;
   }
   .app-shell[data-collapsed="true"] {
@@ -275,9 +283,8 @@ body {
    every other Window keep the full card frame. */
 .app-sidebar > section {
   border-top-width: 0;
-  /* The bottom border is redundant at the viewport edge and made the sidebar's
-     lower edge sit ~2px inset vs the borderless Bottombar — drop it so both
-     panes run flush to the window bottom. */
+  /* The full-width Bottombar's top border closes the sidebar — a bottom border
+     here would stack into a 4px double ink line. */
   border-bottom-width: 0;
   /* Fill the full-height sidebar grid cell so the Navigator panel runs from the
      TopBar to the Bottombar (no cream gap below the nav). min-height (not height)
@@ -359,6 +366,12 @@ body {
   .rtable tbody tr:nth-child(even) td {
     background: var(--table-stripe);
   }
+  /* A row-level tone (e.g. an overdue loan's bg-danger-bg) must survive the
+     even-row stripe, which paints the cells and would hide it on every other
+     row. */
+  .rtable tbody tr.bg-danger-bg td {
+    background: var(--danger-bg);
+  }
   .rtable tbody tr:hover td {
     background: var(--info-bg);
   }
@@ -369,6 +382,47 @@ body {
   .rtable .mono {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
+  }
+  /* Keyboard row cursor (j/k/arrows in RetroTable) — same look as hover. */
+  .rtable tbody tr[data-active-row="true"] td {
+    background: var(--info-bg);
+  }
+  /* Card rows below md: header stays for screen readers only, each row is a
+     block with its cells flowing inline, so a 390px phone gets a stacked list
+     instead of a sideways scroller. The overflow shade is moot here. */
+  @media (max-width: 767px) {
+    .rtable-wrap[data-overflow-right="true"]::after {
+      display: none;
+    }
+    .rtable {
+      table-layout: auto;
+    }
+    .rtable thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .rtable tbody,
+    .rtable tbody tr {
+      display: block;
+      width: 100%;
+    }
+    .rtable tbody tr {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--table-rule);
+    }
+    .rtable tbody td {
+      display: inline-block;
+      padding: 0;
+      margin: 0 10px 4px 0;
+      border-bottom: 0;
+    }
   }
 }
 

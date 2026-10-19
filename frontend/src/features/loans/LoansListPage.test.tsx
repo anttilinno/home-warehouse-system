@@ -114,10 +114,12 @@ describe("LoansListPage", () => {
     expect(await screen.findByText("Jordan")).toBeInTheDocument();
     expect(screen.queryByText("Alex")).not.toBeInTheDocument();
     expect(screen.queryByText("Sam")).not.toBeInTheDocument();
-    // Each history row carries a Returned pill (the Due cell also says
-    // "returned {date}", so match the pill's bare word exactly).
+    // Each history row says so in its Due cell ("returned {date}") — the one
+    // place it is stated now that there is no Status column.
     const row = screen.getByText("Jordan").closest("tr")!;
-    expect(within(row).getByText(/^returned$/i)).toBeInTheDocument();
+    expect(
+      within(row).getByText(/^returned \d{4}-\d{2}-\d{2}$/i),
+    ).toBeInTheDocument();
   });
 
   it("EXPORT CSV with rows present triggers a download", async () => {

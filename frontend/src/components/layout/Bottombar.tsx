@@ -16,8 +16,8 @@ export interface BottombarProps {
 /**
  * Above this many route chips, the route shortcuts collapse behind a single
  * "⋯ MORE" keycap that opens an upward sheet (UI-SPEC §Overflow strategy —
- * sheet, not paginate). F1/ESC and the clocks stay pinned to the right cluster
- * outside the collapse zone (Success Criterion 5). The exact pixel-fit overflow
+ * sheet, not paginate). F1/ESC and the clock stay outside the collapse zone
+ * (Success Criterion 5). The exact pixel-fit overflow
  * is a Plan 06 viewport concern; this count threshold gives a deterministic,
  * JSDOM-testable collapse trigger that keeps the right cluster intact.
  */
@@ -26,10 +26,10 @@ const OVERFLOW_THRESHOLD = 6;
 /**
  * The desktop function-key Bottombar (BAR-01, BAR-04, desktop-only — D-06).
  *
- * Renders one {@link ShortcutChip} per merged shortcut from the
- * {@link useShortcutsContext} SSOT (D-08), a `flex-1` spacer, then the
- * right-anchored cluster: an F1 HELP chip (→ `onOpenHelp`), an ESC BACK chip
- * (→ `onBack`), and the SESSION/LOCAL {@link Clock}.
+ * Renders an F1 HELP chip (→ `onOpenHelp`) and an ESC BACK chip (→ `onBack`),
+ * then one {@link ShortcutChip} per merged shortcut from the
+ * {@link useShortcutsContext} SSOT (D-08), a `flex-1` spacer, and the
+ * right-anchored SESSION/LOCAL {@link Clock}. Keys left, status right.
  *
  * It owns NO document letter-keydown listener — the ShortcutsProvider (Plan
  * 03-01) is the single dispatcher (Pitfall 2). The Bottombar is render-only for
@@ -52,8 +52,17 @@ export function Bottombar({ onOpenHelp, onBack }: Readonly<BottombarProps>) {
     <footer
       aria-label="Shortcuts"
       role="contentinfo"
-      className="hidden md:flex h-9 min-w-0 items-center gap-sp-2 overflow-hidden border-t-2 border-border-ink bg-bg-panel-2 px-sp-3"
+      className="hidden md:flex h-10 min-w-0 items-center gap-sp-2 overflow-hidden border-t-2 border-border-ink bg-bg-panel px-sp-3 shadow-[inset_0_2px_0_var(--bevel-shade)] md:px-sp-4"
     >
+      {/* F1/ESC lead: they are the same on every route, so the left edge stays
+          put while the route chips after them change. */}
+      <ShortcutChip shortcutKey="F1" label="Help" onActivate={onOpenHelp} />
+      <ShortcutChip
+        shortcutKey="ESC"
+        label="Back"
+        onActivate={() => onBack?.()}
+      />
+
       {inlineShortcuts.map((s) => (
         <ShortcutChip
           key={s.key}
@@ -78,22 +87,14 @@ export function Bottombar({ onOpenHelp, onBack }: Readonly<BottombarProps>) {
         />
       )}
 
-      {/* Spacer pushes the right cluster to the far edge; it never overflows. */}
+      {/* Spacer pushes the clock to the far edge; it never overflows. */}
       <span className="flex-1" />
 
-      <div className="flex flex-none items-center gap-sp-2">
-        <ShortcutChip shortcutKey="F1" label="Help" onActivate={onOpenHelp} />
-        <ShortcutChip
-          shortcutKey="ESC"
-          label="Back"
-          onActivate={() => onBack?.()}
-        />
-        {/* SESSION/LOCAL clock is decorative chrome (~225px) — hidden below lg
-            so the bottombar never overflows the content column at md (POL-05). */}
-        <span className="hidden lg:inline-flex">
-          <Clock />
-        </span>
-      </div>
+      {/* SESSION/LOCAL clock is decorative chrome (~225px) — hidden below lg
+          so the bottombar never overflows the content column at md (POL-05). */}
+      <span className="hidden flex-none lg:inline-flex">
+        <Clock />
+      </span>
 
       {sheetOpen && (
         <OverflowSheet

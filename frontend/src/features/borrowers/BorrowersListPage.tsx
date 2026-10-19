@@ -21,14 +21,14 @@ import {
 
 // Phase 9 Plan 02 — the /borrowers list surface (BORR-01). Mirrors
 // InventoryListPage / LoansListPage density: a mint Window with a FilterBar
-// (client search + count + NEW BORROWER CTA), a RetroTable (Name / Contact /
-// Loans / row actions), and a RetroPagination fed a CLIENT-computed pageCount.
+// (client search + count + ADD BORROWER CTA), a RetroTable (Name / Contact /
+// row actions), and a RetroPagination fed a CLIENT-computed pageCount.
 //
 // Data strategy (OQ2 / binding override #2): useBorrowersQuery does ONE ≤100
 // fetch then filters + pages ENTIRELY in the client — the page never calls
-// /borrowers/search and never reads a server `total`. The `Loans` column is a
-// muted "—" placeholder (OQ7 / binding override #2: NO per-row loan-count
-// fan-out; the live count lives on the detail page in plan 09-03).
+// /borrowers/search and never reads a server `total`. There is no Loans column:
+// a per-row count would fan out (OQ7 / binding override #2), and an always-"—"
+// column is noise; the live count lives on the detail page (plan 09-03).
 //
 // RENDER-LOOP GUARD (CONTEXT constraint 5, hit 4× in prior phases): useLingui()'s
 // `t` is NOT referentially stable — read it through a live ref inside the
@@ -64,7 +64,7 @@ export function BorrowersListPage() {
   const focusSearch = useCallback(() => {
     document.querySelector<HTMLInputElement>("[data-search-input]")?.focus();
   }, []);
-  const labelNew = t`New borrower`;
+  const labelNew = t`Add borrower`;
   const labelSearch = t`Focus search`;
   const routeShortcuts = useMemo(
     () => [
@@ -126,7 +126,7 @@ export function BorrowersListPage() {
           searchPlaceholder={t`Search name, email… ↵ to pin`}
           primaryAction={
             <BevelButton variant="mint" onClick={goNew}>
-              <PixelIcon name="plus" size={16} /> <Trans>NEW BORROWER</Trans>
+              <PixelIcon name="plus" size={16} /> <Trans>ADD BORROWER</Trans>
             </BevelButton>
           }
         />
@@ -152,8 +152,11 @@ export function BorrowersListPage() {
                 <tr>
                   <th>{t`Name`}</th>
                   <th>{t`Contact`}</th>
-                  <th>{t`Loans`}</th>
-                  <th />
+                  <th className="max-md:hidden">
+                    <span className="sr-only">
+                      <Trans>Actions</Trans>
+                    </span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -170,13 +173,11 @@ export function BorrowersListPage() {
                       <td className="font-mono text-13">
                         {contact ?? <span className="text-fg-muted">—</span>}
                       </td>
-                      {/* OQ7 / binding override #2: NO per-row loan-count
-                          fan-out — the list shows a muted placeholder; the live
-                          count lives on the detail page (plan 09-03). */}
-                      <td className="text-fg-muted">—</td>
                       {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops row-click propagation only */}
+                      {/* Row tap opens the borrower; below md the EDIT button
+                          only made rows wrap raggedly (same as the items list). */}
                       <td
-                        className="actions text-right"
+                        className="actions text-right max-md:hidden"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <BevelButton

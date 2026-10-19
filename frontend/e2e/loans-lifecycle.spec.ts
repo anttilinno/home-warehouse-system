@@ -157,8 +157,9 @@ test("loan lifecycle: create via UI → Active → return → History", async ({
       hasText: borrowerName,
     });
     await expect(activeRow).toBeVisible();
-    // Status pill on the active row is Active (locale-agnostic).
-    await expect(activeRow).toContainText(/active/i);
+    // No Status column any more: a fresh loan on the Active tab is simply not
+    // flagged overdue in its Due cell (locale-agnostic).
+    await expect(activeRow).not.toContainText(/overdue/i);
 
     // ── RETURN: the row's RETURN action opens the confirm dialog (blue titlebar
     // — a reversible completion, not destructive). Confirm with the dialog's

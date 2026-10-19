@@ -67,7 +67,13 @@ export function Popover({
     const spaceBelow = window.innerHeight - a.bottom;
     const flipUp = spaceBelow < ph && a.top > ph;
     const top = flipUp ? a.top - ph : a.bottom;
-    setPos({ top, left: a.left });
+    // Clamp to the viewport's right edge: a trigger near it (a row ⋯ menu)
+    // would otherwise push the panel off-screen and squeeze its labels.
+    const left = Math.max(
+      0,
+      Math.min(a.left, window.innerWidth - panel.offsetWidth - 8),
+    );
+    setPos({ top, left });
   }, [open, anchorRef, isSheet]);
 
   // Focus management: move focus into the panel on open, restore to anchor on close.

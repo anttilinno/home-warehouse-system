@@ -228,7 +228,11 @@ export function DeclutterPage() {
                       <th>{t`Days unused`}</th>
                       <th>{t`Score`}</th>
                       <th>{t`Price`}</th>
-                      <th />
+                      <th>
+                        <span className="sr-only">
+                          <Trans>Actions</Trans>
+                        </span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>{group.rows.map(renderRow)}</tbody>

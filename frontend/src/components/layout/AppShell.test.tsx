@@ -72,7 +72,7 @@ describe("AppShell", () => {
     // TopBar: its workspace pill is unique chrome.
     expect(screen.getByTestId("workspace-pill")).toBeInTheDocument(); // TopBar
     expect(
-      screen.getByRole("navigation", { name: /primary/i }),
+      screen.getByRole("navigation", { name: /^primary$/i }),
     ).toBeInTheDocument(); // Sidebar
     expect(screen.getByRole("contentinfo")).toBeInTheDocument(); // Bottombar
     expect(screen.getByText("Route content here")).toBeInTheDocument(); // Outlet
@@ -121,15 +121,15 @@ describe("AppShell", () => {
     expect(main.getAttribute("tabindex")).toBe("-1");
   });
 
-  it("holds the responsive class contract: Bottombar hidden md:flex, Fab md:hidden", () => {
+  it("holds the responsive class contract: Bottombar hidden md:flex, TabBar md:hidden", () => {
     renderShell("/");
     const bottombar = screen.getByRole("contentinfo");
     expect(bottombar.className).toContain("hidden");
     expect(bottombar.className).toContain("md:flex");
-    const fab = screen.getByRole("button", { name: /quick actions/i });
-    // The FAB's md:hidden wrapper gates it to <768px.
-    const fabWrapper = fab.closest(".md\\:hidden");
-    expect(fabWrapper).not.toBeNull();
+    const tabbar = screen.getByRole("navigation", {
+      name: /primary \(mobile\)/i,
+    });
+    expect(tabbar.className).toContain("md:hidden");
   });
 
   it("uses NO JS layout measurement APIs (CSS-only collapse — SHELL-02)", () => {

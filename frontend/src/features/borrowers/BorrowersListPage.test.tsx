@@ -160,7 +160,8 @@ describe("BorrowersListPage", () => {
     renderPage();
     await screen.findByText("Alex Carter");
 
-    await user.click(screen.getByRole("button", { name: /new borrower/i }));
+    const ctas = screen.getAllByRole("button", { name: /add borrower/i });
+    await user.click(ctas[ctas.length - 1]);
     expect(await screen.findByText("NEW BORROWER PAGE")).toBeInTheDocument();
   });
 
@@ -197,7 +198,8 @@ describe("BorrowersListPage", () => {
     );
 
     expect(await screen.findByText(/^no borrowers$/i)).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /add borrower/i }));
+    const empty = screen.getAllByRole("button", { name: /add borrower/i });
+    await user.click(empty[empty.length - 1]);
     expect(await screen.findByText("NEW BORROWER PAGE")).toBeInTheDocument();
   });
 

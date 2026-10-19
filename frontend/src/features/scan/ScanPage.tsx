@@ -277,6 +277,7 @@ export function ScanPage() {
                 entityMatch={entityMatch}
                 onOpenActions={openActions}
                 onRetry={retry}
+                onDismiss={resume}
               />
             </div>
           )}

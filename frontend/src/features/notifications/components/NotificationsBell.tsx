@@ -46,7 +46,7 @@ export function NotificationsBell() {
         aria-expanded={open}
         aria-label={t`Notifications`}
         onClick={() => setOpen((v) => !v)}
-        className={`grid h-[28px] w-[28px] place-items-center border-2 border-border-ink bg-bg-panel font-mono text-14 leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed ${FOCUS_RING}`}
+        className={`relative grid h-[28px] w-[28px] place-items-center max-md:before:absolute max-md:before:-inset-2 max-md:before:content-[''] border-2 border-border-ink bg-bg-panel font-mono text-14 leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed ${FOCUS_RING}`}
       >
         <span aria-hidden="true">
           <PixelIcon name="bell" size={16} />

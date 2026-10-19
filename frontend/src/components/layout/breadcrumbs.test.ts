@@ -27,6 +27,11 @@ describe("buildCrumbs", () => {
     expect(tos("/maintenance/due")).toEqual(["/maintenance/due", undefined]);
   });
 
+  it("expiring is a sibling tab of stock, not its child (2 crumbs)", () => {
+    expect(tos("/inventory/expiring")).toEqual(["/items", undefined]);
+    expect(tos("/inventory")).toEqual(["/items", undefined]);
+  });
+
   it("settings subpage → SYSTEM › SETTINGS › subpage", () => {
     expect(tos("/settings/members")).toEqual([
       "/settings",

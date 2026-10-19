@@ -3,13 +3,13 @@ import { useNavigate, useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   Window,
-  BevelButton,
   RetroTable,
   RetroBadge,
   RetroSelect,
   RetroEmptyState,
 } from "@/components/retro";
 import type { ExpiringEntry } from "@/lib/types";
+import { InventoryScopeTabs } from "@/features/items/components/InventoryScopeTabs";
 import {
   useExpiringQuery,
   EXPIRING_DAYS_OPTIONS,
@@ -99,6 +99,7 @@ export function ExpiringPage() {
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">
       <Window title={t`EXPIRING SOON`} titlebarVariant="butter">
+        <InventoryScopeTabs />
         {/* Header strip: days selector + count. */}
         <div className="flex items-center gap-sp-3 border-b-2 border-border-ink bg-bg-panel-2 p-sp-3">
           <div className="w-[160px]">
@@ -193,14 +194,6 @@ export function ExpiringPage() {
           </RetroTable>
         )}
       </Window>
-
-      {!showEmpty && rows.length > 0 && (
-        <div className="mt-sp-3">
-          <BevelButton variant="neutral" onClick={() => navigate("/inventory")}>
-            <Trans>← BACK TO INVENTORY</Trans>
-          </BevelButton>
-        </div>
-      )}
     </div>
   );
 }

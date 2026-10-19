@@ -66,7 +66,7 @@ export function RegisterPage() {
   });
 
   return (
-    <main className="grid min-h-screen place-items-center p-sp-4">
+    <main className="grid min-h-dvh place-items-center p-sp-4">
       <Window
         title={<Trans>Create account</Trans>}
         className="w-full max-w-[400px]"

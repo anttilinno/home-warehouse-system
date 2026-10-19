@@ -41,7 +41,7 @@ function ProviderTile({ initial }: Readonly<{ initial: string }>) {
   return (
     <span
       aria-hidden="true"
-      className="grid h-[28px] w-[28px] flex-none place-items-center border border-border-ink bg-bg-panel font-display text-12 uppercase leading-none text-fg-ink"
+      className="grid h-[28px] w-[28px] flex-none place-items-center border border-border-ink bg-bg-panel font-mono text-12 font-bold uppercase leading-none text-fg-ink"
     >
       {initial}
     </span>

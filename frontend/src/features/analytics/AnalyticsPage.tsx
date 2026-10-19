@@ -42,18 +42,18 @@ export function AnalyticsPage() {
   // requests (the hooks are gated on wsId, which is null here).
   if (workspaces?.length === 0) {
     return (
-      <main className="grid min-h-screen place-items-center p-sp-4">
+      <div className="grid min-h-dvh place-items-center p-sp-4">
         <Window title={<Trans>No workspace</Trans>} titlebarVariant="butter">
           <p className="text-13">
             <Trans>Your account has no workspaces yet.</Trans>
           </p>
         </Window>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="mx-auto min-w-0 max-w-[1280px]">
+    <div className="mx-auto min-w-0 max-w-[1280px]">
       {/* The six charts in a responsive grid of retro Windows: two columns on
           wide, collapsing to one column on narrow (CONTEXT desktop-first). The
           monthly chart spans both columns — it is a wide time series. */}
@@ -73,6 +73,6 @@ export function AnalyticsPage() {
       <div className="mt-sp-5">
         <OutOfStockTable items={outOfStock} isLoading={outOfStockLoading} />
       </div>
-    </main>
+    </div>
   );
 }

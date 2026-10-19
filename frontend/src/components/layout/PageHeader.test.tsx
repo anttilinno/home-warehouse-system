@@ -28,14 +28,23 @@ describe("PageHeader", () => {
   it("renders the breadcrumb crumbs joined by an ink separator", () => {
     renderPageHeader(<PageHeader crumbs={CRUMBS} />);
     expect(screen.getByText("Overview")).toBeInTheDocument();
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
+    expect(
+      screen.getByText("Dashboard", { selector: "nav *" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("›")).toBeInTheDocument();
+  });
+
+  it("names the page with one h1 from the leaf crumb", () => {
+    renderPageHeader(<PageHeader crumbs={CRUMBS} />);
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Dashboard" }),
+    ).toBeInTheDocument();
   });
 
   it("renders an ancestor crumb with a `to` as a link and the leaf as a span", () => {
     renderPageHeader(<PageHeader crumbs={CRUMBS} />);
     const ancestor = screen.getByText("Overview");
-    const leaf = screen.getByText("Dashboard");
+    const leaf = screen.getByText("Dashboard", { selector: "nav *" });
     expect(ancestor.closest("a")).toHaveAttribute("href", "/");
     expect(leaf.tagName).toBe("SPAN");
     expect(leaf).toHaveAttribute("aria-current", "page");
@@ -57,10 +66,9 @@ describe("PageHeader", () => {
     );
   });
 
-  it("renders a SESSION readout (reusing the Clock leaf)", () => {
+  it("leaves SESSION to the Bottombar clock (no duplicate readout)", () => {
     renderPageHeader(<PageHeader crumbs={[{ label: "Overview" }]} />);
-    expect(screen.getByText("SESSION")).toBeInTheDocument();
-    expect(screen.getByTestId("clock-session")).toBeInTheDocument();
+    expect(screen.queryByText("SESSION")).toBeNull();
   });
 
   it("renders the meta line with tabular-nums", () => {

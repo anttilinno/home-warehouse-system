@@ -147,14 +147,6 @@ describe("Sidebar", () => {
       "href",
       "/my-changes",
     );
-    expect(screen.getByRole("link", { name: /imports/i })).toHaveAttribute(
-      "href",
-      "/imports",
-    );
-    expect(screen.getByRole("link", { name: /sync history/i })).toHaveAttribute(
-      "href",
-      "/sync-history",
-    );
   });
 
   it("carries .nav-label / .nav-count rail-mode hook classes", () => {

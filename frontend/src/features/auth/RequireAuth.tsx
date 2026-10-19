@@ -41,7 +41,7 @@ export function RequireAuth({ children }: Readonly<{ children: ReactNode }>) {
 
   if (workspaces.isPending) {
     return (
-      <main className="grid min-h-screen place-items-center">
+      <main className="grid min-h-dvh place-items-center">
         <p className="font-mono text-13 text-fg-muted">
           <Trans>Loading…</Trans>
         </p>
@@ -53,7 +53,7 @@ export function RequireAuth({ children }: Readonly<{ children: ReactNode }>) {
   // v2.0 spurious-logout regression). Offer a retry that refetches the probe.
   if (workspaces.isError) {
     return (
-      <main className="grid min-h-screen place-items-center">
+      <main className="grid min-h-dvh place-items-center">
         <div
           role="alert"
           className="flex max-w-sm flex-col items-center gap-sp-4 text-center"

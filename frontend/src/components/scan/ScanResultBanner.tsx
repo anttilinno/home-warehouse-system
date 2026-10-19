@@ -42,6 +42,8 @@ export interface ScanResultBannerProps {
   onOpenActions?: () => void;
   /** ERROR: re-fire the same code. */
   onRetry?: () => void;
+  /** Any settled state: clear the banner and unpause the camera. */
+  onDismiss?: () => void;
 }
 
 // Three cues per state: a StatusPill variant + a unicode glyph + the Silkscreen
@@ -100,6 +102,71 @@ function BannerHeadline({
   return null;
 }
 
+// The per-state action cluster. Every settled state also gets SCAN NEXT so the
+// camera never dead-ends paused behind a banner (resume() lives in the page).
+function BannerActions({
+  status,
+  code,
+  item,
+  entity,
+  onOpenActions,
+  onRetry,
+  onDismiss,
+}: Readonly<{
+  status: ScanBannerStatus;
+  code: string;
+  item?: Item | null;
+  entity: ShortCodeMatch | null | undefined;
+  onOpenActions?: () => void;
+  onRetry?: () => void;
+  onDismiss?: () => void;
+}>): ReactNode {
+  return (
+    <span className="flex flex-wrap items-center justify-end gap-sp-2">
+      {status === "match" && item && (
+        <button type="button" className={BEVEL_BTN} onClick={onOpenActions}>
+          <PixelIcon name="chevron-right" size={16} /> <Trans>ACTIONS</Trans>
+        </button>
+      )}
+      {entity && (
+        <Link to={shortCodeEntityPath(entity)} className={BEVEL_BTN}>
+          <PixelIcon name="chevron-right" size={16} /> <Trans>OPEN</Trans>
+        </Link>
+      )}
+      {(status === "not-found" || status === "offline") && (
+        <span className="flex flex-wrap items-center gap-sp-2">
+          {/* Unknown (or unverifiable-offline) code → let the user register
+              it as an item (code → barcode) or a container (code →
+              short_code). Offline, the create becomes a queued write
+              (Phase 3/4 offline mutations) that replays on reconnect. */}
+          <Link
+            to={`/items/new?barcode=${encodeURIComponent(code)}`}
+            className={BEVEL_BTN}
+          >
+            <PixelIcon name="plus" size={16} /> <Trans>ITEM</Trans>
+          </Link>
+          <Link
+            to={`/taxonomy?tab=containers&new_code=${encodeURIComponent(code)}`}
+            className={BEVEL_BTN}
+          >
+            <PixelIcon name="folder" size={16} /> <Trans>CONTAINER</Trans>
+          </Link>
+        </span>
+      )}
+      {status === "error" && (
+        <button type="button" className={BEVEL_BTN} onClick={onRetry}>
+          <PixelIcon name="reload" size={16} /> <Trans>TRY AGAIN</Trans>
+        </button>
+      )}
+      {status !== "loading" && onDismiss && (
+        <button type="button" className={BEVEL_BTN} onClick={onDismiss}>
+          <PixelIcon name="camera" size={16} /> <Trans>SCAN NEXT</Trans>
+        </button>
+      )}
+    </span>
+  );
+}
+
 export function ScanResultBanner({
   status,
   code,
@@ -107,6 +174,7 @@ export function ScanResultBanner({
   entityMatch,
   onOpenActions,
   onRetry,
+  onDismiss,
 }: Readonly<ScanResultBannerProps>) {
   const s = STATE[status];
   // An item match wins: entityMatch is only consulted when the barcode lookup
@@ -149,41 +217,15 @@ export function ScanResultBanner({
           )}
         </span>
 
-        {status === "match" && item && (
-          <button type="button" className={BEVEL_BTN} onClick={onOpenActions}>
-            <PixelIcon name="chevron-right" size={16} /> <Trans>ACTIONS</Trans>
-          </button>
-        )}
-        {entity && (
-          <Link to={shortCodeEntityPath(entity)} className={BEVEL_BTN}>
-            <PixelIcon name="chevron-right" size={16} /> <Trans>OPEN</Trans>
-          </Link>
-        )}
-        {(status === "not-found" || status === "offline") && (
-          <span className="flex flex-wrap items-center gap-sp-2">
-            {/* Unknown (or unverifiable-offline) code → let the user register
-                it as an item (code → barcode) or a container (code →
-                short_code). Offline, the create becomes a queued write
-                (Phase 3/4 offline mutations) that replays on reconnect. */}
-            <Link
-              to={`/items/new?barcode=${encodeURIComponent(code)}`}
-              className={BEVEL_BTN}
-            >
-              <PixelIcon name="plus" size={16} /> <Trans>ITEM</Trans>
-            </Link>
-            <Link
-              to={`/taxonomy?tab=containers&new_code=${encodeURIComponent(code)}`}
-              className={BEVEL_BTN}
-            >
-              <PixelIcon name="folder" size={16} /> <Trans>CONTAINER</Trans>
-            </Link>
-          </span>
-        )}
-        {status === "error" && (
-          <button type="button" className={BEVEL_BTN} onClick={onRetry}>
-            <PixelIcon name="reload" size={16} /> <Trans>TRY AGAIN</Trans>
-          </button>
-        )}
+        <BannerActions
+          status={status}
+          code={code}
+          item={item}
+          entity={entity}
+          onOpenActions={onOpenActions}
+          onRetry={onRetry}
+          onDismiss={onDismiss}
+        />
       </div>
     </section>
   );

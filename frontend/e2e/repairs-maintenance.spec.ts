@@ -203,8 +203,9 @@ test("repairs + maintenance: repair rollup + lifecycle start, schedule due → c
     // FLOW A — REPAIRS DRAWER: rollup (RPR-02) + create → START (RPR-01)
     // ════════════════════════════════════════════════════════════════════════
 
-    // Open the per-row REPAIRS drawer (🔧 action; aria-label "Repairs").
-    await seededRow.getByRole("button", { name: /^repairs$/i }).click();
+    // Open the per-row REPAIRS drawer (row ⋯ menu → "Repairs").
+    await seededRow.getByRole("button", { name: /more actions/i }).click();
+    await page.getByRole("menuitem", { name: /^repairs$/i }).click();
     const repairsDrawer = page.getByRole("dialog", { name: /^REPAIRS/i });
     await expect(repairsDrawer).toBeVisible();
 
@@ -281,10 +282,11 @@ test("repairs + maintenance: repair rollup + lifecycle start, schedule due → c
     // FLOW B — MAINTENANCE: schedule due today → /maintenance/due → complete
     // ════════════════════════════════════════════════════════════════════════
 
-    // Open the per-row MAINTENANCE drawer (⟳ action; aria-label "Maintenance").
+    // Open the per-row MAINTENANCE drawer (row ⋯ menu → "Maintenance").
     const maintRow = page.locator("table tbody tr", { hasText: rmItemName });
     await expect(maintRow).toBeVisible();
-    await maintRow.getByRole("button", { name: /^maintenance$/i }).click();
+    await maintRow.getByRole("button", { name: /more actions/i }).click();
+    await page.getByRole("menuitem", { name: /^maintenance$/i }).click();
     const maintDrawer = page.getByRole("dialog", { name: /^MAINTENANCE/i });
     await expect(maintDrawer).toBeVisible();
 

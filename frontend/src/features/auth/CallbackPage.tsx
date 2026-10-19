@@ -68,7 +68,7 @@ export function CallbackPage() {
 
   if (state === "error") {
     return (
-      <main className="grid min-h-screen place-items-center p-sp-4">
+      <main className="grid min-h-dvh place-items-center p-sp-4">
         <Window
           title={<Trans>Sign-in failed</Trans>}
           titlebarVariant="pink"
@@ -103,7 +103,7 @@ export function CallbackPage() {
 
   // Exchanging — the retro stepped-progress loading idiom (UI-SPEC §3).
   return (
-    <main className="grid min-h-screen place-items-center p-sp-4">
+    <main className="grid min-h-dvh place-items-center p-sp-4">
       <Window
         title={<Trans>Signing in</Trans>}
         className="w-full max-w-[400px]"

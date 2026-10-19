@@ -100,7 +100,11 @@ export function MaintenanceDuePage() {
                 <th>{t`Schedule`}</th>
                 <th>{t`Next due`}</th>
                 <th>{t`Status`}</th>
-                <th />
+                <th>
+                  <span className="sr-only">
+                    <Trans>Actions</Trans>
+                  </span>
+                </th>
               </tr>
             </thead>
             <tbody>

@@ -22,6 +22,7 @@ import type { Item } from "@/lib/types";
 import { useItemsQuery } from "./hooks/useItemsQuery";
 import { useItemMutations } from "./hooks/useItemMutations";
 import { ItemsResults } from "./components/ItemsResults";
+import { InventoryScopeTabs } from "./components/InventoryScopeTabs";
 import { ItemsBulkBar } from "./components/ItemsBulkBar";
 import { DeleteItemDialog } from "./components/DeleteItemDialog";
 import { BulkDeleteItemsDialog } from "./components/BulkDeleteItemsDialog";
@@ -253,6 +254,11 @@ export function ItemsListPage() {
           </BevelButton>
         }
       >
+        {/* The body is flush (bodyClassName=""), so the strip brings its own
+            padding to sit where the padded Stock/Expiring bodies put it. */}
+        <div className="px-sp-4 pt-sp-4">
+          <InventoryScopeTabs />
+        </div>
         <ViewBar
           {...viewBar}
           itemCount={data?.total ?? 0}

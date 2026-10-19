@@ -94,7 +94,12 @@ export default function App() {
             <RetroToaster />
             {import.meta.env.DEV && (
               <Suspense fallback={null}>
-                <ReactQueryDevtoolsLazy initialIsOpen={false} />
+                {/* top-left sits over the decorative brand mark; every other corner
+                    covers a live control or the Bottombar clock. */}
+                <ReactQueryDevtoolsLazy
+                  initialIsOpen={false}
+                  buttonPosition="top-left"
+                />
               </Suspense>
             )}
           </PersistQueryClientProvider>

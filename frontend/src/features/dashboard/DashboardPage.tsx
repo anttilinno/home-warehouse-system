@@ -61,13 +61,13 @@ export function DashboardPage() {
 
   if (workspaces?.length === 0) {
     return (
-      <main className="grid min-h-screen place-items-center p-sp-4">
+      <div className="grid min-h-dvh place-items-center p-sp-4">
         <Window title={<Trans>No workspace</Trans>} titlebarVariant="butter">
           <p className="text-13">
             <Trans>Your account has no workspaces yet.</Trans>
           </p>
         </Window>
-      </main>
+      </div>
     );
   }
 

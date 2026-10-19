@@ -65,7 +65,6 @@ const APP_ROUTES: readonly string[] = [
   "/analytics",
   "/approvals",
   "/my-changes",
-  "/sync-history",
   "/imports",
   "/wishlist",
   "/declutter",

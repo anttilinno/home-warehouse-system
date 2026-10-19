@@ -5,7 +5,7 @@ import { RouteFallback } from "@/components/layout/RouteFallback";
 import { NotFoundPage } from "@/routes/NotFoundPage";
 // Phase 14 System group (14-01..14-06). Imported EAGERLY (tables + forms, no
 // heavy chart/scanner chunk) so a wrong path/name fails at tsc/build time, not
-// at runtime (T-14-22). SyncHistoryPage lives at features/system-history/Page —
+// at runtime (T-14-22).
 // NOT features/sync-history — because the FOUND-02 lint:imports guard substring-
 // matches `sync` in any import specifier (14-06-SUMMARY); the route URL string
 // `/sync-history` is fine (it is a Route path, not an import specifier).
@@ -35,7 +35,6 @@ import { AccountsPage } from "@/features/settings/AccountsPage";
 import { SecurityPage } from "@/features/settings/SecurityPage";
 import { SettingsLandingPage } from "@/features/settings/SettingsLandingPage";
 import { SettingsLayout } from "@/features/settings/SettingsLayout";
-import { SyncHistoryPage } from "@/features/system-history/Page";
 import { CategoryFormDialog } from "@/features/taxonomy/components/CategoryFormDialog";
 import { TaxonomyPage } from "@/features/taxonomy/TaxonomyPage";
 import { WishlistPage } from "@/features/wishlist/WishlistPage";
@@ -222,7 +221,6 @@ export function AppRoutes() {
             precede the `*` wildcard (T-14-21). Eagerly imported (T-14-22). */}
         <Route path="approvals" element={<ApprovalsPage />} />
         <Route path="my-changes" element={<MyChangesPage />} />
-        <Route path="sync-history" element={<SyncHistoryPage />} />
         <Route path="imports" element={<ImportsPage />} />
         <Route path="wishlist" element={<WishlistPage />} />
         <Route path="declutter" element={<DeclutterPage />} />

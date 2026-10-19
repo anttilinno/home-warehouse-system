@@ -78,7 +78,7 @@ export function DataStoragePage() {
     <Window title={<Trans>Data & Storage</Trans>} bodyClassName="p-sp-4">
       {/* 0. SHOW ARCHIVED — global, backend-synced list-view preference */}
       <section className="flex flex-col gap-sp-2 border-b border-table-rule pb-sp-4">
-        <h2 className="font-display text-12 uppercase tracking-6 text-fg-muted">
+        <h2 className="font-body text-11 font-bold uppercase tracking-10 text-fg-muted">
           <Trans>Archived items</Trans>
         </h2>
         <RetroCheckbox
@@ -102,7 +102,7 @@ export function DataStoragePage() {
 
       {/* 1. CACHED DATA — client-only clear */}
       <section className="flex flex-col gap-sp-2 border-b border-table-rule py-sp-4">
-        <h2 className="font-display text-12 uppercase tracking-6 text-fg-muted">
+        <h2 className="font-body text-11 font-bold uppercase tracking-10 text-fg-muted">
           <Trans>Cached data</Trans>
         </h2>
         <p className="text-13 text-fg-ink">
@@ -119,7 +119,7 @@ export function DataStoragePage() {
 
       {/* 2. EXPORT — real, admin-gated blob download */}
       <section className="flex flex-col gap-sp-2 border-b border-table-rule py-sp-4">
-        <h2 className="font-display text-12 uppercase tracking-6 text-fg-muted">
+        <h2 className="font-body text-11 font-bold uppercase tracking-10 text-fg-muted">
           <Trans>Export</Trans>
         </h2>
         <p className="text-13 text-fg-ink">
@@ -148,7 +148,7 @@ export function DataStoragePage() {
 
       {/* 3. IMPORT — pointer to Phase-14 imports (COMING SOON: no route yet) */}
       <section className="flex flex-col gap-sp-2 pt-sp-4">
-        <h2 className="font-display text-12 uppercase tracking-6 text-fg-muted">
+        <h2 className="font-body text-11 font-bold uppercase tracking-10 text-fg-muted">
           <Trans>Import</Trans>
         </h2>
         <div className="flex items-center justify-between gap-sp-3">

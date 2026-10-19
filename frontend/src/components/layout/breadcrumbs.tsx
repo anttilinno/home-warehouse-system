@@ -29,19 +29,21 @@ const SECTIONS: ReadonlyArray<{
     group: "planning",
     label: <Trans>Due Maintenance</Trans>,
   },
-  {
-    base: "/sync-history",
-    group: "system",
-    label: <Trans>Sync History</Trans>,
-  },
   { base: "/my-changes", group: "system", label: <Trans>My Changes</Trans> },
   { base: "/analytics", group: "overview", label: <Trans>Analytics</Trans> },
   { base: "/borrowers", group: "inventory", label: <Trans>Borrowers</Trans> },
-  { base: "/inventory", group: "inventory", label: <Trans>Inventory</Trans> },
+  // Expiring and Stock are sibling tabs (InventoryScopeTabs), so Expiring is
+  // its own section rather than a "Stock › Expiring" child.
+  {
+    base: "/inventory/expiring",
+    group: "inventory",
+    label: <Trans>Expiring</Trans>,
+  },
+  { base: "/inventory", group: "inventory", label: <Trans>Stock</Trans> },
   { base: "/approvals", group: "system", label: <Trans>Approvals</Trans> },
   { base: "/declutter", group: "planning", label: <Trans>Declutter</Trans> },
   { base: "/wishlist", group: "planning", label: <Trans>Wishlist</Trans> },
-  { base: "/taxonomy", group: "inventory", label: <Trans>Taxonomy</Trans> },
+  { base: "/taxonomy", group: "inventory", label: <Trans>Organize</Trans> },
   { base: "/settings", group: "system", label: <Trans>Settings</Trans> },
   { base: "/imports", group: "system", label: <Trans>Imports</Trans> },
   { base: "/scan", group: "overview", label: <Trans>Scan</Trans> },

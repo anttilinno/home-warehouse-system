@@ -9,9 +9,7 @@ import type { MessageDescriptor } from "@lingui/core";
 // consumer resolves them with `i18n._(label)` / `t(label)` at render.
 //
 // LINT LANDMINE (FOUND-02): `palette`/`route` are SAFE substrings — nothing here
-// is named `*sync*`/`*idb*`/`*offline*`. The "Sync History" ROW label is a plain
-// translated string and its `to` is "/sync-history" (a route path, not an import
-// specifier — `lint:imports` scans import statements, not data literals).
+// is named `*sync*`/`*idb*`/`*offline*`.
 
 export interface PaletteRoute {
   /** Router navigation target. */
@@ -25,6 +23,7 @@ export const paletteRoutes: PaletteRoute[] = [
   { to: "/analytics", label: msg`Analytics` },
   { to: "/items", label: msg`Items` },
   { to: "/inventory", label: msg`Inventory` },
+  { to: "/inventory/expiring", label: msg`Expiring` },
   { to: "/maintenance/due", label: msg`Maintenance` },
   { to: "/taxonomy?tab=locations", label: msg`Locations` },
   { to: "/taxonomy?tab=containers", label: msg`Containers` },
@@ -37,6 +36,34 @@ export const paletteRoutes: PaletteRoute[] = [
   { to: "/wishlist", label: msg`Wishlist` },
   { to: "/declutter", label: msg`Declutter` },
   { to: "/imports", label: msg`Imports` },
-  { to: "/sync-history", label: msg`Sync History` },
   { to: "/settings", label: msg`Settings` },
+  { to: "/settings/profile", label: msg`Settings · Profile` },
+  { to: "/settings/appearance", label: msg`Settings · Appearance` },
+  { to: "/settings/language", label: msg`Settings · Language` },
+  { to: "/settings/formats", label: msg`Settings · Formats` },
+  { to: "/settings/notifications", label: msg`Settings · Notifications` },
+  { to: "/settings/data", label: msg`Settings · Data` },
+  { to: "/settings/members", label: msg`Settings · Members` },
+  { to: "/settings/security", label: msg`Settings · Security` },
+  { to: "/settings/accounts", label: msg`Settings · Accounts` },
+  { to: "/settings/paperless", label: msg`Settings · Paperless` },
+];
+
+/** Static "Actions" group — verbs, rendered before Routes. `to` is absent for
+ *  non-navigation actions (the palette dispatches on `id`). Ids are stable so
+ *  the MRU keeps replaying them. */
+export interface PaletteAction {
+  /** Stable id; doubles as the MRU id and (when `to` is set) the nav target. */
+  id: string;
+  label: MessageDescriptor;
+  to?: string;
+}
+
+export const paletteActions: PaletteAction[] = [
+  { id: "/items/new", to: "/items/new", label: msg`New item` },
+  { id: "/loans/new", to: "/loans/new", label: msg`New loan` },
+  { id: "/borrowers/new", to: "/borrowers/new", label: msg`New borrower` },
+  { id: "/scan", to: "/scan", label: msg`Scan` },
+  { id: "action:toggle-theme", label: msg`Toggle theme` },
+  { id: "/settings", to: "/settings", label: msg`Settings` },
 ];

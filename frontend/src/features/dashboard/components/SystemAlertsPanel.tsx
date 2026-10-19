@@ -56,7 +56,7 @@ function AlertCard({
       className="flex items-center justify-between gap-sp-3 border-2 border-border-ink bg-bg-panel-2 px-sp-3 py-sp-2 no-underline"
     >
       <span className="flex flex-col gap-px">
-        <span className="font-display text-13 uppercase tracking-2 text-fg-ink">
+        <span className="font-display text-16 uppercase tracking-2 text-fg-ink">
           {label}
         </span>
         {resolvedZero && (

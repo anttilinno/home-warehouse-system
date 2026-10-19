@@ -114,7 +114,7 @@ export function WishlistTable({
             action={{
               label: (
                 <>
-                  <PixelIcon name="plus" size={16} /> <Trans>ADD ITEM</Trans>
+                  <PixelIcon name="plus" size={16} /> <Trans>ADD WISH</Trans>
                 </>
               ),
               onClick: onAdd,
@@ -131,7 +131,11 @@ export function WishlistTable({
               <th>{t`Price`}</th>
               <th>{t`Priority`}</th>
               <th>{t`Status`}</th>
-              <th />
+              <th>
+                <span className="sr-only">
+                  <Trans>Actions</Trans>
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody>

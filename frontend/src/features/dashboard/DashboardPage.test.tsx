@@ -155,7 +155,7 @@ describe("DashboardPage (extended — W2)", () => {
     expect(await screen.findByText("7")).toBeInTheDocument();
   });
 
-  it("renders an action-derived Status pill in the activity table", async () => {
+  it("renders the action as one action-derived badge (no duplicate Status column)", async () => {
     setContext();
     mountHandlers();
     renderDashboard();
@@ -163,13 +163,11 @@ describe("DashboardPage (extended — W2)", () => {
     const createRow = (await screen.findByText("Cordless drill")).closest(
       "tr",
     )!;
-    // The Status column carries an action-derived pill (CREATE → ok variant).
-    // The action text appears twice in the row: once as the plain Action cell
-    // and once inside the Status pill (a styled badge <span> with rounded-chip).
+    // The Action column carries the action-derived badge (CREATE → ok
+    // variant); the word appears once, not again in a Status column.
     const creates = within(createRow).getAllByText("CREATE");
-    expect(creates.length).toBe(2);
-    const pill = creates.find((el) => el.className.includes("rounded-chip"));
-    expect(pill).toBeDefined();
+    expect(creates).toHaveLength(1);
+    expect(creates[0].className).toContain("rounded-chip");
   });
 
   it("renders an Actor column: user_id → short slug, missing → '—'", async () => {

@@ -139,7 +139,7 @@ test.describe("responsive breakpoint matrix (POL-05)", () => {
 
     // Stable nav-surface locators (verified contract).
     const sidebar = page.locator(".app-sidebar nav[aria-label='Primary']");
-    const fab = page.getByRole("button", { name: "Quick actions" });
+    const fab = page.getByRole("navigation", { name: "Primary (mobile)" });
 
     for (const width of BREAKPOINTS) {
       const isDesktop = width >= MD;

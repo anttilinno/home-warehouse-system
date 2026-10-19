@@ -152,6 +152,10 @@ msgstr "{done}/{0} üles laaditud"
 msgid "{label} unlinked."
 msgstr "{label} lahti ühendatud."
 
+#: src/features/loans/LoansListPage.tsx
+msgid "{overdueBy}d overdue"
+msgstr "{overdueBy}p üle tähtaja"
+
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "{overdueCount} overdue"
 msgstr "{overdueCount} üle tähtaja"
@@ -205,8 +209,8 @@ msgstr "← TAGASI ESEMETE JUURDE"
 #~ msgstr "+ Lisa ese"
 
 #: src/features/loans/LoansListPage.tsx
-msgid "−{overdueBy}d"
-msgstr "−{overdueBy}p"
+#~ msgid "−{overdueBy}d"
+#~ msgstr "−{overdueBy}p"
 
 #: src/features/items/components/InventoryPanel.tsx
 #: src/features/wishlist/components/WishlistTable.tsx
@@ -401,8 +405,17 @@ msgstr "Toiming"
 msgid "action needed"
 msgstr "vajab tegutsemist"
 
+#: src/features/analytics/components/OutOfStockTable.tsx
+#: src/features/borrowers/BorrowersListPage.tsx
+#: src/features/command-palette/CommandPalette.tsx
+#: src/features/declutter/DeclutterPage.tsx
+#: src/features/inventory/components/InventoryResults.tsx
+#: src/features/items/components/ItemsResults.tsx
+#: src/features/loans/LoansListPage.tsx
+#: src/features/maintenance/MaintenanceDuePage.tsx
 #: src/features/settings/MembersPage.tsx
 #: src/features/settings/SecurityPage.tsx
+#: src/features/wishlist/components/WishlistTable.tsx
 msgid "Actions"
 msgstr "Toimingud"
 
@@ -415,8 +428,8 @@ msgid "active"
 msgstr "aktiivne"
 
 #: src/features/loans/LoansListPage.tsx
-msgid "Active"
-msgstr "Aktiivne"
+#~ msgid "Active"
+#~ msgstr "Aktiivne"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "ACTIVE"
@@ -448,6 +461,10 @@ msgid "ADD"
 msgstr "LISA"
 
 #: src/features/borrowers/BorrowersListPage.tsx
+msgid "Add borrower"
+msgstr ""
+
+#: src/features/borrowers/BorrowersListPage.tsx
 msgid "ADD BORROWER"
 msgstr "LISA LAENAJA"
 
@@ -469,7 +486,6 @@ msgstr "LISA KIRJE"
 msgid "ADD FILE"
 msgstr "LISA FAIL"
 
-#: src/components/layout/Fab.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Add item"
 msgstr "Lisa ese"
@@ -477,7 +493,6 @@ msgstr "Lisa ese"
 #: src/features/items/components/ItemsResults.tsx
 #: src/features/items/ItemFormPage.tsx
 #: src/features/items/ItemsListPage.tsx
-#: src/features/wishlist/components/WishlistTable.tsx
 msgid "ADD ITEM"
 msgstr "LISA ESE"
 
@@ -513,6 +528,10 @@ msgstr "LISA AJAKAVA"
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "ADD TO WISHLIST"
 msgstr "LISA SOOVINIMEKIRJA"
+
+#: src/features/wishlist/components/WishlistTable.tsx
+msgid "ADD WISH"
+msgstr ""
 
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Add your first location — a room, shelf, or area. Nest sub-locations to mirror your space."
@@ -847,7 +866,6 @@ msgid "Caption"
 msgstr "Pealkiri"
 
 #: src/components/layout/breadcrumbs.tsx
-#: src/components/layout/Sidebar.tsx
 msgid "Capture"
 msgstr "Jäädvustus"
 
@@ -967,6 +985,10 @@ msgstr "Sulge"
 msgid "CLOSE"
 msgstr "SULGE"
 
+#: src/components/layout/F1HelpDialog.tsx
+msgid "Close / back"
+msgstr ""
+
 #: src/features/scan/ClaimPage.tsx
 msgid "Code not found"
 msgstr "Koodi ei leitud"
@@ -980,6 +1002,7 @@ msgstr "Värv"
 msgid "Coming soon"
 msgstr "Tulekul"
 
+#: src/components/layout/F1HelpDialog.tsx
 #: src/features/command-palette/CommandPalette.tsx
 msgid "Command palette"
 msgstr "Käsupalett"
@@ -2151,6 +2174,10 @@ msgstr "Sisesta oma nimi."
 msgid "Entity"
 msgstr "Olem"
 
+#: src/features/inventory/InventoryListPage.tsx
+msgid "entries"
+msgstr ""
+
 #: src/features/inventory/hooks/useInventoryFormMutations.ts
 msgid "Entry saved."
 msgstr "Kirje salvestatud."
@@ -2185,8 +2212,13 @@ msgid "exchanging credentials"
 msgstr "mandaatide vahetamine"
 
 #: src/components/layout/breadcrumbs.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "Expiring"
 msgstr "Aeguvad"
+
+#: src/features/items/components/InventoryScopeTabs.tsx
+msgid "EXPIRING"
+msgstr ""
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "Expiring soon"
@@ -2307,12 +2339,12 @@ msgstr "FAILID"
 #~ msgstr "Filtreeri laenajaid…"
 
 #: src/components/retro/filters/ViewMenu.tsx
-msgid "Filter categories"
-msgstr "Filtreeri kategooriaid"
+#~ msgid "Filter categories"
+#~ msgstr "Filtreeri kategooriaid"
 
 #: src/components/retro/filters/ViewMenu.tsx
-msgid "Filter categories…"
-msgstr "Filtreeri kategooriaid…"
+#~ msgid "Filter categories…"
+#~ msgstr "Filtreeri kategooriaid…"
 
 #: src/features/inventory/InventoryListPage.tsx
 #~ msgid "Filter inventory…"
@@ -2329,6 +2361,14 @@ msgstr "Filtreeri esemeid"
 #: src/features/loans/LoansListPage.tsx
 #~ msgid "Filter loans…"
 #~ msgstr "Filtreeri laenutusi…"
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "Filter options"
+msgstr ""
+
+#: src/components/retro/filters/ViewMenu.tsx
+msgid "Filter…"
+msgstr ""
 
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "FilterBar + FilterPopover — search, facets, chips, count, CTA."
@@ -2405,6 +2445,10 @@ msgstr "AJALUGU"
 #~ msgid "History tab panel."
 #~ msgstr "Ajaloo vahekaardi paneel."
 
+#: src/components/layout/TabBar.tsx
+msgid "Home"
+msgstr ""
+
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
 msgid "home inventory terminal · v3.0"
@@ -2447,7 +2491,6 @@ msgid "Importing…"
 msgstr "Importimine…"
 
 #: src/components/layout/breadcrumbs.tsx
-#: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/imports/components/ImportHistory.tsx
 msgid "Imports"
@@ -2458,7 +2501,6 @@ msgid "IMPORTS — {workspaceName}"
 msgstr "IMPORDID — {workspaceName}"
 
 #: src/features/items/components/InventoryPanel.tsx
-#: src/features/items/components/ItemRow.tsx
 msgid "IN STOCK"
 msgstr "LAOS"
 
@@ -2495,8 +2537,8 @@ msgid "INVENTORY"
 msgstr "LAOSEIS"
 
 #: src/features/inventory/InventoryListPage.tsx
-msgid "INVENTORY — {workspaceName}"
-msgstr "LAOSEIS — {workspaceName}"
+#~ msgid "INVENTORY — {workspaceName}"
+#~ msgstr "LAOSEIS — {workspaceName}"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Inventory entry"
@@ -2548,12 +2590,17 @@ msgstr "eset"
 
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
+#: src/components/layout/TabBar.tsx
 #: src/features/command-palette/CommandPalette.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/components/DashboardStatTiles.tsx
 #: src/features/dashboard/components/HudRow.tsx
 msgid "Items"
 msgstr "Esemed"
+
+#: src/features/items/components/InventoryScopeTabs.tsx
+msgid "ITEMS"
+msgstr ""
 
 #: src/features/items/ItemsListPage.tsx
 msgid "ITEMS — {workspaceName}"
@@ -2745,7 +2792,7 @@ msgstr "Selle eseme laenutamine — vali laenaja."
 
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
-#: src/features/borrowers/BorrowersListPage.tsx
+#: src/components/layout/TabBar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/components/DashboardStatTiles.tsx
 #: src/features/dashboard/DashboardPage.tsx
@@ -2915,8 +2962,13 @@ msgstr "Liikmed"
 #~ msgstr "Menüü ▾"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
+#: src/features/items/ItemDetailPage.tsx
 msgid "Min stock"
 msgstr "Min laoseis"
+
+#: src/features/items/ItemFormPage.tsx
+msgid "Min stock level"
+msgstr ""
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Mirror Paperless tags"
@@ -2926,9 +2978,17 @@ msgstr "Peegelda Paperlessi silte"
 msgid "Monthly loan activity"
 msgstr "Kuine laenutuste tegevus"
 
+#: src/components/layout/TabBar.tsx
+msgid "More"
+msgstr ""
+
 #: src/features/items/ItemDetailPage.tsx
 msgid "More actions"
 msgstr "Veel toiminguid"
+
+#: src/features/inventory/components/InventoryRow.tsx
+msgid "More actions for {label}"
+msgstr "Veel toiminguid: {label}"
 
 #: src/components/layout/Bottombar.tsx
 msgid "MORE SHORTCUTS"
@@ -3017,12 +3077,11 @@ msgstr "mitte kunagi"
 msgid "New"
 msgstr "Uus"
 
-#: src/features/borrowers/BorrowersListPage.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "New borrower"
 msgstr "Uus laenaja"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
-#: src/features/borrowers/BorrowersListPage.tsx
 msgid "NEW BORROWER"
 msgstr "UUS LAENAJA"
 
@@ -3050,6 +3109,7 @@ msgstr "Uus kanne"
 msgid "New here?"
 msgstr "Uus siin?"
 
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "New item"
@@ -3059,6 +3119,7 @@ msgstr "Uus ese"
 msgid "NEW LABEL"
 msgstr "UUS SILT"
 
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/loans/LoansListPage.tsx
 msgid "New loan"
 msgstr "Uus laen"
@@ -3493,8 +3554,8 @@ msgid "ONLINE"
 msgstr "VÕRGUS"
 
 #: src/features/system-history/Page.tsx
-msgid "ONLINE ONLY"
-msgstr "AINULT VÕRGUS"
+#~ msgid "ONLINE ONLY"
+#~ msgstr "AINULT VÕRGUS"
 
 #: src/features/items/hooks/useItemMutations.ts
 #: src/features/items/ItemsListPage.tsx
@@ -3558,6 +3619,7 @@ msgstr "Tellitud"
 msgid "ORDERED"
 msgstr "TELLITUD"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 msgid "Organize"
 msgstr "Korrasta"
@@ -3571,7 +3633,6 @@ msgid "Out of stock"
 msgstr "Laost otsas"
 
 #: src/features/dashboard/components/DashboardStatTiles.tsx
-#: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Overdue"
 msgstr "Üle tähtaja"
@@ -3679,6 +3740,10 @@ msgstr "Ootel kinnitused"
 #: src/features/borrowers/components/BorrowerProfile.tsx
 msgid "Phone"
 msgstr "Telefon"
+
+#: src/features/items/components/ItemsResults.tsx
+msgid "Photo"
+msgstr "Foto"
 
 #: src/features/scan/CapturePage.tsx
 msgid "PHOTO"
@@ -3816,8 +3881,6 @@ msgid "Qty"
 msgstr "Kogus"
 
 #: src/features/inventory/InventoryFormPage.tsx
-#: src/features/items/ItemDetailPage.tsx
-#: src/features/items/ItemFormPage.tsx
 msgid "Quantity"
 msgstr "Kogus"
 
@@ -4069,8 +4132,8 @@ msgid "Return the active loans before deleting this borrower."
 msgstr "Tagasta aktiivsed laenutused enne selle laenaja kustutamist."
 
 #: src/features/loans/LoansListPage.tsx
-msgid "Returned"
-msgstr "Tagastatud"
+#~ msgid "Returned"
+#~ msgstr "Tagastatud"
 
 #: src/features/loans/components/ReturnLoanDialog.tsx
 msgid "Returned — moved to History."
@@ -4237,6 +4300,7 @@ msgstr "Salvestatud."
 
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
+#: src/components/layout/TabBar.tsx
 #: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Scan"
@@ -4245,6 +4309,10 @@ msgstr "Skaneeri"
 #: src/features/scan/ScanPage.tsx
 msgid "SCAN"
 msgstr "SKANNI"
+
+#: src/components/scan/ScanResultBanner.tsx
+msgid "SCAN NEXT"
+msgstr ""
 
 #: src/features/scan/CapturePage.tsx
 msgid "Scan, snap, move on. Fill in the details later from a desktop."
@@ -4385,6 +4453,46 @@ msgstr "Määratakse loomisel — ei saa muuta."
 msgid "Settings"
 msgstr "Seaded"
 
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Accounts"
+msgstr ""
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Appearance"
+msgstr ""
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Data"
+msgstr ""
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Formats"
+msgstr ""
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Language"
+msgstr ""
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Members"
+msgstr ""
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Notifications"
+msgstr ""
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Paperless"
+msgstr ""
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Profile"
+msgstr ""
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Settings · Security"
+msgstr ""
+
 #: src/features/taxonomy/components/TaxonomyFormFields.tsx
 msgid "Short code"
 msgstr "Lühikood"
@@ -4496,13 +4604,11 @@ msgstr "Etapp"
 msgid "START"
 msgstr "ALUSTA"
 
-#: src/features/dashboard/components/RecentActivityCard.tsx
 #: src/features/imports/components/ImportHistory.tsx
 #: src/features/inventory/components/InventoryResults.tsx
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/components/ItemsResults.tsx
-#: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 #: src/features/my-changes/MyChangesPage.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx
@@ -4526,9 +4632,18 @@ msgstr "Olekute jaotus"
 msgid "Stay"
 msgstr "Jää"
 
+#: src/components/layout/breadcrumbs.tsx
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "Stock"
 msgstr "Laoseis"
+
+#: src/features/items/components/InventoryScopeTabs.tsx
+msgid "STOCK"
+msgstr "LAOSEIS"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "STOCK — {workspaceName}"
+msgstr "LAOSEIS — {workspaceName}"
 
 #: src/features/items/components/InventoryPanelStub.tsx
 msgid "Stock entries arrive in 7b."
@@ -4543,18 +4658,18 @@ msgid "Switched to {name}."
 msgstr "Vahetatud: {name}."
 
 #: src/features/system-history/Page.tsx
-msgid "Sync"
-msgstr "Sünkroonimine"
+#~ msgid "Sync"
+#~ msgstr "Sünkroonimine"
 
 #: src/components/layout/breadcrumbs.tsx
 #: src/components/layout/Sidebar.tsx
 #: src/features/command-palette/paletteRoutes.ts
-msgid "Sync History"
-msgstr "Sünkroonimise ajalugu"
+#~ msgid "Sync History"
+#~ msgstr "Sünkroonimise ajalugu"
 
 #: src/features/system-history/Page.tsx
-msgid "SYNC HISTORY"
-msgstr "SÜNKROONIMISE AJALUGU"
+#~ msgid "SYNC HISTORY"
+#~ msgstr "SÜNKROONIMISE AJALUGU"
 
 #: src/lib/offline/useResumeOnReconnect.ts
 msgid "Synced."
@@ -4584,8 +4699,8 @@ msgid "target {CAPACITY_TARGET_PLACEHOLDER} · data pending"
 msgstr "siht {CAPACITY_TARGET_PLACEHOLDER} · andmed ootel"
 
 #: src/components/layout/breadcrumbs.tsx
-msgid "Taxonomy"
-msgstr "Taksonoomia"
+#~ msgid "Taxonomy"
+#~ msgstr "Taksonoomia"
 
 #: src/features/taxonomy/TaxonomyPage.tsx
 #~ msgid "TAXONOMY — {workspaceName}"
@@ -4732,8 +4847,8 @@ msgid "This route has no quick actions yet. Press F1 anytime for the full list."
 msgstr "Sellel marsruudil pole veel kiirtoiminguid. Vajuta täisloendi nägemiseks igal ajal F1."
 
 #: src/features/system-history/Page.tsx
-msgid "This workspace runs online-only — changes save directly to the server, so there are no background sync events to show."
-msgstr "See tööruum töötab ainult võrgus — muudatused salvestatakse otse serverisse, mistõttu pole taustasünkroonimise sündmusi kuvada."
+#~ msgid "This workspace runs online-only — changes save directly to the server, so there are no background sync events to show."
+#~ msgstr "See tööruum töötab ainult võrgus — muudatused salvestatakse otse serverisse, mistõttu pole taustasünkroonimise sündmusi kuvada."
 
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Thousand and decimal separators must be different."
@@ -4785,6 +4900,14 @@ msgstr "Asukohta"
 #: src/features/items/components/PhotoTile.tsx
 msgid "Toggle {label}"
 msgstr "Lülita {label}"
+
+#: src/features/command-palette/paletteRoutes.ts
+msgid "Toggle theme"
+msgstr ""
+
+#: src/components/layout/F1HelpDialog.tsx
+msgid "Toggle this help"
+msgstr ""
 
 #: src/features/analytics/components/TopBorrowersChart.tsx
 msgid "Top borrowers"
