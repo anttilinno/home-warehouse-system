@@ -95,7 +95,7 @@ export function ImportsPage() {
         <div className="p-sp-4">
           {/* 1. IMPORT — admin-gated multipart upload (the async job path). */}
           <section className="flex flex-col gap-sp-3 border-b border-table-rule pb-sp-4">
-            <h2 className="font-display text-12 uppercase tracking-6 text-fg-muted">
+            <h2 className="font-body text-11 font-bold uppercase tracking-10 text-fg-muted">
               <Trans>Import from CSV</Trans>
             </h2>
             {isAdmin ? (
@@ -143,7 +143,7 @@ export function ImportsPage() {
 
           {/* 2. EXPORT — reuse settingsApi.exportWorkspace (no re-implementation). */}
           <section className="flex flex-col gap-sp-2 border-b border-table-rule py-sp-4">
-            <h2 className="font-display text-12 uppercase tracking-6 text-fg-muted">
+            <h2 className="font-body text-11 font-bold uppercase tracking-10 text-fg-muted">
               <Trans>Export</Trans>
             </h2>
             <p className="text-13 text-fg-ink">
@@ -173,7 +173,7 @@ export function ImportsPage() {
 
           {/* 3. HISTORY — the import-jobs activity table. */}
           <section className="flex flex-col gap-sp-2 pt-sp-4">
-            <h2 className="font-display text-12 uppercase tracking-6 text-fg-muted">
+            <h2 className="font-body text-11 font-bold uppercase tracking-10 text-fg-muted">
               <Trans>Import history</Trans>
             </h2>
 

@@ -112,7 +112,7 @@ export function TopBar({ online, onOpenSearch }: Readonly<TopBarProps>) {
         onClick={onOpenSearch}
         aria-label="Search"
         aria-keyshortcuts="Meta+K Control+K"
-        className={`mx-sp-2 flex h-[28px] min-w-0 max-w-[420px] flex-1 items-center gap-sp-2 border-2 border-border-ink bg-bg-panel-2 px-sp-2 text-12 text-fg-muted bevel-pressed hover:text-fg-ink active:translate-x-px active:translate-y-px ${FOCUS_RING}`}
+        className={`relative mx-sp-2 flex h-[28px] min-w-0 max-md:before:absolute max-md:before:-inset-y-2 max-md:before:inset-x-0 max-md:before:content-[''] max-w-[420px] flex-1 items-center gap-sp-2 border-2 border-border-ink bg-bg-panel-2 px-sp-2 text-12 text-fg-muted bevel-pressed hover:text-fg-ink active:translate-x-px active:translate-y-px ${FOCUS_RING}`}
       >
         <PixelIcon name="search" />
         <span className="truncate">

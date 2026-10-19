@@ -152,7 +152,11 @@ export function BorrowersListPage() {
                 <tr>
                   <th>{t`Name`}</th>
                   <th>{t`Contact`}</th>
-                  <th />
+                  <th className="max-md:hidden">
+                    <span className="sr-only">
+                      <Trans>Actions</Trans>
+                    </span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -170,8 +174,10 @@ export function BorrowersListPage() {
                         {contact ?? <span className="text-fg-muted">—</span>}
                       </td>
                       {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops row-click propagation only */}
+                      {/* Row tap opens the borrower; below md the EDIT button
+                          only made rows wrap raggedly (same as the items list). */}
                       <td
-                        className="actions text-right"
+                        className="actions text-right max-md:hidden"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <BevelButton

@@ -252,7 +252,11 @@ export function LoansListPage() {
               <th>{t`Borrower`}</th>
               <th>{t`Loaned`}</th>
               <th>{t`Due`}</th>
-              <th />
+              <th>
+                <span className="sr-only">
+                  <Trans>Actions</Trans>
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody>

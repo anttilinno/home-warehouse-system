@@ -133,7 +133,11 @@ export function ItemsResults({
                 onChange={onToggleAll}
               />
             </th>
-            <th />
+            <th>
+              <span className="sr-only">
+                <Trans>Photo</Trans>
+              </span>
+            </th>
             {SORTABLE.map((col) => (
               <th key={col.key}>
                 <button
@@ -149,7 +153,11 @@ export function ItemsResults({
             ))}
             <th>{t`Category`}</th>
             <th>{t`Status`}</th>
-            <th />
+            <th>
+              <span className="sr-only">
+                <Trans>Actions</Trans>
+              </span>
+            </th>
           </tr>
         </thead>
         <tbody>

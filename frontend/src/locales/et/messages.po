@@ -405,9 +405,17 @@ msgstr "Toiming"
 msgid "action needed"
 msgstr "vajab tegutsemist"
 
+#: src/features/analytics/components/OutOfStockTable.tsx
+#: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/command-palette/CommandPalette.tsx
+#: src/features/declutter/DeclutterPage.tsx
+#: src/features/inventory/components/InventoryResults.tsx
+#: src/features/items/components/ItemsResults.tsx
+#: src/features/loans/LoansListPage.tsx
+#: src/features/maintenance/MaintenanceDuePage.tsx
 #: src/features/settings/MembersPage.tsx
 #: src/features/settings/SecurityPage.tsx
+#: src/features/wishlist/components/WishlistTable.tsx
 msgid "Actions"
 msgstr "Toimingud"
 
@@ -3732,6 +3740,10 @@ msgstr "Ootel kinnitused"
 #: src/features/borrowers/components/BorrowerProfile.tsx
 msgid "Phone"
 msgstr "Telefon"
+
+#: src/features/items/components/ItemsResults.tsx
+msgid "Photo"
+msgstr "Foto"
 
 #: src/features/scan/CapturePage.tsx
 msgid "PHOTO"

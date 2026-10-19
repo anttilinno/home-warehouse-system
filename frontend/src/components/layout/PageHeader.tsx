@@ -28,53 +28,59 @@ export function PageHeader({
   const lastIndex = crumbs.length - 1;
 
   return (
-    <div className="hidden items-baseline justify-between gap-sp-4 border-b-2 md:flex border-border-ink bg-bg-panel-2 px-sp-3 py-sp-2">
-      <nav
-        aria-label="Breadcrumb"
-        className="flex items-center gap-sp-1 text-11 font-bold uppercase tracking-10"
-      >
-        {crumbs.map((crumb, i) => {
-          const isLeaf = i === lastIndex;
-          return (
-            // biome-ignore lint/suspicious/noArrayIndexKey: crumb chain is positional and rebuilt wholesale per route; labels are opaque <Trans> nodes and `to` repeats across crumbs, so the index IS the identity.
-            <Fragment key={i}>
-              {i > 0 && (
-                <span aria-hidden="true" className="text-fg-ink">
-                  ›
-                </span>
-              )}
-              {!isLeaf && crumb.to ? (
-                <Link to={crumb.to} className={CRUMB_LINK}>
-                  {crumb.label}
-                </Link>
-              ) : (
-                <span
-                  aria-current={isLeaf ? "page" : undefined}
-                  className={isLeaf ? "text-fg-ink" : "text-fg-muted"}
-                >
-                  {crumb.label}
-                </span>
-              )}
-            </Fragment>
-          );
-        })}
-      </nav>
+    <>
+      {/* One h1 per page, named after the leaf crumb. Kept outside the
+          breadcrumb bar, which is display:none below md and would take the
+          heading out of the accessibility tree with it. */}
+      <h1 className="sr-only">{crumbs[lastIndex]?.label}</h1>
+      <div className="hidden items-baseline justify-between gap-sp-4 border-b-2 md:flex border-border-ink bg-bg-panel-2 px-sp-3 py-sp-2">
+        <nav
+          aria-label="Breadcrumb"
+          className="flex items-center gap-sp-1 text-11 font-bold uppercase tracking-10"
+        >
+          {crumbs.map((crumb, i) => {
+            const isLeaf = i === lastIndex;
+            return (
+              // biome-ignore lint/suspicious/noArrayIndexKey: crumb chain is positional and rebuilt wholesale per route; labels are opaque <Trans> nodes and `to` repeats across crumbs, so the index IS the identity.
+              <Fragment key={i}>
+                {i > 0 && (
+                  <span aria-hidden="true" className="text-fg-ink">
+                    ›
+                  </span>
+                )}
+                {!isLeaf && crumb.to ? (
+                  <Link to={crumb.to} className={CRUMB_LINK}>
+                    {crumb.label}
+                  </Link>
+                ) : (
+                  <span
+                    aria-current={isLeaf ? "page" : undefined}
+                    className={isLeaf ? "text-fg-ink" : "text-fg-muted"}
+                  >
+                    {crumb.label}
+                  </span>
+                )}
+              </Fragment>
+            );
+          })}
+        </nav>
 
-      {/* LAST SYNC is decorative chrome; hidden below lg so the breadcrumb +
+        {/* LAST SYNC is decorative chrome; hidden below lg so the breadcrumb +
           content column never overflow on narrow viewports (POL-05). */}
-      <div className="hidden items-center gap-sp-3 font-mono text-12 tabular-nums text-fg-muted lg:flex">
-        <span className="inline-flex items-center gap-sp-1">
-          <span className="text-11 font-bold uppercase tracking-10 text-fg-muted">
-            <Trans>LAST SYNC</Trans>
+        <div className="hidden items-center gap-sp-3 font-mono text-12 tabular-nums text-fg-muted lg:flex">
+          <span className="inline-flex items-center gap-sp-1">
+            <span className="text-11 font-bold uppercase tracking-10 text-fg-muted">
+              <Trans>LAST SYNC</Trans>
+            </span>
+            <span
+              data-testid="page-header-lastsync"
+              className="tabular-nums text-fg-ink"
+            >
+              {lastSync}
+            </span>
           </span>
-          <span
-            data-testid="page-header-lastsync"
-            className="tabular-nums text-fg-ink"
-          >
-            {lastSync}
-          </span>
-        </span>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

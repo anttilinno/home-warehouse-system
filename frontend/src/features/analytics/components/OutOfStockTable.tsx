@@ -60,7 +60,11 @@ export function OutOfStockTable({
             <th>{t`Category`}</th>
             <th className="text-right">{t`Min stock`}</th>
             <th className="text-right">{t`Stock`}</th>
-            <th />
+            <th>
+              <span className="sr-only">
+                <Trans>Actions</Trans>
+              </span>
+            </th>
           </tr>
         </thead>
         <tbody>

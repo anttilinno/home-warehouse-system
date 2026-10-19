@@ -57,7 +57,7 @@ export function RecentActivityCard({
               <th>
                 <Trans>Entity</Trans>
               </th>
-              <th>
+              <th className="max-md:hidden">
                 <Trans>Actor</Trans>
               </th>
             </tr>
@@ -91,7 +91,8 @@ export function RecentActivityCard({
                 </td>
                 {/* Actor: the raw user_id slug (no actor name on the wire —
                     RecentActivity carries user_id? only). "—" when absent. */}
-                <td className="mono">
+                {/* An id slug is noise on a phone-width table; desktop only. */}
+                <td className="mono max-md:hidden">
                   {row.user_id ? row.user_id.slice(0, 8) : "—"}
                 </td>
               </tr>

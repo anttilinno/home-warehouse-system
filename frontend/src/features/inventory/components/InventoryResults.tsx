@@ -180,7 +180,11 @@ export function InventoryResults({
               sortGlyph={sortGlyph}
             />
             <th>{t`Expiry`}</th>
-            <th />
+            <th>
+              <span className="sr-only">
+                <Trans>Actions</Trans>
+              </span>
+            </th>
           </tr>
         </thead>
         <tbody>

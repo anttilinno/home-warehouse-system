@@ -56,7 +56,8 @@ function NavBody({ icon, label, count }: Readonly<Omit<NavItemProps, "to">>) {
   );
 }
 
-const NAV_ACTIVE = `${NAV_BASE} border border-border-ink bg-selection-fill shadow-hard-ink`;
+// Pastel fills carry ink text only (hard rule 2), so the count goes ink too.
+const NAV_ACTIVE = `${NAV_BASE} border border-border-ink bg-selection-fill shadow-hard-ink [&_.nav-count]:text-fg-ink`;
 const NAV_INACTIVE = `${NAV_BASE} border border-transparent text-fg-ink hover:border-border-ink hover:bg-bg-panel-2 active:bg-bg-pressed`;
 
 function NavItem({ icon, label, count, to }: Readonly<NavItemProps>) {
@@ -149,7 +150,7 @@ function NavGroup({
           onClick={toggle}
           aria-expanded={open}
           aria-controls={listId}
-          className="flex w-full items-center gap-sp-2 border-b border-dotted border-fg-faint pb-[3px] max-md:py-sp-3 text-10 font-bold uppercase tracking-14 text-fg-muted hover:text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
+          className="relative flex w-full items-center gap-sp-2 before:absolute before:inset-x-0 before:-inset-y-[3px] before:content-[''] border-b border-dotted border-fg-faint pb-[3px] max-md:py-sp-3 text-10 font-bold uppercase tracking-14 text-fg-muted hover:text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
         >
           <span
             aria-hidden="true"
@@ -199,7 +200,7 @@ function CollapseToggle({
       aria-expanded={!collapsed}
       aria-label={label}
       title={label}
-      className="grid h-[16px] w-[16px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-12 leading-none bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
+      className="relative grid h-[16px] w-[16px] flex-none place-items-center before:absolute before:-inset-[4px] before:content-[''] border-2 border-border-ink bg-bg-panel font-mono text-12 leading-none bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
     >
       <span aria-hidden="true">{collapsed ? "›" : "‹"}</span>
     </button>

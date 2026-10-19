@@ -131,7 +131,11 @@ export function WishlistTable({
               <th>{t`Price`}</th>
               <th>{t`Priority`}</th>
               <th>{t`Status`}</th>
-              <th />
+              <th>
+                <span className="sr-only">
+                  <Trans>Actions</Trans>
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody>

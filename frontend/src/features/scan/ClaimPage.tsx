@@ -56,7 +56,7 @@ export function ClaimPage() {
   // ERROR → in-page role="alert" danger banner (ItemFormPage root-error idiom).
   if (isError) {
     return (
-      <main className="mx-auto w-full max-w-[480px] p-sp-4">
+      <div className="mx-auto w-full max-w-[480px] p-sp-4">
         <Window title={<Trans>Claim code</Trans>} titlebarVariant="mint">
           <p
             role="alert"
@@ -75,14 +75,14 @@ export function ClaimPage() {
             </Link>
           </div>
         </Window>
-      </main>
+      </div>
     );
   }
 
   // RESOLVING — the retro stepped-progress loading idiom (UI-SPEC §3).
   if (isResolving) {
     return (
-      <main className="grid min-h-[60vh] place-items-center p-sp-4">
+      <div className="grid min-h-[60vh] place-items-center p-sp-4">
         <Window
           title={<Trans>Claim code</Trans>}
           titlebarVariant="mint"
@@ -107,7 +107,7 @@ export function ClaimPage() {
             </p>
           </div>
         </Window>
-      </main>
+      </div>
     );
   }
 
@@ -120,7 +120,7 @@ export function ClaimPage() {
     "inline-flex cursor-pointer items-center justify-center gap-sp-2 border-2 border-border-ink bg-titlebar-mint px-[14px] py-[6px] font-body text-13 font-semibold uppercase tracking-4 text-fg-ink bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed";
 
   return (
-    <main className="mx-auto w-full max-w-[480px] p-sp-4">
+    <div className="mx-auto w-full max-w-[480px] p-sp-4">
       <Window title={<Trans>Claim code</Trans>} titlebarVariant="mint">
         <p className="text-14 text-fg-muted">
           <Trans>
@@ -160,6 +160,6 @@ export function ClaimPage() {
           />
         </div>
       </Window>
-    </main>
+    </div>
   );
 }

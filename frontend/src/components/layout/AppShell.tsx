@@ -167,7 +167,7 @@ function ShellChrome() {
 
       {/* Desktop Navigator — persistent in the grid; hidden <768px (the drawer
           takes over there via the responsive grid + this wrapper). */}
-      <div className="app-sidebar hidden md:block">
+      <aside aria-label="Navigator" className="app-sidebar hidden md:block">
         <Sidebar
           collapsed={collapsed}
           onToggleCollapse={() => setCollapsed((v) => !v)}
@@ -176,7 +176,7 @@ function ShellChrome() {
           user={me.data}
           onLogout={logout}
         />
-      </div>
+      </aside>
 
       <main id="main" tabIndex={-1} className="app-main">
         <PageHeader crumbs={crumbs} lastSync={lastSync} />

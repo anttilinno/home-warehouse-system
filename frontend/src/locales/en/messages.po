@@ -405,9 +405,17 @@ msgstr "Action"
 msgid "action needed"
 msgstr "action needed"
 
+#: src/features/analytics/components/OutOfStockTable.tsx
+#: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/command-palette/CommandPalette.tsx
+#: src/features/declutter/DeclutterPage.tsx
+#: src/features/inventory/components/InventoryResults.tsx
+#: src/features/items/components/ItemsResults.tsx
+#: src/features/loans/LoansListPage.tsx
+#: src/features/maintenance/MaintenanceDuePage.tsx
 #: src/features/settings/MembersPage.tsx
 #: src/features/settings/SecurityPage.tsx
+#: src/features/wishlist/components/WishlistTable.tsx
 msgid "Actions"
 msgstr "Actions"
 
@@ -3732,6 +3740,10 @@ msgstr "Pending approvals"
 #: src/features/borrowers/components/BorrowerProfile.tsx
 msgid "Phone"
 msgstr "Phone"
+
+#: src/features/items/components/ItemsResults.tsx
+msgid "Photo"
+msgstr "Photo"
 
 #: src/features/scan/CapturePage.tsx
 msgid "PHOTO"

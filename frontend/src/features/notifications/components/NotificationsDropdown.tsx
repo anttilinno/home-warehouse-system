@@ -117,7 +117,7 @@ export function NotificationsDropdown({
         className="absolute right-0 top-[calc(100%+4px)] z-40 max-h-[420px] w-[320px] overflow-y-auto border-2 border-border-ink bg-bg-panel bevel-raised-ink"
       >
         <header className="flex items-center justify-between gap-sp-2 border-b-2 border-border-ink bg-titlebar-blue px-sp-3 py-[6px] pinstripes">
-          <h2 className="font-display text-14 uppercase tracking-2 text-fg-ink">
+          <h2 className="font-display text-16 uppercase tracking-2 text-fg-ink">
             <Trans>Notifications</Trans>
           </h2>
           <BevelButton
