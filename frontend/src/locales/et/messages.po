@@ -462,7 +462,7 @@ msgstr "LISA"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "Add borrower"
-msgstr ""
+msgstr "Lisa laenaja"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "ADD BORROWER"
@@ -531,7 +531,7 @@ msgstr "LISA SOOVINIMEKIRJA"
 
 #: src/features/wishlist/components/WishlistTable.tsx
 msgid "ADD WISH"
-msgstr ""
+msgstr "LISA SOOV"
 
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Add your first location — a room, shelf, or area. Nest sub-locations to mirror your space."
@@ -987,7 +987,7 @@ msgstr "SULGE"
 
 #: src/components/layout/F1HelpDialog.tsx
 msgid "Close / back"
-msgstr ""
+msgstr "Sulge / tagasi"
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Code not found"
@@ -2176,7 +2176,7 @@ msgstr "Olem"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "entries"
-msgstr ""
+msgstr "kirjet"
 
 #: src/features/inventory/hooks/useInventoryFormMutations.ts
 msgid "Entry saved."
@@ -2218,7 +2218,7 @@ msgstr "Aeguvad"
 
 #: src/features/items/components/InventoryScopeTabs.tsx
 msgid "EXPIRING"
-msgstr ""
+msgstr "AEGUVAD"
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "Expiring soon"
@@ -2364,11 +2364,11 @@ msgstr "Filtreeri esemeid"
 
 #: src/components/retro/filters/ViewMenu.tsx
 msgid "Filter options"
-msgstr ""
+msgstr "Filtri valikud"
 
 #: src/components/retro/filters/ViewMenu.tsx
 msgid "Filter…"
-msgstr ""
+msgstr "Filtreeri…"
 
 #: src/routes/demo/DemoPage.tsx
 #~ msgid "FilterBar + FilterPopover — search, facets, chips, count, CTA."
@@ -2447,7 +2447,7 @@ msgstr "AJALUGU"
 
 #: src/components/layout/TabBar.tsx
 msgid "Home"
-msgstr ""
+msgstr "Avaleht"
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
@@ -2600,7 +2600,7 @@ msgstr "Esemed"
 
 #: src/features/items/components/InventoryScopeTabs.tsx
 msgid "ITEMS"
-msgstr ""
+msgstr "ESEMED"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "ITEMS — {workspaceName}"
@@ -2968,7 +2968,7 @@ msgstr "Min laoseis"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "Min stock level"
-msgstr ""
+msgstr "Min laoseis"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Mirror Paperless tags"
@@ -2980,7 +2980,7 @@ msgstr "Kuine laenutuste tegevus"
 
 #: src/components/layout/TabBar.tsx
 msgid "More"
-msgstr ""
+msgstr "Veel"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "More actions"
@@ -4312,7 +4312,7 @@ msgstr "SKANNI"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "SCAN NEXT"
-msgstr ""
+msgstr "SKANNI JÄRGMINE"
 
 #: src/features/scan/CapturePage.tsx
 msgid "Scan, snap, move on. Fill in the details later from a desktop."
@@ -4455,43 +4455,43 @@ msgstr "Seaded"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Accounts"
-msgstr ""
+msgstr "Seaded · Kontod"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Appearance"
-msgstr ""
+msgstr "Seaded · Välimus"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Data"
-msgstr ""
+msgstr "Seaded · Andmed"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Formats"
-msgstr ""
+msgstr "Seaded · Vormingud"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Language"
-msgstr ""
+msgstr "Seaded · Keel"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Members"
-msgstr ""
+msgstr "Seaded · Liikmed"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Notifications"
-msgstr ""
+msgstr "Seaded · Teavitused"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Paperless"
-msgstr ""
+msgstr "Seaded · Paperless"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Profile"
-msgstr ""
+msgstr "Seaded · Profiil"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Settings · Security"
-msgstr ""
+msgstr "Seaded · Turvalisus"
 
 #: src/features/taxonomy/components/TaxonomyFormFields.tsx
 msgid "Short code"
@@ -4903,11 +4903,11 @@ msgstr "Lülita {label}"
 
 #: src/features/command-palette/paletteRoutes.ts
 msgid "Toggle theme"
-msgstr ""
+msgstr "Vaheta teemat"
 
 #: src/components/layout/F1HelpDialog.tsx
 msgid "Toggle this help"
-msgstr ""
+msgstr "Näita/peida see abi"
 
 #: src/features/analytics/components/TopBorrowersChart.tsx
 msgid "Top borrowers"
